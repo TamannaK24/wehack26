@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Shield,
@@ -99,21 +99,16 @@ const Sidebar = ({
 };
 
 const TopBar = ({
-  sidebarOpen,
-  onToggleSidebar,
+  isVisible,
 }: {
-  sidebarOpen: boolean;
-  onToggleSidebar: () => void;
+  isVisible: boolean;
 }) => (
-  <header className="fixed top-0 w-full z-50 flex justify-between items-center px-8 h-20 bg-[#131313] border-b border-outline-variant/20 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
+  <header
+    className={`fixed top-0 w-full z-50 flex justify-between items-center px-8 h-20 bg-[#131313] border-b border-outline-variant/20 shadow-[0_10px_30px_rgba(0,0,0,0.8)] transition-all duration-300 ${
+      isVisible ? 'translate-y-0 opacity-100 pointer-events-auto' : '-translate-y-full opacity-0 pointer-events-none'
+    }`}
+  >
     <div className="flex items-center gap-6">
-      <button
-        onClick={onToggleSidebar}
-        className="w-10 h-10 border border-outline-variant/40 text-primary hover:bg-primary/10 transition-colors flex items-center justify-center"
-        aria-label={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
-      >
-        {sidebarOpen ? <DoorClosed size={18} /> : <ListFilter size={18} />}
-      </button>
       <span className="text-3xl font-headline text-primary italic uppercase tracking-tight">The Nocturne Gallery</span>
     </div>
     <div className="flex items-center gap-8">
@@ -134,6 +129,20 @@ export default function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('GALLERY');
   const [transition, setTransition] = useState<TransitionType>('push');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showTopBar, setShowTopBar] = useState(true);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowTopBar(window.scrollY <= 1);
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   const handleNavigate = (screen: Screen, type: TransitionType) => {
     setTransition(type);
@@ -159,7 +168,15 @@ export default function App() {
     <div className="min-h-screen bg-background selection:bg-primary/30 selection:text-on-primary">
       <div className="film-grain" />
 
-      <TopBar sidebarOpen={sidebarOpen} onToggleSidebar={() => setSidebarOpen((prev) => !prev)} />
+      <button
+        onClick={() => setSidebarOpen((prev) => !prev)}
+        className="fixed top-6 left-8 z-[60] w-10 h-10 border border-outline-variant/40 bg-[#131313]/90 text-primary hover:bg-primary/10 transition-colors flex items-center justify-center"
+        aria-label={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+      >
+        {sidebarOpen ? <DoorClosed size={18} /> : <ListFilter size={18} />}
+      </button>
+
+      <TopBar isVisible={showTopBar} />
       <Sidebar currentScreen={currentScreen} onNavigate={handleNavigate} isOpen={sidebarOpen} />
 
       <main className={`pt-32 pb-24 px-8 relative overflow-hidden transition-[padding] duration-500 ${sidebarOpen ? 'lg:pl-80' : 'lg:pl-8'}`}>
