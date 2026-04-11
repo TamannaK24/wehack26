@@ -12,7 +12,7 @@ import {
   ListFilter,
   DoorClosed,
 } from 'lucide-react';
-import CuratorsGallery from './pages/CuratorsGallery';
+import CuratorsGallery from './pages/GalleryPage';
 import DeepLedger from './pages/DeepLedger';
 import RestorationProjects from './pages/RestorationProjects';
 import InquiryEstate from './pages/InquiryEstate';
@@ -100,11 +100,13 @@ const Sidebar = ({
 
 const TopBar = ({
   isVisible,
+  sidebarOpen,
 }: {
   isVisible: boolean;
+  sidebarOpen: boolean;
 }) => (
   <header
-    className={`fixed top-0 w-full z-50 flex justify-between items-center px-8 h-20 bg-[#131313] border-b border-outline-variant/20 shadow-[0_10px_30px_rgba(0,0,0,0.8)] transition-all duration-300 ${
+    className={`fixed top-0 w-full z-50 flex justify-between items-center h-20 pr-8 pl-24 bg-[#131313] border-b border-outline-variant/20 shadow-[0_10px_30px_rgba(0,0,0,0.8)] transition-[padding,transform,opacity] duration-300 ${
       isVisible ? 'translate-y-0 opacity-100 pointer-events-auto' : '-translate-y-full opacity-0 pointer-events-none'
     }`}
   >
@@ -176,7 +178,7 @@ export default function App() {
         {sidebarOpen ? <DoorClosed size={18} /> : <ListFilter size={18} />}
       </button>
 
-      <TopBar isVisible={showTopBar} />
+      <TopBar isVisible={showTopBar} sidebarOpen={sidebarOpen} />
       <Sidebar currentScreen={currentScreen} onNavigate={handleNavigate} isOpen={sidebarOpen} />
 
       <main className={`pt-32 pb-24 px-8 relative overflow-hidden transition-[padding] duration-500 ${sidebarOpen ? 'lg:pl-80' : 'lg:pl-8'}`}>
