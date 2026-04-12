@@ -333,7 +333,7 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
         </h1>
         <p className="mt-3 text-zinc-400 text-sm max-w-xl">
           Four quick steps: confirm the site, file documents, complete the protection checklist, then optionally add a
-          blueprint or property photos — you can skip anything for now.
+          blueprint or property photos.
         </p>
         <div className="mt-6 flex flex-wrap gap-2">
           {(['Address', 'Documents', 'Quiz', 'Blueprint'] as const).map((label, i) => (

@@ -1,7 +1,7 @@
 {
   "referenceDate": "2026-04-12",
   "sourceFile": "C:\\Projects\\wehack26\\backend\\final.json",
-  "masterScore": 63,
+  "masterScore": 67,
   "riskTier": "Elevated Risk",
   "weights": {
     "roofWeatherScore": 0.25,

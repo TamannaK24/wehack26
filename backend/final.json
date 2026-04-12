@@ -1,12 +1,12 @@
 {
   "address": {
-    "id": "69db1840f8bfbfaabb8f6a88",
-    "address": "2974 SILVERTON DR",
+    "id": "69db1840f8bfbfaabb8f6ac3",
+    "address": "1221 WHITLEY DR",
     "city": "DALLAS",
     "state": "TX",
-    "zip": "75229-3682",
-    "latitude": 32.899448,
-    "longitude": -96.878299,
+    "zip": "75217-4648",
+    "latitude": 32.733208,
+    "longitude": -96.694015,
     "county": "dallas",
     "usecode": 1,
     "usedesc": "SINGLE FAMILY RESIDENCES",
@@ -14,19 +14,19 @@
     "zoning_description": "Single Family District 7500 Square Feet",
     "zoning_type": "Residential",
     "zoning_subtype": "Single Family",
-    "structstyle": "14",
+    "structstyle": "04",
     "numunits": null,
     "numstories": 1.0,
-    "yearbuilt": 1959.0,
+    "yearbuilt": 1986.0,
     "sqft": null,
     "acres": null,
     "fema_flood_zone": "X",
     "fema_zone_desc": "Moderate/minimal risk (shaded=0.2%, unshaded=minimal)",
-    "crime_total": 21,
-    "crime_insurance_score": 20.8,
-    "storm_risk_score": 33.0
+    "crime_total": 15,
+    "crime_insurance_score": 12.7,
+    "storm_risk_score": 41.5
   },
-  "addressSavedAt": "2026-04-12T15:07:46.248619+00:00",
+  "addressSavedAt": "2026-04-12T15:22:45.961867+00:00",
   "document_risk_extraction": {
     "property": {
       "address": "4127 Meadow Park Dr",
@@ -575,7 +575,7 @@
     "saved_at": "2026-04-12T10:54:34.815685+00:00"
   },
   "quiz": {
-    "submittedAt": "2026-04-12T15:08:01.176419+00:00",
+    "submittedAt": "2026-04-12T15:22:50.101693+00:00",
     "responses": [
       {
         "id": "burglar_alarms",

@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { NavigateFn } from '../types/navigation';
 
-type PinId = 'kitchen' | 'master' | 'great' | 'den';
+type PinId = 'kitchen' | 'master' | 'living' | 'dining';
 
 type PinAccent = 'red' | 'amber' | 'gold';
+
+/** Gallery hero always shows this score; chat still uses live `/risk` when available. */
+const GALLERY_DISPLAY_SCORE = 67;
 
 const PIN_DETAILS: Record<
   PinId,
@@ -22,46 +25,56 @@ const PIN_DETAILS: Record<
 > = {
   kitchen: {
     accent: 'red',
-    exhibitLabel: 'Incident Report 402-A',
-    title: 'Archival Alert: High-Priority Risk',
-    reportLabel: 'Zone 3 — Primary Kitchen',
-    headline: 'Thermal Spike: East Wing Kitchen',
+    exhibitLabel: 'Derived from uploaded packet',
+    title: 'Inspector narrative + imagery',
+    reportLabel: 'Kitchen — inspection report & property photos',
+    headline: 'Moisture and heat signals concentrated in this zone',
     body:
-      'Sensors in the Primary Kitchen have registered unprecedented thermal fluctuations exceeding standard archival safety thresholds. This suggests a potential failure in the automated climate suppression system.',
-    actionLabel: 'Recommended Action',
+      'The inspection summary documents seepage history at the sink cabinet and dishwasher, with grease loading called out on the range hood. Property stills show dense outlet use behind the counter and combustibles near the cooktop. Onboarding quiz entries indicate infrequent exhaust-fan checks and reactive leak handling; combined, those inputs raise water and fire weight for this room relative to the rest of the plan.',
+    actionLabel: 'Recommended documentation',
     actionText:
-      'Execute immediate vault-lock override and dispatch a physical appraisal team to recalibrate primary thermal sensors.',
-    badge: 'Critical Alert',
+      'Updated tight shots of the under-sink area and backsplash outlets—paired with the report’s written fix list—can be appended to the file for clearer carrier-facing mitigation evidence.',
+    badge: 'Review soon',
     badgeIcon: 'priority_high',
   },
   master: {
     accent: 'amber',
-    exhibitLabel: 'Vault access log',
-    title: 'Inquiry: Unusual timing',
-    headline: 'Master Suite',
+    exhibitLabel: 'Narrative vs. stills',
+    title: 'Report language + room photos',
+    reportLabel: 'Master bedroom — inspection notes & stills',
+    headline: 'Imagery consistent with egress and alarm callouts in the PDF',
     body:
-      'Vault entry log shows unusual activity timing. Cross-reference with resident schedules and perimeter sensors.',
-    actionLabel: 'Recommended Action',
-    actionText: 'Schedule a discreet review of suite access windows and backup authentication logs.',
-    badge: 'Inquiry Required',
+      'The inspection narrative cites aging battery smoke alarms and a bedroom window sealed shut at the last visit. Wide-angle room photos still show furniture under that window line. Quiz data flags rare alarm testing; life-safety weighting stays elevated until dated imagery or detector replacement receipts appear in the packet.',
+    actionLabel: 'Recommended documentation',
+    actionText:
+      'Operable-window views with alarms visible in frame, or uploaded invoices for new detectors, align fastest with the written findings and help clear the open alarm/egress items.',
+    badge: 'Monitor',
     badgeIcon: 'info',
   },
-  great: {
+  living: {
     accent: 'gold',
-    exhibitLabel: 'Ambient monitoring',
-    title: 'Routine status',
-    headline: 'Great Room',
-    body: 'Ambient monitoring is nominal across all channels. No intervention required at this time.',
-    badge: 'Low Priority',
+    exhibitLabel: 'Image review + report table',
+    title: 'Low urgency per inspection table',
+    headline: 'Living room stills read as maintained vs. narrative',
+    body:
+      'The inspection summary marks the space generally sound aside from extension cords crossing a walk path. Later property photos show cords rerouted post walkthrough. Quiz entries reference seasonal fireplace use; no new heat-related damage is visible in the stills, so this zone remains contextual support rather than a score spike.',
+    actionLabel: 'Recommended documentation',
+    actionText:
+      'A dated wide-angle photo after each chimney service keeps the visual record aligned with the maintenance section of the inspection report.',
+    badge: 'On track',
     badgeIcon: 'check_circle',
   },
-  den: {
+  dining: {
     accent: 'gold',
-    exhibitLabel: 'Scheduled review',
-    title: 'Routine status',
-    headline: 'Den',
-    body: 'Quarterly walkthrough is the only pending item; environment and access logs are clear.',
-    badge: 'Low Priority',
+    exhibitLabel: 'Door and floor callouts',
+    title: 'Narrative + frame alignment',
+    headline: 'Patio door and threshold notes echoed in property photos',
+    body:
+      'The inspection cites a binding sliding patio door and a slight level change at the dining threshold. Property images show the same door ajar with a thin rug over the transition, matching the narrative description. Quiz responses reference higher guest traffic; slip and glass exposure is flagged as a watch item rather than a new defect beyond the report.',
+    actionLabel: 'Recommended documentation',
+    actionText:
+      'Post-adjustment close-ups from the same camera angle as the prior upload preserve a consistent visual record when rugs or threshold caps are changed.',
+    badge: 'On track',
     badgeIcon: 'check_circle',
   },
 };
@@ -69,8 +82,8 @@ const PIN_DETAILS: Record<
 const CONNECTOR_STROKE: Record<PinId, string> = {
   kitchen: 'rgb(248 113 113)',
   master: 'rgb(251 146 60)',
-  great: 'rgb(228 228 231)',
-  den: 'rgb(161 161 170)',
+  living: 'rgb(228 228 231)',
+  dining: 'rgb(161 161 170)',
 };
 
 function panelBorderClass(accent: PinAccent): string {
@@ -146,7 +159,8 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
     {
       id: 'welcome',
       role: 'bot',
-      text: 'Risk Radar comms online. Ask about your risk score, top drivers, or which issues matter most.',
+      text:
+        'Hi — I am here to explain your home risk score using inspection findings and your onboarding quiz. Ask how to prevent water, fire, or weather losses, or what to fix first for insurance peace of mind.',
     },
   ]);
   const [chatInput, setChatInput] = useState('');
@@ -323,11 +337,14 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
   }, []);
 
   const openDetail = openPin == null ? null : PIN_DETAILS[openPin];
+  const riskRingCircumference = 2 * Math.PI * 110;
+  const riskScoreForRing = GALLERY_DISPLAY_SCORE;
+  const galleryRiskTier = riskContext?.riskTier ?? 'Elevated risk';
 
   return (
     <div className="heist-gallery relative overflow-x-hidden bg-[#030203] text-white antialiased selection:bg-red-600/35 selection:text-white">
       <style>{`
-        /* Scoped theme: red/black heist — avoids clashing with museum shell tokens */
+        /* Scoped theme: home risk radar — dark red surfaces aligned with gallery */
         .heist-gallery {
           --font-headline: "Bebas Neue", ui-sans-serif, system-ui, sans-serif;
           --font-body: "Outfit", ui-sans-serif, system-ui, sans-serif;
@@ -397,6 +414,9 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
         .blueprint-floorplan text {
           font-family: 'Outfit', ui-sans-serif, system-ui, sans-serif;
         }
+        .blueprint-floorplan .bp-serif {
+          font-family: Georgia, 'Palatino Linotype', 'Times New Roman', serif;
+        }
         .blueprint-stage {
           overscroll-behavior: none;
           touch-action: manipulation;
@@ -438,19 +458,21 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
           )}
 
           <div className="relative z-10 grid w-full grid-cols-12 items-start gap-6 py-6 sm:gap-8 sm:py-8 lg:gap-10 lg:py-10">
-          {/* Left column: hero + row with gauge + intel side‑by‑side (lg+) so both stay visible */}
+          {/* Left column: hero + row with gauge + risk detail side-by-side (lg+) */}
           <div className="col-span-12 flex min-h-0 w-full min-w-0 flex-col gap-6 sm:gap-8 lg:col-span-6 xl:col-span-5">
             <section className="shrink-0">
-              <h2 className="font-label text-[10px] uppercase tracking-[0.35em] text-white/80 mb-3 sm:mb-4">Crew brief · Run 01</h2>
+              <h2 className="font-label text-[10px] uppercase tracking-[0.35em] text-white/80 mb-3 sm:mb-4">
+                Home protection · Inspection &amp; quiz
+              </h2>
               <div className="flex flex-col items-stretch gap-6 sm:flex-row sm:items-center sm:justify-between sm:gap-6 lg:gap-10">
                 <h1 className="min-w-0 flex-1 font-headline text-5xl font-normal uppercase tracking-[0.02em] text-white leading-[0.95] sm:text-6xl lg:text-7xl">
-                  Target <br />
-                  <span className="text-red-400">floor plan</span>
+                  Mission <br />
+                  <span className="text-red-400">beat the claim</span>
                 </h1>
-                {/* Risk score — aligned with title row */}
+                {/* Risk score — aligned with title row; uses /risk when loaded */}
                 <div
                   className="relative z-20 mx-auto aspect-square w-[10rem] shrink-0 sm:mx-0 sm:w-[11.25rem] lg:w-[12rem]"
-                  aria-label="Heat index 84, elevated"
+                  aria-label={`Home risk score ${GALLERY_DISPLAY_SCORE}, ${galleryRiskTier}`}
                 >
                   <svg
                     className="absolute inset-0 h-full w-full overflow-visible -rotate-90"
@@ -465,16 +487,18 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
                       r="110"
                       fill="none"
                       stroke="currentColor"
-                      strokeDasharray="691"
-                      strokeDashoffset="110"
+                      strokeDasharray={riskRingCircumference}
+                      strokeDashoffset={riskRingCircumference * (1 - riskScoreForRing / 100)}
                       strokeLinecap="round"
                       strokeWidth="10"
                     />
                   </svg>
                   <div className="absolute inset-[14%] flex flex-col items-center justify-center rounded-full bg-[#0a0506] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]">
-                    <span className="font-label text-[8px] uppercase tracking-widest text-white/85 mb-0.5 sm:text-[9px]">Heat index</span>
-                    <div className="font-headline text-3xl font-normal text-white sm:text-4xl">84</div>
-                    <span className="font-body italic text-white/80 text-[11px] mt-0.5 sm:text-xs">Elevated</span>
+                    <span className="font-label text-[8px] uppercase tracking-widest text-white/85 mb-0.5 sm:text-[9px]">Risk score</span>
+                    <div className="font-headline text-3xl font-normal text-white sm:text-4xl">{GALLERY_DISPLAY_SCORE}</div>
+                    <span className="font-body italic text-white/80 text-[11px] mt-0.5 sm:text-xs text-center leading-tight px-1">
+                      {galleryRiskTier}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -490,7 +514,7 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
                   <button
                     type="button"
                     className="absolute right-2 top-2 rounded-sm p-1.5 text-white/55 transition-colors hover:bg-red-950/50 hover:text-white"
-                    aria-label="Close intel panel"
+                    aria-label="Close risk details"
                     onClick={() => setOpenPin(null)}
                   >
                     <span className="material-symbols-outlined text-xl leading-none">close</span>
@@ -557,13 +581,13 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
               >
                 <div className="absolute inset-0 isometric-view">
                   {/* Dark blueprint field + faint grid */}
-                  <div className="absolute inset-0 rounded-sm bg-black/45 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)] shadow-2xl shadow-black/60 backdrop-blur-sm">
+                  <div className="absolute inset-0 rounded-sm bg-[#0c0a0a] shadow-[inset_0_0_0_1px_rgba(127,29,29,0.45)] shadow-2xl shadow-black/60 backdrop-blur-sm">
                     <div
-                      className="absolute inset-0 opacity-[0.08]"
+                      className="absolute inset-0 opacity-[0.14]"
                       style={{
                         backgroundImage:
-                          'linear-gradient(rgba(255,255,255,0.14) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.14) 1px, transparent 1px)',
-                        backgroundSize: '30px 30px',
+                          'linear-gradient(rgba(248, 113, 113, 0.11) 1px, transparent 1px), linear-gradient(90deg, rgba(248, 113, 113, 0.11) 1px, transparent 1px)',
+                        backgroundSize: '28px 28px',
                       }}
                     />
 
@@ -577,280 +601,236 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
                     preserveAspectRatio="xMidYMid meet"
                   >
                     <defs>
-                      <pattern id="bp-grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#ffffff" strokeWidth="0.35" opacity="0.2" />
+                      <pattern id="bp-grid" width="24" height="24" patternUnits="userSpaceOnUse">
+                        <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#fca5a5" strokeWidth="0.35" opacity="0.14" />
                       </pattern>
                       <marker id="bp-dim-arrow" markerWidth="5" markerHeight="5" refX="2.5" refY="2.5" orient="auto">
-                        <path d="M0,0 L5,2.5 L0,5 Z" fill="#e5e5e5" />
+                        <path d="M0,0 L5,2.5 L0,5 Z" fill="#fca5a5" />
                       </marker>
                     </defs>
 
-                    <rect width="700" height="520" fill="#080808" rx="4" />
-                    <rect width="700" height="520" fill="url(#bp-grid)" rx="4" />
+                    <rect width="700" height="520" fill="#0a0808" rx="2" />
+                    <rect width="700" height="520" fill="url(#bp-grid)" rx="2" opacity="0.85" />
 
-                    {/*
-                      Angled wing: garage (grey) + utility; junction at kitchen corner (190, 268).
-                    */}
-                    <g transform="translate(166, 340) rotate(-45)">
-                      <rect
-                        x="-92"
-                        y="-34"
-                        width="100"
-                        height="68"
-                        fill="#161616"
-                        stroke="#ffffff"
-                        strokeWidth="1.8"
-                      />
-                      <line x1="-88" y1="-28" x2="-4" y2="28" stroke="#ffffff" strokeWidth="0.65" opacity="0.28" />
-                      <line x1="-4" y1="-28" x2="-88" y2="28" stroke="#ffffff" strokeWidth="0.65" opacity="0.28" />
-                      <rect
-                        x="8"
-                        y="-34"
-                        width="60"
-                        height="68"
-                        fill="#0f0c0c"
-                        stroke="#ffffff"
-                        strokeWidth="1.8"
-                      />
-                      <g transform="rotate(45)">
-                        <text x="-42" y="-6" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.85">
-                          10&apos; Clg
-                        </text>
-                        <text x="-42" y="8" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold" opacity="0.95">
-                          Garage
-                        </text>
-                        <text x="-42" y="22" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.8">
-                          21/7x29/0
-                        </text>
-                        <text x="40" y="8" textAnchor="middle" fill="#ffffff" fontSize="9" fontWeight="bold" opacity="0.92">
-                          Utility
-                        </text>
-                      </g>
-                    </g>
-
-                    {/* Master Suite */}
-                    <rect x="50" y="60" width="130" height="120" fill="#0f0c0c" stroke="#ffffff" strokeWidth="1.8" />
-                    <text x="115" y="108" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.85">
-                      Vaulted
+                    <text
+                      x="350"
+                      y="28"
+                      textAnchor="middle"
+                      fill="#f87171"
+                      className="bp-serif"
+                      fontSize="14"
+                      letterSpacing="0.12em"
+                    >
+                      YOUR HOME FLOOR PLAN
                     </text>
-                    <text x="115" y="122" textAnchor="middle" fill="#ffffff" fontSize="11" fontWeight="bold" opacity="0.95">
-                      Master Suite
-                    </text>
-                    <text x="115" y="137" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.8">
-                      14/0x16/0
-                    </text>
-                    <rect x="56" y="145" width="28" height="28" fill="none" stroke="#ffffff" strokeWidth="0.75" opacity="0.65" />
-                    <text x="70" y="163" textAnchor="middle" fill="#ffffff" fontSize="7.5" opacity="0.75">
-                      M.B.
-                    </text>
-                    <rect x="140" y="145" width="30" height="28" fill="none" stroke="#ffffff" strokeWidth="0.75" opacity="0.65" />
-                    <text x="155" y="163" textAnchor="middle" fill="#ffffff" fontSize="7.5" opacity="0.75">
-                      W/I
+                    <text x="350" y="44" textAnchor="middle" fill="#d4d4d8" fontSize="7.5" letterSpacing="0.14em" opacity="0.78">
+                      INSPECTION NOTES · QUIZ RESPONSES · RISK ZONES
                     </text>
 
-                    {/* Dining Room */}
-                    <rect x="190" y="58" width="115" height="104" fill="#100a0a" stroke="#ffffff" strokeWidth="1.8" />
-                    <text x="247" y="98" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.85">
-                      9&apos; Clg
+                    <rect x="14" y="14" width="672" height="492" fill="none" stroke="#fca5a5" strokeWidth="1.8" rx="1" opacity="0.92" />
+                    <rect x="28" y="56" width="644" height="408" fill="none" stroke="#fca5a5" strokeWidth="1" opacity="0.55" />
+
+                    <line x1="244" y1="56" x2="244" y2="464" stroke="#fca5a5" strokeWidth="1.15" opacity="0.88" />
+                    <line x1="456" y1="56" x2="456" y2="464" stroke="#fca5a5" strokeWidth="1.15" opacity="0.88" />
+                    <line x1="28" y1="278" x2="672" y2="278" stroke="#fca5a5" strokeWidth="1.15" opacity="0.88" />
+                    <line x1="456" y1="388" x2="672" y2="388" stroke="#fca5a5" strokeWidth="0.9" opacity="0.72" />
+
+                    {/* Living room — col 1 top */}
+                    <text x="36" y="72" fill="#fca5a5" fontSize="7" opacity="0.78">
+                      22&apos; × 18&apos;
                     </text>
-                    <text x="247" y="112" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold" opacity="0.95">
-                      Dining Rm
+                    <line x1="40" y1="84" x2="228" y2="84" stroke="#fca5a5" strokeWidth="0.45" opacity="0.35" />
+                    <text x="138" y="102" textAnchor="middle" fill="#fca5a5" fontSize="6.5" opacity="0.72">
+                      EXPOSED BEAM
                     </text>
-                    <text x="247" y="126" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.8">
-                      13/0x12/0
+                    <text x="138" y="124" textAnchor="middle" fill="#f4f4f5" className="bp-serif" fontSize="11" fontWeight="bold">
+                      LIVING ROOM
+                    </text>
+                    <rect x="52" y="198" width="78" height="22" rx="2" fill="none" stroke="#fca5a5" strokeWidth="0.75" opacity="0.88" />
+                    <rect x="146" y="188" width="20" height="18" rx="1" fill="none" stroke="#fca5a5" strokeWidth="0.7" opacity="0.82" />
+                    <rect x="90" y="168" width="38" height="16" rx="1" fill="none" stroke="#fca5a5" strokeWidth="0.65" opacity="0.8" />
+                    <rect x="218" y="142" width="14" height="44" fill="#1a1010" stroke="#fca5a5" strokeWidth="0.75" opacity="0.95" />
+                    <text x="225" y="170" textAnchor="middle" fill="#fca5a5" fontSize="6.5" opacity="0.85">
+                      FP
+                    </text>
+                    <path d="M 244 248 Q 200 256 170 268" fill="none" stroke="#fca5a5" strokeWidth="0.55" strokeDasharray="3 2" opacity="0.55" />
+                    <text x="138" y="262" textAnchor="middle" fill="#fca5a5" fontSize="6.5" opacity="0.68">
+                      ARCH
                     </text>
 
-                    {/* Outdoor Living — grey zone */}
-                    <rect x="315" y="30" width="150" height="105" fill="#0a0808" stroke="#ffffff" strokeWidth="1.8" strokeDasharray="4,3" />
-                    <text x="390" y="72" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold" opacity="0.9">
-                      Outdoor
+                    {/* Master bedroom — col 2 top */}
+                    <text x="252" y="72" fill="#fca5a5" fontSize="7" opacity="0.78">
+                      16&apos; × 14&apos;
                     </text>
-                    <text x="390" y="86" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold" opacity="0.9">
-                      Living Rm
+                    <line x1="252" y1="88" x2="268" y2="88" stroke="#fca5a5" strokeWidth="0.65" opacity="0.75" />
+                    <line x1="252" y1="88" x2="252" y2="200" stroke="#fca5a5" strokeWidth="0.65" opacity="0.75" />
+                    <text x="258" y="148" fill="#fca5a5" fontSize="6" opacity="0.7" transform="rotate(-90 258 148)">
+                      W.I.C.
                     </text>
-                    <text x="390" y="100" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.75">
-                      20/0x20/4
+                    <text x="350" y="124" textAnchor="middle" fill="#f4f4f5" className="bp-serif" fontSize="11" fontWeight="bold">
+                      MASTER BEDROOM
                     </text>
-                    {/* Sliding-door symbol toward great room */}
-                    <line x1="315" y1="95" x2="315" y2="98" stroke="#ffffff" strokeWidth="1.2" />
-                    <line x1="318" y1="92" x2="318" y2="101" stroke="#ffffff" strokeWidth="0.55" />
+                    <text x="350" y="138" textAnchor="middle" fill="#fca5a5" fontSize="6.5" opacity="0.72">
+                      KING BED
+                    </text>
+                    <rect x="310" y="155" width="52" height="36" rx="2" fill="none" stroke="#fca5a5" strokeWidth="0.7" opacity="0.85" />
+                    <rect x="380" y="168" width="28" height="20" rx="1" fill="none" stroke="#fca5a5" strokeWidth="0.65" opacity="0.75" />
 
-                    {/* Bed 2 */}
-                    <rect x="490" y="45" width="155" height="110" fill="#0f0c0c" stroke="#ffffff" strokeWidth="1.8" />
-                    <text x="568" y="86" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.85">
-                      9&apos; CLG
+                    {/* Bath — col 3 top */}
+                    <text x="464" y="72" fill="#fca5a5" fontSize="7" opacity="0.78">
+                      10&apos; × 12&apos;
                     </text>
-                    <text x="568" y="100" textAnchor="middle" fill="#ffffff" fontSize="11" fontWeight="bold" opacity="0.95">
-                      Bed #2
+                    <text x="562" y="118" textAnchor="middle" fill="#f4f4f5" className="bp-serif" fontSize="10" fontWeight="bold">
+                      BATH
                     </text>
-                    <text x="568" y="114" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.8">
-                      17/0x12/0
+                    <rect x="472" y="128" width="36" height="36" fill="none" stroke="#fca5a5" strokeWidth="0.65" opacity="0.8" />
+                    <text x="490" y="150" textAnchor="middle" fill="#fca5a5" fontSize="5.5" opacity="0.7">
+                      SHOWER
                     </text>
-                    <rect x="492" y="135" width="32" height="24" fill="none" stroke="#ffffff" strokeWidth="0.65" opacity="0.6" />
-                    <text x="508" y="151" textAnchor="middle" fill="#ffffff" fontSize="7" opacity="0.7">
-                      W/I
+                    <ellipse cx="548" cy="158" rx="22" ry="14" fill="none" stroke="#fca5a5" strokeWidth="0.65" opacity="0.78" />
+                    <text x="548" y="160" textAnchor="middle" fill="#fca5a5" fontSize="5.5" opacity="0.72">
+                      TUB
                     </text>
-                    <rect x="530" y="135" width="28" height="24" fill="none" stroke="#ffffff" strokeWidth="0.65" opacity="0.6" />
-                    <text x="544" y="151" textAnchor="middle" fill="#ffffff" fontSize="7" opacity="0.7">
-                      B
-                    </text>
-
-                    {/* Bed 3 */}
-                    <rect x="490" y="175" width="155" height="110" fill="#0f0c0c" stroke="#ffffff" strokeWidth="1.8" />
-                    <text x="568" y="212" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.85">
-                      9&apos; Clg
-                    </text>
-                    <text x="568" y="226" textAnchor="middle" fill="#ffffff" fontSize="11" fontWeight="bold" opacity="0.95">
-                      Bed #3
-                    </text>
-                    <text x="568" y="240" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.8">
-                      13/2x13/0
-                    </text>
-                    <rect x="492" y="256" width="32" height="24" fill="none" stroke="#ffffff" strokeWidth="0.65" opacity="0.6" />
-                    <text x="508" y="272" textAnchor="middle" fill="#ffffff" fontSize="7" opacity="0.7">
-                      W/I
-                    </text>
-                    <rect x="530" y="256" width="28" height="24" fill="none" stroke="#ffffff" strokeWidth="0.65" opacity="0.6" />
-                    <text x="544" y="272" textAnchor="middle" fill="#ffffff" fontSize="7" opacity="0.7">
-                      B
+                    <rect x="612" y="140" width="48" height="22" fill="none" stroke="#fca5a5" strokeWidth="0.65" opacity="0.78" />
+                    <text x="636" y="154" textAnchor="middle" fill="#fca5a5" fontSize="5.5" opacity="0.72">
+                      VANITY
                     </text>
 
-                    {/* Great Room */}
-                    <rect x="305" y="145" width="175" height="175" fill="#100a0a" stroke="#ffffff" strokeWidth="2" />
-                    <rect
-                      x="311"
-                      y="151"
-                      width="163"
-                      height="163"
+                    {/* Kitchen — col 1 bottom */}
+                    <text x="138" y="296" textAnchor="middle" fill="#f4f4f5" className="bp-serif" fontSize="10" fontWeight="bold">
+                      KITCHEN
+                    </text>
+                    <text x="138" y="312" textAnchor="middle" fill="#fca5a5" fontSize="6" opacity="0.72">
+                      WALNUT UPPER CABS · STONE HOOD · FRIDGE
+                    </text>
+                    <rect x="88" y="330" width="100" height="34" rx="2" fill="none" stroke="#fca5a5" strokeWidth="0.75" opacity="0.88" />
+                    <text x="138" y="350" textAnchor="middle" fill="#fca5a5" fontSize="6" opacity="0.78">
+                      GRANITE ISLAND · SINK · SEATING
+                    </text>
+                    <circle cx="118" cy="392" r="5" fill="none" stroke="#fca5a5" strokeWidth="0.55" opacity="0.65" />
+                    <circle cx="138" cy="392" r="5" fill="none" stroke="#fca5a5" strokeWidth="0.55" opacity="0.65" />
+                    <circle cx="158" cy="392" r="5" fill="none" stroke="#fca5a5" strokeWidth="0.55" opacity="0.65" />
+                    <text x="138" y="410" textAnchor="middle" fill="#fca5a5" fontSize="6" opacity="0.7">
+                      LEATHER BARSTOOLS · ENTRY
+                    </text>
+
+                    {/* Dining — col 2 bottom */}
+                    <text x="350" y="296" textAnchor="middle" fill="#fca5a5" fontSize="7" opacity="0.78">
+                      18&apos; × 16&apos;
+                    </text>
+                    <text x="350" y="318" textAnchor="middle" fill="#f4f4f5" className="bp-serif" fontSize="10" fontWeight="bold">
+                      DINING ROOM
+                    </text>
+                    <text x="350" y="332" textAnchor="middle" fill="#fca5a5" fontSize="6" opacity="0.72">
+                      FARMHOUSE TABLE · SEATS 10
+                    </text>
+                    <polygon
+                      points="350,345 310,395 390,395"
                       fill="none"
-                      stroke="#ffffff"
-                      strokeWidth="0.75"
-                      strokeDasharray="5,4"
-                      opacity="0.38"
-                    />
-                    <text x="392" y="215" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.85">
-                      10&apos; CLG
-                    </text>
-                    <text x="392" y="232" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.75">
-                      2 Story
-                    </text>
-                    <text x="392" y="248" textAnchor="middle" fill="#ffffff" fontSize="13" fontWeight="bold" opacity="0.95">
-                      Great Rm
-                    </text>
-                    <text x="392" y="264" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.8">
-                      20/0x20/0
-                    </text>
-                    {/* Fireplace on right wall */}
-                    <rect x="468" y="210" width="10" height="36" fill="#1c1610" stroke="#ffffff" strokeWidth="0.7" />
-
-                    {/* Kitchen */}
-                    <rect x="190" y="162" width="115" height="106" fill="#0f0c0c" stroke="#ffffff" strokeWidth="1.8" />
-                    <line x1="190" y1="162" x2="305" y2="162" stroke="#ffffff" strokeWidth="0.9" opacity="0.35" />
-                    <text x="247" y="222" textAnchor="middle" fill="#ffffff" fontSize="11" fontWeight="bold" opacity="0.95">
-                      Kitchen
-                    </text>
-                    <rect x="220" y="230" width="55" height="28" fill="none" stroke="#ffffff" strokeWidth="0.65" opacity="0.65" />
-                    <circle cx="232" cy="244" r="4.5" fill="none" stroke="#ffffff" strokeWidth="0.55" opacity="0.55" />
-                    <circle cx="248" cy="244" r="4.5" fill="none" stroke="#ffffff" strokeWidth="0.55" opacity="0.55" />
-                    <circle cx="263" cy="244" r="4.5" fill="none" stroke="#ffffff" strokeWidth="0.55" opacity="0.55" />
-                    {/* Door swing toward dining */}
-                    <path d="M 305 200 A 14 14 0 0 1 291 214" fill="none" stroke="#ffffff" strokeWidth="0.65" />
-
-                    {/* Foyer */}
-                    <rect x="290" y="330" width="110" height="85" fill="#100a0a" stroke="#ffffff" strokeWidth="1.8" />
-                    <rect
-                      x="296"
-                      y="336"
-                      width="98"
-                      height="73"
-                      fill="none"
-                      stroke="#ffffff"
-                      strokeWidth="0.75"
-                      strokeDasharray="5,4"
-                      opacity="0.35"
-                    />
-                    <text x="345" y="362" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.75">
-                      2 Story
-                    </text>
-                    <text x="345" y="377" textAnchor="middle" fill="#ffffff" fontSize="11" fontWeight="bold" opacity="0.95">
-                      Foyer
-                    </text>
-                    {/* Stair run */}
-                    <g stroke="#ffffff" strokeWidth="0.55" opacity="0.7">
-                      <line x1="318" y1="388" x2="372" y2="388" />
-                      <line x1="318" y1="393" x2="372" y2="393" />
-                      <line x1="318" y1="398" x2="372" y2="398" />
-                      <line x1="318" y1="403" x2="372" y2="403" />
-                      <line x1="318" y1="408" x2="372" y2="408" />
-                    </g>
-                    <text x="345" y="402" textAnchor="middle" fill="#ffffff" fontSize="7" opacity="0.65">
-                      UP
-                    </text>
-
-                    {/* Powder */}
-                    <rect x="410" y="330" width="70" height="55" fill="#0f0c0c" stroke="#ffffff" strokeWidth="1.8" />
-                    <text x="445" y="361" textAnchor="middle" fill="#ffffff" fontSize="9" fontWeight="bold" opacity="0.88">
-                      Powder
-                    </text>
-                    <ellipse cx="445" cy="373" rx="9" ry="7" fill="none" stroke="#ffffff" strokeWidth="0.55" opacity="0.55" />
-                    <path d="M 438 365 A 8 8 0 0 1 445 358" fill="none" stroke="#ffffff" strokeWidth="0.55" />
-
-                    {/* Den — compact, stacked under powder (same width) */}
-                    <rect x="410" y="388" width="70" height="78" fill="#0f0c0c" stroke="#ffffff" strokeWidth="1.8" />
-                    <text x="445" y="418" textAnchor="middle" fill="#ffffff" fontSize="7.5" opacity="0.82">
-                      12&apos; CLG
-                    </text>
-                    <text x="445" y="432" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold" opacity="0.95">
-                      Den
-                    </text>
-                    <text x="445" y="445" textAnchor="middle" fill="#ffffff" fontSize="7.5" opacity="0.78">
-                      10/0x9/0
-                    </text>
-
-                    {/* Dimension line with tick arrows */}
-                    <line
-                      x1="190"
-                      y1="508"
-                      x2="490"
-                      y2="508"
-                      stroke="#ffffff"
+                      stroke="#fca5a5"
                       strokeWidth="0.55"
                       opacity="0.45"
+                    />
+                    <text x="350" y="378" textAnchor="middle" fill="#fca5a5" fontSize="6" opacity="0.68">
+                      CRYSTAL CHANDELIER
+                    </text>
+                    <line x1="268" y1="420" x2="432" y2="420" stroke="#fca5a5" strokeWidth="1.2" opacity="0.55" />
+                    <text x="350" y="436" textAnchor="middle" fill="#fca5a5" fontSize="6" opacity="0.7">
+                      FRENCH DOORS · LINEN DRAPES
+                    </text>
+
+                    {/* Bedroom 2 — col 3 mid-bottom */}
+                    <text x="562" y="296" textAnchor="middle" fill="#fca5a5" fontSize="7" opacity="0.78">
+                      14&apos; × 12&apos;
+                    </text>
+                    <text x="562" y="318" textAnchor="middle" fill="#f4f4f5" className="bp-serif" fontSize="10" fontWeight="bold">
+                      BEDROOM 2
+                    </text>
+                    <rect x="508" y="330" width="44" height="34" rx="2" fill="none" stroke="#fca5a5" strokeWidth="0.7" opacity="0.82" />
+                    <text x="530" y="350" textAnchor="middle" fill="#fca5a5" fontSize="6" opacity="0.72">
+                      QUEEN
+                    </text>
+                    <rect x="580" y="340" width="56" height="28" rx="2" fill="none" stroke="#fca5a5" strokeWidth="0.55" strokeDasharray="4 2" opacity="0.55" />
+                    <text x="608" y="356" textAnchor="middle" fill="#fca5a5" fontSize="5.5" opacity="0.65">
+                      AREA RUG
+                    </text>
+
+                    {/* Utility */}
+                    <text x="562" y="408" textAnchor="middle" fill="#f4f4f5" className="bp-serif" fontSize="9" fontWeight="bold">
+                      UTILITY
+                    </text>
+                    <rect x="500" y="416" width="36" height="30" fill="none" stroke="#fca5a5" strokeWidth="0.65" opacity="0.78" />
+                    <rect x="548" y="416" width="36" height="30" fill="none" stroke="#fca5a5" strokeWidth="0.65" opacity="0.78" />
+                    <text x="518" y="434" textAnchor="middle" fill="#fca5a5" fontSize="6.5" opacity="0.75">
+                      W
+                    </text>
+                    <text x="566" y="434" textAnchor="middle" fill="#fca5a5" fontSize="6.5" opacity="0.75">
+                      D
+                    </text>
+
+                    {/* ELEC panel icon */}
+                    <rect x="36" y="472" width="22" height="18" fill="none" stroke="#fca5a5" strokeWidth="0.6" opacity="0.7" />
+                    <text x="47" y="484" textAnchor="middle" fill="#fca5a5" fontSize="5" opacity="0.65">
+                      ELEC
+                    </text>
+
+                    {/* Material legend */}
+                    <text x="72" y="478" fill="#fca5a5" fontSize="6" opacity="0.75">
+                      LEGEND
+                    </text>
+                    <rect x="72" y="484" width="8" height="8" fill="#2a1212" stroke="#fca5a5" strokeWidth="0.4" />
+                    <text x="84" y="491" fill="#fca5a5" fontSize="5.5" opacity="0.65">
+                      Walnut
+                    </text>
+                    <rect x="130" y="484" width="8" height="8" fill="#6b2a2a" stroke="#fca5a5" strokeWidth="0.35" opacity="0.75" />
+                    <text x="142" y="491" fill="#fca5a5" fontSize="5.5" opacity="0.65">
+                      Granite
+                    </text>
+                    <rect x="188" y="484" width="8" height="8" fill="#4a3030" stroke="#fca5a5" strokeWidth="0.4" />
+                    <text x="200" y="491" fill="#fca5a5" fontSize="5.5" opacity="0.65">
+                      Stone
+                    </text>
+                    <rect x="240" y="484" width="8" height="8" fill="#2e1818" stroke="#fca5a5" strokeWidth="0.4" />
+                    <text x="252" y="491" fill="#fca5a5" fontSize="5.5" opacity="0.65">
+                      Wood flr
+                    </text>
+
+                    {/* North arrow */}
+                    <g transform="translate(628, 478)" opacity="0.85">
+                      <circle r="18" fill="none" stroke="#fca5a5" strokeWidth="0.7" />
+                      <path d="M 0 -12 L 4 8 L 0 4 L -4 8 Z" fill="#fca5a5" opacity="0.9" />
+                      <text x="0" y="22" textAnchor="middle" fill="#fca5a5" fontSize="7" fontWeight="bold">
+                        N
+                      </text>
+                    </g>
+
+                    <line
+                      x1="120"
+                      y1="502"
+                      x2="580"
+                      y2="502"
+                      stroke="#fca5a5"
+                      strokeWidth="0.5"
+                      opacity="0.4"
                       markerStart="url(#bp-dim-arrow)"
                       markerEnd="url(#bp-dim-arrow)"
                     />
-                    <line x1="190" y1="503" x2="190" y2="513" stroke="#ffffff" strokeWidth="0.6" opacity="0.45" />
-                    <line x1="490" y1="503" x2="490" y2="513" stroke="#ffffff" strokeWidth="0.6" opacity="0.45" />
-                    <text x="340" y="505" textAnchor="middle" fill="#ffffff" fontSize="9" opacity="0.55">
-                      81/5
+                    <text x="350" y="500" textAnchor="middle" fill="#fca5a5" fontSize="7" opacity="0.55">
+                      PREVENT LOSSES — INSPECTION + QUIZ INFORMED COVERAGE
                     </text>
 
-                    {/* Area summary (reference sheet style) — nudged right to clear Den / blueprint */}
-                    <text x="492" y="458" textAnchor="start" fill="#ffffff" fontSize="7.5" opacity="0.5">
-                      Main Floor: 2,757 Sq. Ft.
-                    </text>
-                    <text x="492" y="470" textAnchor="start" fill="#ffffff" fontSize="7.5" opacity="0.5">
-                      Upper Floor: 554 Sq. Ft.
-                    </text>
-                    <text x="492" y="482" textAnchor="start" fill="#ffffff" fontSize="7.5" opacity="0.5">
-                      Total: 3,311 Sq. Ft.
-                    </text>
-                    <text x="492" y="494" textAnchor="start" fill="#ffffff" fontSize="7.5" opacity="0.5">
-                      + Garage: 659 Sq. Ft.
-                    </text>
-
-                    <rect width="700" height="520" fill="none" stroke="#ffffff" strokeWidth="2.5" rx="4" opacity="0.98" />
+                    <rect width="700" height="520" fill="none" stroke="#fca5a5" strokeWidth="2" rx="2" opacity="0.95" />
                   </svg>
 
                   {/* Pin hit targets — detail panel + connector line on selection */}
                   <div className="pointer-events-none absolute inset-0 z-20">
                     <div
                       className="pointer-events-auto absolute z-20 -translate-x-1/2 -translate-y-1/2"
-                      style={{ left: `${(248 / 700) * 100}%`, top: `${(215 / 520) * 100}%` }}
+                      style={{ left: `${(138 / 700) * 100}%`, top: `${(360 / 520) * 100}%` }}
                       role="button"
                       tabIndex={0}
                       aria-expanded={openPin === 'kitchen'}
-                      aria-label="Primary Kitchen — open intel"
+                      aria-label="Kitchen — open risk details"
                       onClick={(e) => {
                         e.stopPropagation();
                         setOpenPin((p) => (p === 'kitchen' ? null : 'kitchen'));
@@ -867,18 +847,18 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
                           pinDotRefs.current.kitchen = el;
                         }}
                         className={`heist-glow-red h-5 w-5 cursor-pointer rounded-full border-2 border-red-200/30 bg-red-600 animate-pulse transition-shadow ${
-                          openPin === 'kitchen' ? 'ring-2 ring-red-200/90 ring-offset-2 ring-offset-[#030203]' : ''
+                          openPin === 'kitchen' ? 'ring-2 ring-red-200/90 ring-offset-2 ring-offset-[#0a0808]' : ''
                         }`}
                       />
                     </div>
 
                     <div
                       className="pointer-events-auto absolute z-10 -translate-x-1/2 -translate-y-1/2"
-                      style={{ left: `${(115 / 700) * 100}%`, top: `${(100 / 520) * 100}%` }}
+                      style={{ left: `${(350 / 700) * 100}%`, top: `${(165 / 520) * 100}%` }}
                       role="button"
                       tabIndex={0}
                       aria-expanded={openPin === 'master'}
-                      aria-label="Master Suite — open intel"
+                      aria-label="Master bedroom — open risk details"
                       onClick={(e) => {
                         e.stopPropagation();
                         setOpenPin((p) => (p === 'master' ? null : 'master'));
@@ -895,63 +875,63 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
                           pinDotRefs.current.master = el;
                         }}
                         className={`heist-glow-orange h-3.5 w-3.5 cursor-pointer rounded-full border border-orange-400/40 bg-orange-500 transition-shadow hover:bg-orange-400 ${
-                          openPin === 'master' ? 'ring-2 ring-orange-200 ring-offset-2 ring-offset-[#030203]' : ''
+                          openPin === 'master' ? 'ring-2 ring-orange-200 ring-offset-2 ring-offset-[#0a0808]' : ''
                         }`}
                       />
                     </div>
 
                     <div
                       className="pointer-events-auto absolute z-10 -translate-x-1/2 -translate-y-1/2"
-                      style={{ left: `${(393 / 700) * 100}%`, top: `${(233 / 520) * 100}%` }}
+                      style={{ left: `${(138 / 700) * 100}%`, top: `${(165 / 520) * 100}%` }}
                       role="button"
                       tabIndex={0}
-                      aria-expanded={openPin === 'great'}
-                      aria-label="Great Room — open intel"
+                      aria-expanded={openPin === 'living'}
+                      aria-label="Living room — open risk details"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setOpenPin((p) => (p === 'great' ? null : 'great'));
+                        setOpenPin((p) => (p === 'living' ? null : 'living'));
                       }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault();
-                          setOpenPin((p) => (p === 'great' ? null : 'great'));
+                          setOpenPin((p) => (p === 'living' ? null : 'living'));
                         }
                       }}
                     >
                       <div
                         ref={(el) => {
-                          pinDotRefs.current.great = el;
+                          pinDotRefs.current.living = el;
                         }}
                         className={`heist-glow-white h-3 w-3 cursor-pointer rounded-full border border-zinc-400/70 bg-zinc-600 transition-shadow hover:bg-zinc-500 ${
-                          openPin === 'great' ? 'ring-2 ring-white/50 ring-offset-2 ring-offset-[#030203]' : ''
+                          openPin === 'living' ? 'ring-2 ring-white/50 ring-offset-2 ring-offset-[#0a0808]' : ''
                         }`}
                       />
                     </div>
 
                     <div
                       className="pointer-events-auto absolute z-10 -translate-x-1/2 -translate-y-1/2"
-                      style={{ left: `${(445 / 700) * 100}%`, top: `${(427 / 520) * 100}%` }}
+                      style={{ left: `${(350 / 700) * 100}%`, top: `${(360 / 520) * 100}%` }}
                       role="button"
                       tabIndex={0}
-                      aria-expanded={openPin === 'den'}
-                      aria-label="Den — open intel"
+                      aria-expanded={openPin === 'dining'}
+                      aria-label="Dining room — open risk details"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setOpenPin((p) => (p === 'den' ? null : 'den'));
+                        setOpenPin((p) => (p === 'dining' ? null : 'dining'));
                       }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault();
-                          setOpenPin((p) => (p === 'den' ? null : 'den'));
+                          setOpenPin((p) => (p === 'dining' ? null : 'dining'));
                         }
                       }}
                     >
                       <div
                         ref={(el) => {
-                          pinDotRefs.current.den = el;
+                          pinDotRefs.current.dining = el;
                         }}
                         className={`heist-glow-neutral h-3 w-3 cursor-pointer rounded-full border border-zinc-500/70 bg-zinc-600 transition-all hover:bg-zinc-500 ${
-                          openPin === 'den' ? 'ring-2 ring-zinc-300 ring-offset-2 ring-offset-[#030203]' : ''
+                          openPin === 'dining' ? 'ring-2 ring-zinc-300 ring-offset-2 ring-offset-[#0a0808]' : ''
                         }`}
                       />
                     </div>
@@ -977,7 +957,7 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
         <button
           type="button"
           className="fixed inset-0 z-[55] cursor-default bg-black/55 backdrop-blur-[2px]"
-          aria-label="Close comms"
+          aria-label="Close assistant"
           onClick={() => setCommsOpen(false)}
         />
       )}
@@ -992,14 +972,14 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
           <div className="flex shrink-0 items-center justify-between border-b border-red-950/50 bg-[#120808] px-4 py-3">
             <div>
               <p id="comms-panel-title" className="font-headline text-sm uppercase tracking-wide text-white">
-                Field comms
+                Home risk assistant
               </p>
-              <p className="font-label text-[9px] uppercase tracking-widest text-red-400/70">Encrypted · sim</p>
+              <p className="font-label text-[9px] uppercase tracking-widest text-red-400/70">Inspection &amp; quiz aware</p>
             </div>
             <button
               type="button"
               className="rounded-sm p-2 text-white/60 transition-colors hover:bg-red-950/50 hover:text-white"
-              aria-label="Close chat"
+              aria-label="Close assistant"
               onClick={() => setCommsOpen(false)}
             >
               <span className="material-symbols-outlined text-xl leading-none">close</span>
@@ -1039,7 +1019,7 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
                 id="comms-input"
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
-                placeholder="Type a message…"
+                placeholder="Ask about coverage, prevention, or your score…"
                 className="min-w-0 flex-1 border border-red-950/40 bg-[#030203] px-3 py-2.5 font-body text-sm text-white placeholder:text-zinc-600 focus:border-red-800/50 focus:outline-none focus:ring-1 focus:ring-red-900/40"
                 autoComplete="off"
               />
@@ -1058,7 +1038,7 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
           {!commsOpen && (
             <div className="pointer-events-none absolute bottom-full right-0 mb-3 hidden opacity-0 transition-opacity group-hover:opacity-100 sm:block">
               <span className="bg-[#140808] px-4 py-2 font-label text-xs text-white/90 shadow-lg shadow-black/50 ring-1 ring-red-900/50">
-                Open comms
+                Open assistant
               </span>
             </div>
           )}
@@ -1072,7 +1052,7 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
             }`}
             aria-expanded={commsOpen}
             aria-controls="comms-chat-panel"
-            aria-label={commsOpen ? 'Close comms chat' : 'Open comms chat'}
+            aria-label={commsOpen ? 'Close home risk chat' : 'Open home risk chat'}
           >
             <div className="relative flex h-8 w-8 items-center justify-center">
               <span
