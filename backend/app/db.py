@@ -17,6 +17,7 @@ client = MongoClient(mongo_uri, serverSelectionTimeoutMS=750)
 db = client["riskdb"]
 risk_reports = db["risk_reports"]
 homes_collection = db["homes"]
+questions_collection = db["questions"]
 
 def insert_json_to_mongodb(json_file_path):
     with open(json_file_path, "r", encoding="utf-8") as f:
