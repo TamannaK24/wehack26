@@ -3,6 +3,7 @@ import { ArrowRight, ChevronLeft, CheckCircle2 } from 'lucide-react';
 import { loadUser, saveUser } from '../lib/authStorage';
 import {
   DocumentsUploadForm,
+  PropertyBlueprintUploadForm,
   ProtectionQuizForm,
   emptyPropertyAddress,
   emptyDocumentUploads,
@@ -13,7 +14,7 @@ import {
   type ProtectionQuizAnswers,
 } from '../components/onboarding';
 
-type Step = 'address' | 'documents' | 'quiz';
+type Step = 'address' | 'documents' | 'quiz' | 'property';
 
 type OnboardingPageProps = {
   onComplete: () => void;
@@ -29,7 +30,6 @@ type AddressSearchResult = {
 };
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:5000').replace(/\/$/, '');
-console.log("API_BASE_URL =", API_BASE_URL);
 
 export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
   const [step, setStep] = useState<Step>('address');
@@ -179,7 +179,8 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
     onComplete();
   };
 
-  const stepIndex = step === 'address' ? 0 : step === 'documents' ? 1 : 2;
+  const stepIndex =
+    step === 'address' ? 0 : step === 'documents' ? 1 : step === 'quiz' ? 2 : 3;
 
   return (
     <div className="relative max-w-3xl mx-auto px-4 py-8">
@@ -197,10 +198,11 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
           Property <span className="text-red-400">intake</span>
         </h1>
         <p className="mt-3 text-zinc-400 text-sm max-w-xl">
-          Confirm the site, file documents, and complete the checklist — you can skip anything for now.
+          Four quick steps: confirm the site, file documents, complete the protection checklist, then optionally add a
+          blueprint or property photos — you can skip anything for now.
         </p>
-        <div className="mt-6 flex gap-2">
-          {(['Address', 'Documents', 'Quiz'] as const).map((label, i) => (
+        <div className="mt-6 flex flex-wrap gap-2">
+          {(['Address', 'Documents', 'Quiz', 'Blueprint'] as const).map((label, i) => (
             <div
               key={label}
               className={`flex items-center gap-2 font-label text-[9px] uppercase tracking-widest px-3 py-1.5 border ${
@@ -341,6 +343,30 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
             <button
               type="button"
               onClick={() => setStep('documents')}
+              className="inline-flex items-center gap-2 text-zinc-500 font-label text-[10px] uppercase tracking-widest hover:text-red-300 self-start"
+            >
+              <ChevronLeft size={14} />
+              Back
+            </button>
+            <button
+              type="button"
+              onClick={() => setStep('property')}
+              className="inline-flex items-center justify-center gap-2 border border-red-800/50 bg-red-950/40 px-8 py-3 font-label text-[10px] font-bold uppercase tracking-[0.2em] text-red-100 hover:bg-red-900/50"
+            >
+              Continue
+              <ArrowRight size={16} />
+            </button>
+          </div>
+        </>
+      )}
+
+      {step === 'property' && (
+        <>
+          <PropertyBlueprintUploadForm value={documents} onChange={setDocuments} />
+          <div className="flex flex-col sm:flex-row sm:justify-between gap-4 mt-6 pt-4 border-t border-red-950/25">
+            <button
+              type="button"
+              onClick={() => setStep('quiz')}
               className="inline-flex items-center gap-2 text-zinc-500 font-label text-[10px] uppercase tracking-widest hover:text-red-300 self-start"
             >
               <ChevronLeft size={14} />

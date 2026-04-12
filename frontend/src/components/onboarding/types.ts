@@ -29,11 +29,17 @@ export type FileMeta = {
 export type DocumentUploads = {
   claimsFile: File | null;
   inspectionFile: File | null;
+  /** Optional floor plan / blueprint (single file) */
+  blueprintFile: File | null;
+  /** Optional property photos (multiple) */
+  propertyPhotos: File[];
 };
 
 export const emptyDocumentUploads = (): DocumentUploads => ({
   claimsFile: null,
   inspectionFile: null,
+  blueprintFile: null,
+  propertyPhotos: [],
 });
 
 /** Non-negative whole counts per feature; 0 = not installed / none */
@@ -46,6 +52,8 @@ export type OnboardingPayload = {
   documentsMeta: {
     claims: FileMeta | null;
     inspections: FileMeta | null;
+    blueprint: FileMeta | null;
+    propertyPhotos: FileMeta[];
   };
   protectionQuiz: ProtectionQuizAnswers;
 };
@@ -79,6 +87,8 @@ export function buildOnboardingPayload(
     documentsMeta: {
       claims: fileToMeta(uploads.claimsFile),
       inspections: fileToMeta(uploads.inspectionFile),
+      blueprint: fileToMeta(uploads.blueprintFile),
+      propertyPhotos: uploads.propertyPhotos.map((f) => fileToMeta(f)).filter((m): m is FileMeta => m != null),
     },
     protectionQuiz: normalizeProtectionQuizAnswers(protectionQuiz),
   };
