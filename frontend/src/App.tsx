@@ -141,7 +141,7 @@ const TopBar = ({
           </button>
           <div className="leading-tight">
             <p className="font-label text-[9px] uppercase tracking-widest text-red-400/90">Field lead</p>
-            <p className="font-headline text-xs tracking-wide text-white">E. Thorne</p>
+            <p className="font-headline text-xs tracking-wide text-white">React Radar</p>
           </div>
         </div>
         <div className="flex items-center gap-3 text-red-400/90">

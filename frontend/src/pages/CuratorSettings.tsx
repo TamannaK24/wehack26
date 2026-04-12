@@ -31,8 +31,8 @@ const CuratorSettings = ({
           <UserCircle className="text-primary" size={56} />
         </div>
         <div>
-          <p className="font-headline text-2xl text-on-surface">Alistair Vance</p>
-          <p className="font-label text-[10px] uppercase tracking-widest text-zinc-500 mt-1">Master Conservator</p>
+          <p className="font-headline text-2xl text-on-surface">React Radar</p>
+          <p className="font-label text-[10px] uppercase tracking-widest text-zinc-500 mt-1">Operator</p>
         </div>
         <button className="w-full border border-outline-variant/30 text-primary py-3 font-label uppercase tracking-[0.2em] text-[10px] hover:bg-primary hover:text-on-primary transition-all">
           Change Portrait
@@ -43,16 +43,16 @@ const CuratorSettings = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <label className="space-y-2">
             <span className="font-label text-[10px] uppercase tracking-widest text-primary">Full Name</span>
-            <input defaultValue="Alistair Vance" className="w-full bg-background border border-outline-variant/25 px-4 py-3 text-on-surface" />
+            <input defaultValue="React Radar" className="w-full bg-background border border-outline-variant/25 px-4 py-3 text-on-surface" />
           </label>
           <label className="space-y-2">
             <span className="font-label text-[10px] uppercase tracking-widest text-primary">Public Alias</span>
-            <input defaultValue="The_Vance_Archive" className="w-full bg-background border border-outline-variant/25 px-4 py-3 text-on-surface" />
+            <input defaultValue="react_radar" className="w-full bg-background border border-outline-variant/25 px-4 py-3 text-on-surface" />
           </label>
         </div>
         <label className="space-y-2 block">
           <span className="font-label text-[10px] uppercase tracking-widest text-primary">Email Address</span>
-          <input defaultValue="alistair.vance@curator.digital" className="w-full bg-background border border-outline-variant/25 px-4 py-3 text-on-surface" />
+          <input defaultValue="hello@reactradar.app" className="w-full bg-background border border-outline-variant/25 px-4 py-3 text-on-surface" />
         </label>
         <div className="flex justify-end">
           <button className="px-8 py-3 bg-primary text-on-primary font-label uppercase tracking-widest text-[10px] font-bold hover:brightness-110">
