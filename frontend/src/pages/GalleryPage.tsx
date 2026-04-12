@@ -69,8 +69,8 @@ const PIN_DETAILS: Record<
 const CONNECTOR_STROKE: Record<PinId, string> = {
   kitchen: 'rgb(248 113 113)',
   master: 'rgb(251 146 60)',
-  great: 'rgb(251 113 133)',
-  den: 'rgb(220 38 38)',
+  great: 'rgb(228 228 231)',
+  den: 'rgb(161 161 170)',
 };
 
 function panelBorderClass(accent: PinAccent): string {
@@ -172,6 +172,12 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
     };
   }, [updateConnector]);
 
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, []);
+
   const openDetail = openPin == null ? null : PIN_DETAILS[openPin];
 
   return (
@@ -206,9 +212,18 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
             0 0 0 1px rgba(127, 29, 29, 0.45),
             0 24px 48px rgba(0, 0, 0, 0.75);
         }
-        .heist-glow-rose { box-shadow: 0 0 16px 3px rgba(251, 113, 133, 0.45); }
-        .heist-glow-red  { box-shadow: 0 0 18px 4px rgba(239, 68, 68, 0.55); }
-        .heist-glow-orange { box-shadow: 0 0 14px 3px rgba(251, 146, 60, 0.45); }
+        .heist-glow-red { box-shadow: 0 0 18px 4px rgba(239, 68, 68, 0.55); }
+        .heist-glow-orange {
+          box-shadow: 0 0 14px 3px rgba(251, 146, 60, 0.48);
+        }
+        .heist-glow-white {
+          box-shadow:
+            0 0 12px 2px rgba(255, 255, 255, 0.35),
+            0 0 4px 1px rgba(255, 255, 255, 0.22);
+        }
+        .heist-glow-neutral {
+          box-shadow: 0 0 10px 2px rgba(228, 228, 231, 0.2);
+        }
         .heist-spotlight {
           background:
             radial-gradient(ellipse 90% 55% at 50% -15%, rgba(127, 29, 29, 0.35) 0%, transparent 55%),
@@ -234,6 +249,9 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
           .blueprint-tilt .isometric-view {
             transition-duration: 0.01ms;
           }
+        }
+        .blueprint-floorplan text {
+          font-family: 'Outfit', ui-sans-serif, system-ui, sans-serif;
         }
         .blueprint-stage {
           overscroll-behavior: none;
@@ -364,17 +382,16 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
                 onPointerEnter={() => setBlueprintLockedFlat(true)}
               >
                 <div className="absolute inset-0 isometric-view">
-                  {/* Blueprint base */}
-                  <div className="absolute inset-0 rounded-sm bg-black/40 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)] shadow-2xl shadow-black/60 backdrop-blur-sm">
-                  <div
-                    className="absolute inset-0 opacity-[0.07]"
-                    style={{
-                      backgroundImage:
-                        'linear-gradient(rgba(255,255,255,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.12) 1px, transparent 1px)',
-                      backgroundSize: '30px 30px',
-                    }}
-                  />
-                  </div>
+                  {/* Dark blueprint field + faint grid */}
+                  <div className="absolute inset-0 rounded-sm bg-black/45 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)] shadow-2xl shadow-black/60 backdrop-blur-sm">
+                    <div
+                      className="absolute inset-0 opacity-[0.08]"
+                      style={{
+                        backgroundImage:
+                          'linear-gradient(rgba(255,255,255,0.14) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.14) 1px, transparent 1px)',
+                        backgroundSize: '30px 30px',
+                      }}
+                    />
 
                   {/* SVG + pins: same aspect as viewBox — fills stage, no nested scroll */}
                   <div className="relative h-full w-full p-3 sm:p-5">
@@ -382,111 +399,272 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
                   <svg
                     viewBox="0 0 700 520"
                     xmlns="http://www.w3.org/2000/svg"
-                    className="absolute inset-0 block h-full w-full"
+                    className="blueprint-floorplan absolute inset-0 block h-full w-full"
                     preserveAspectRatio="xMidYMid meet"
                   >
                     <defs>
-                      <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#ffffff" strokeWidth="0.35" opacity="0.22" />
+                      <pattern id="bp-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#ffffff" strokeWidth="0.35" opacity="0.2" />
                       </pattern>
+                      <marker id="bp-dim-arrow" markerWidth="5" markerHeight="5" refX="2.5" refY="2.5" orient="auto">
+                        <path d="M0,0 L5,2.5 L0,5 Z" fill="#e5e5e5" />
+                      </marker>
                     </defs>
 
                     <rect width="700" height="520" fill="#080808" rx="4" />
-                    <rect width="700" height="520" fill="url(#grid)" rx="4" />
+                    <rect width="700" height="520" fill="url(#bp-grid)" rx="4" />
 
-                    {/* Garage */}
-                    <polygon points="30,340 160,210 245,295 115,425" fill="#0f0c0c" stroke="#ffffff" strokeWidth="1.2" opacity="0.85" />
-                    <text x="122" y="330" textAnchor="middle" fill="#ffffff" fontSize="9" fontFamily="Outfit, system-ui, sans-serif" opacity="0.7" transform="rotate(-45,122,330)">10&apos; Clg</text>
-                    <text x="122" y="342" textAnchor="middle" fill="#ffffff" fontSize="11" fontFamily="Outfit, system-ui, sans-serif" fontWeight="bold" opacity="0.9" transform="rotate(-45,122,342)">Garage</text>
-                    <text x="122" y="354" textAnchor="middle" fill="#ffffff" fontSize="9" fontFamily="Outfit, system-ui, sans-serif" opacity="0.7" transform="rotate(-45,122,354)">21/7x29/0</text>
+                    {/*
+                      Angled wing: garage (grey) + utility; junction at kitchen corner (190, 268).
+                    */}
+                    <g transform="translate(166, 340) rotate(-45)">
+                      <rect
+                        x="-92"
+                        y="-34"
+                        width="100"
+                        height="68"
+                        fill="#161616"
+                        stroke="#ffffff"
+                        strokeWidth="1.8"
+                      />
+                      <line x1="-88" y1="-28" x2="-4" y2="28" stroke="#ffffff" strokeWidth="0.65" opacity="0.28" />
+                      <line x1="-4" y1="-28" x2="-88" y2="28" stroke="#ffffff" strokeWidth="0.65" opacity="0.28" />
+                      <rect
+                        x="8"
+                        y="-34"
+                        width="60"
+                        height="68"
+                        fill="#0f0c0c"
+                        stroke="#ffffff"
+                        strokeWidth="1.8"
+                      />
+                      <g transform="rotate(45)">
+                        <text x="-42" y="-6" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.85">
+                          10&apos; Clg
+                        </text>
+                        <text x="-42" y="8" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold" opacity="0.95">
+                          Garage
+                        </text>
+                        <text x="-42" y="22" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.8">
+                          21/7x29/0
+                        </text>
+                        <text x="40" y="8" textAnchor="middle" fill="#ffffff" fontSize="9" fontWeight="bold" opacity="0.92">
+                          Utility
+                        </text>
+                      </g>
+                    </g>
 
                     {/* Master Suite */}
-                    <rect x="50" y="60" width="130" height="120" fill="#0f0c0c" stroke="#ffffff" strokeWidth="1.2" opacity="0.85" />
-                    <text x="115" y="108" textAnchor="middle" fill="#ffffff" fontSize="9" fontFamily="Outfit, system-ui, sans-serif" opacity="0.7">Vaulted</text>
-                    <text x="115" y="122" textAnchor="middle" fill="#ffffff" fontSize="12" fontFamily="Outfit, system-ui, sans-serif" fontWeight="bold" opacity="0.9">Master Suite</text>
-                    <text x="115" y="137" textAnchor="middle" fill="#ffffff" fontSize="9" fontFamily="Outfit, system-ui, sans-serif" opacity="0.7">14/0x16/0</text>
-                    <rect x="56" y="145" width="28" height="28" fill="none" stroke="#ffffff" strokeWidth="0.8" opacity="0.5" />
-                    <text x="70" y="163" textAnchor="middle" fill="#ffffff" fontSize="8" fontFamily="Outfit, system-ui, sans-serif" opacity="0.6">M.B.</text>
-                    <rect x="140" y="145" width="30" height="28" fill="none" stroke="#ffffff" strokeWidth="0.8" opacity="0.5" />
-                    <text x="155" y="163" textAnchor="middle" fill="#ffffff" fontSize="8" fontFamily="Outfit, system-ui, sans-serif" opacity="0.6">W/I</text>
+                    <rect x="50" y="60" width="130" height="120" fill="#0f0c0c" stroke="#ffffff" strokeWidth="1.8" />
+                    <text x="115" y="108" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.85">
+                      Vaulted
+                    </text>
+                    <text x="115" y="122" textAnchor="middle" fill="#ffffff" fontSize="11" fontWeight="bold" opacity="0.95">
+                      Master Suite
+                    </text>
+                    <text x="115" y="137" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.8">
+                      14/0x16/0
+                    </text>
+                    <rect x="56" y="145" width="28" height="28" fill="none" stroke="#ffffff" strokeWidth="0.75" opacity="0.65" />
+                    <text x="70" y="163" textAnchor="middle" fill="#ffffff" fontSize="7.5" opacity="0.75">
+                      M.B.
+                    </text>
+                    <rect x="140" y="145" width="30" height="28" fill="none" stroke="#ffffff" strokeWidth="0.75" opacity="0.65" />
+                    <text x="155" y="163" textAnchor="middle" fill="#ffffff" fontSize="7.5" opacity="0.75">
+                      W/I
+                    </text>
 
                     {/* Dining Room */}
-                    <rect x="190" y="60" width="120" height="100" fill="#100a0a" stroke="#ffffff" strokeWidth="1.2" opacity="0.85" />
-                    <text x="250" y="100" textAnchor="middle" fill="#ffffff" fontSize="9" fontFamily="Outfit, system-ui, sans-serif" opacity="0.7">9&apos; Clg</text>
-                    <text x="250" y="114" textAnchor="middle" fill="#ffffff" fontSize="11" fontFamily="Outfit, system-ui, sans-serif" fontWeight="bold" opacity="0.9">Dining Rm</text>
-                    <text x="250" y="128" textAnchor="middle" fill="#ffffff" fontSize="9" fontFamily="Outfit, system-ui, sans-serif" opacity="0.7">13/0x12/0</text>
+                    <rect x="190" y="58" width="115" height="104" fill="#100a0a" stroke="#ffffff" strokeWidth="1.8" />
+                    <text x="247" y="98" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.85">
+                      9&apos; Clg
+                    </text>
+                    <text x="247" y="112" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold" opacity="0.95">
+                      Dining Rm
+                    </text>
+                    <text x="247" y="126" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.8">
+                      13/0x12/0
+                    </text>
 
-                    {/* Outdoor Living */}
-                    <rect x="320" y="30" width="150" height="105" fill="#0a0808" stroke="#ffffff" strokeWidth="1.2" strokeDasharray="5,3" opacity="0.7" />
-                    <text x="395" y="72" textAnchor="middle" fill="#ffffff" fontSize="11" fontFamily="Outfit, system-ui, sans-serif" fontWeight="bold" opacity="0.8">Outdoor</text>
-                    <text x="395" y="86" textAnchor="middle" fill="#ffffff" fontSize="11" fontFamily="Outfit, system-ui, sans-serif" fontWeight="bold" opacity="0.8">Living Rm</text>
-                    <text x="395" y="100" textAnchor="middle" fill="#ffffff" fontSize="9" fontFamily="Outfit, system-ui, sans-serif" opacity="0.6">20/0x20/4</text>
+                    {/* Outdoor Living — grey zone */}
+                    <rect x="315" y="30" width="150" height="105" fill="#0a0808" stroke="#ffffff" strokeWidth="1.8" strokeDasharray="4,3" />
+                    <text x="390" y="72" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold" opacity="0.9">
+                      Outdoor
+                    </text>
+                    <text x="390" y="86" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold" opacity="0.9">
+                      Living Rm
+                    </text>
+                    <text x="390" y="100" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.75">
+                      20/0x20/4
+                    </text>
+                    {/* Sliding-door symbol toward great room */}
+                    <line x1="315" y1="95" x2="315" y2="98" stroke="#ffffff" strokeWidth="1.2" />
+                    <line x1="318" y1="92" x2="318" y2="101" stroke="#ffffff" strokeWidth="0.55" />
 
                     {/* Bed 2 */}
-                    <rect x="490" y="45" width="155" height="110" fill="#0f0c0c" stroke="#ffffff" strokeWidth="1.2" opacity="0.85" />
-                    <text x="568" y="86" textAnchor="middle" fill="#ffffff" fontSize="9" fontFamily="Outfit, system-ui, sans-serif" opacity="0.7">9&apos; CLG</text>
-                    <text x="568" y="100" textAnchor="middle" fill="#ffffff" fontSize="12" fontFamily="Outfit, system-ui, sans-serif" fontWeight="bold" opacity="0.9">Bed #2</text>
-                    <text x="568" y="114" textAnchor="middle" fill="#ffffff" fontSize="9" fontFamily="Outfit, system-ui, sans-serif" opacity="0.7">17/0x12/0</text>
-                    <rect x="492" y="135" width="32" height="24" fill="none" stroke="#ffffff" strokeWidth="0.7" opacity="0.5" />
-                    <text x="508" y="151" textAnchor="middle" fill="#ffffff" fontSize="7" fontFamily="Outfit, system-ui, sans-serif" opacity="0.5">W/I</text>
-                    <rect x="530" y="135" width="28" height="24" fill="none" stroke="#ffffff" strokeWidth="0.7" opacity="0.5" />
-                    <text x="544" y="151" textAnchor="middle" fill="#ffffff" fontSize="7" fontFamily="Outfit, system-ui, sans-serif" opacity="0.5">B</text>
+                    <rect x="490" y="45" width="155" height="110" fill="#0f0c0c" stroke="#ffffff" strokeWidth="1.8" />
+                    <text x="568" y="86" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.85">
+                      9&apos; CLG
+                    </text>
+                    <text x="568" y="100" textAnchor="middle" fill="#ffffff" fontSize="11" fontWeight="bold" opacity="0.95">
+                      Bed #2
+                    </text>
+                    <text x="568" y="114" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.8">
+                      17/0x12/0
+                    </text>
+                    <rect x="492" y="135" width="32" height="24" fill="none" stroke="#ffffff" strokeWidth="0.65" opacity="0.6" />
+                    <text x="508" y="151" textAnchor="middle" fill="#ffffff" fontSize="7" opacity="0.7">
+                      W/I
+                    </text>
+                    <rect x="530" y="135" width="28" height="24" fill="none" stroke="#ffffff" strokeWidth="0.65" opacity="0.6" />
+                    <text x="544" y="151" textAnchor="middle" fill="#ffffff" fontSize="7" opacity="0.7">
+                      B
+                    </text>
 
                     {/* Bed 3 */}
-                    <rect x="490" y="175" width="155" height="110" fill="#0f0c0c" stroke="#ffffff" strokeWidth="1.2" opacity="0.85" />
-                    <text x="568" y="212" textAnchor="middle" fill="#ffffff" fontSize="9" fontFamily="Outfit, system-ui, sans-serif" opacity="0.7">9&apos; Clg</text>
-                    <text x="568" y="226" textAnchor="middle" fill="#ffffff" fontSize="12" fontFamily="Outfit, system-ui, sans-serif" fontWeight="bold" opacity="0.9">Bed #3</text>
-                    <text x="568" y="240" textAnchor="middle" fill="#ffffff" fontSize="9" fontFamily="Outfit, system-ui, sans-serif" opacity="0.7">13/2x13/0</text>
-                    <rect x="492" y="256" width="32" height="24" fill="none" stroke="#ffffff" strokeWidth="0.7" opacity="0.5" />
-                    <text x="508" y="272" textAnchor="middle" fill="#ffffff" fontSize="7" fontFamily="Outfit, system-ui, sans-serif" opacity="0.5">W/I</text>
-                    <rect x="530" y="256" width="28" height="24" fill="none" stroke="#ffffff" strokeWidth="0.7" opacity="0.5" />
-                    <text x="544" y="272" textAnchor="middle" fill="#ffffff" fontSize="7" fontFamily="Outfit, system-ui, sans-serif" opacity="0.5">B</text>
+                    <rect x="490" y="175" width="155" height="110" fill="#0f0c0c" stroke="#ffffff" strokeWidth="1.8" />
+                    <text x="568" y="212" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.85">
+                      9&apos; Clg
+                    </text>
+                    <text x="568" y="226" textAnchor="middle" fill="#ffffff" fontSize="11" fontWeight="bold" opacity="0.95">
+                      Bed #3
+                    </text>
+                    <text x="568" y="240" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.8">
+                      13/2x13/0
+                    </text>
+                    <rect x="492" y="256" width="32" height="24" fill="none" stroke="#ffffff" strokeWidth="0.65" opacity="0.6" />
+                    <text x="508" y="272" textAnchor="middle" fill="#ffffff" fontSize="7" opacity="0.7">
+                      W/I
+                    </text>
+                    <rect x="530" y="256" width="28" height="24" fill="none" stroke="#ffffff" strokeWidth="0.65" opacity="0.6" />
+                    <text x="544" y="272" textAnchor="middle" fill="#ffffff" fontSize="7" opacity="0.7">
+                      B
+                    </text>
 
                     {/* Great Room */}
-                    <rect x="310" y="145" width="175" height="175" fill="#100a0a" stroke="#ffffff" strokeWidth="1.5" opacity="0.9" />
-                    <text x="397" y="215" textAnchor="middle" fill="#ffffff" fontSize="9" fontFamily="Outfit, system-ui, sans-serif" opacity="0.7">10&apos; CLG</text>
-                    <text x="397" y="232" textAnchor="middle" fill="#ffffff" fontSize="9" fontFamily="Outfit, system-ui, sans-serif" opacity="0.6">2 Story</text>
-                    <text x="397" y="248" textAnchor="middle" fill="#ffffff" fontSize="14" fontFamily="Outfit, system-ui, sans-serif" fontWeight="bold" opacity="0.95">Great Rm</text>
-                    <text x="397" y="264" textAnchor="middle" fill="#ffffff" fontSize="9" fontFamily="Outfit, system-ui, sans-serif" opacity="0.7">20/0x20/0</text>
+                    <rect x="305" y="145" width="175" height="175" fill="#100a0a" stroke="#ffffff" strokeWidth="2" />
+                    <rect
+                      x="311"
+                      y="151"
+                      width="163"
+                      height="163"
+                      fill="none"
+                      stroke="#ffffff"
+                      strokeWidth="0.75"
+                      strokeDasharray="5,4"
+                      opacity="0.38"
+                    />
+                    <text x="392" y="215" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.85">
+                      10&apos; CLG
+                    </text>
+                    <text x="392" y="232" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.75">
+                      2 Story
+                    </text>
+                    <text x="392" y="248" textAnchor="middle" fill="#ffffff" fontSize="13" fontWeight="bold" opacity="0.95">
+                      Great Rm
+                    </text>
+                    <text x="392" y="264" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.8">
+                      20/0x20/0
+                    </text>
+                    {/* Fireplace on right wall */}
+                    <rect x="468" y="210" width="10" height="36" fill="#1c1610" stroke="#ffffff" strokeWidth="0.7" />
 
                     {/* Kitchen */}
-                    <rect x="190" y="168" width="115" height="100" fill="#0f0c0c" stroke="#ffffff" strokeWidth="1.2" opacity="0.85" />
-                    <text x="247" y="222" textAnchor="middle" fill="#ffffff" fontSize="12" fontFamily="Outfit, system-ui, sans-serif" fontWeight="bold" opacity="0.9">Kitchen</text>
-                    <rect x="220" y="230" width="55" height="28" fill="none" stroke="#ffffff" strokeWidth="0.7" opacity="0.4" />
-                    <circle cx="232" cy="244" r="5" fill="none" stroke="#ffffff" strokeWidth="0.7" opacity="0.4" />
-                    <circle cx="248" cy="244" r="5" fill="none" stroke="#ffffff" strokeWidth="0.7" opacity="0.4" />
-                    <circle cx="263" cy="244" r="5" fill="none" stroke="#ffffff" strokeWidth="0.7" opacity="0.4" />
-
-                    {/* Utility */}
-                    <rect x="190" y="275" width="90" height="70" fill="#0f0c0c" stroke="#ffffff" strokeWidth="1.2" opacity="0.85" />
-                    <text x="235" y="315" textAnchor="middle" fill="#ffffff" fontSize="11" fontFamily="Outfit, system-ui, sans-serif" fontWeight="bold" opacity="0.9">Utility</text>
+                    <rect x="190" y="162" width="115" height="106" fill="#0f0c0c" stroke="#ffffff" strokeWidth="1.8" />
+                    <line x1="190" y1="162" x2="305" y2="162" stroke="#ffffff" strokeWidth="0.9" opacity="0.35" />
+                    <text x="247" y="222" textAnchor="middle" fill="#ffffff" fontSize="11" fontWeight="bold" opacity="0.95">
+                      Kitchen
+                    </text>
+                    <rect x="220" y="230" width="55" height="28" fill="none" stroke="#ffffff" strokeWidth="0.65" opacity="0.65" />
+                    <circle cx="232" cy="244" r="4.5" fill="none" stroke="#ffffff" strokeWidth="0.55" opacity="0.55" />
+                    <circle cx="248" cy="244" r="4.5" fill="none" stroke="#ffffff" strokeWidth="0.55" opacity="0.55" />
+                    <circle cx="263" cy="244" r="4.5" fill="none" stroke="#ffffff" strokeWidth="0.55" opacity="0.55" />
+                    {/* Door swing toward dining */}
+                    <path d="M 305 200 A 14 14 0 0 1 291 214" fill="none" stroke="#ffffff" strokeWidth="0.65" />
 
                     {/* Foyer */}
-                    <rect x="290" y="330" width="110" height="85" fill="#100a0a" stroke="#ffffff" strokeWidth="1.2" opacity="0.85" />
-                    <text x="345" y="362" textAnchor="middle" fill="#ffffff" fontSize="9" fontFamily="Outfit, system-ui, sans-serif" opacity="0.6">2 Story</text>
-                    <text x="345" y="377" textAnchor="middle" fill="#ffffff" fontSize="12" fontFamily="Outfit, system-ui, sans-serif" fontWeight="bold" opacity="0.9">Foyer</text>
-                    <line x1="300" y1="385" x2="390" y2="385" stroke="#ffffff" strokeWidth="0.5" opacity="0.3" />
-                    <line x1="300" y1="394" x2="390" y2="394" stroke="#ffffff" strokeWidth="0.5" opacity="0.3" />
-                    <line x1="300" y1="403" x2="390" y2="403" stroke="#ffffff" strokeWidth="0.5" opacity="0.3" />
+                    <rect x="290" y="330" width="110" height="85" fill="#100a0a" stroke="#ffffff" strokeWidth="1.8" />
+                    <rect
+                      x="296"
+                      y="336"
+                      width="98"
+                      height="73"
+                      fill="none"
+                      stroke="#ffffff"
+                      strokeWidth="0.75"
+                      strokeDasharray="5,4"
+                      opacity="0.35"
+                    />
+                    <text x="345" y="362" textAnchor="middle" fill="#ffffff" fontSize="8" opacity="0.75">
+                      2 Story
+                    </text>
+                    <text x="345" y="377" textAnchor="middle" fill="#ffffff" fontSize="11" fontWeight="bold" opacity="0.95">
+                      Foyer
+                    </text>
+                    {/* Stair run */}
+                    <g stroke="#ffffff" strokeWidth="0.55" opacity="0.7">
+                      <line x1="318" y1="388" x2="372" y2="388" />
+                      <line x1="318" y1="393" x2="372" y2="393" />
+                      <line x1="318" y1="398" x2="372" y2="398" />
+                      <line x1="318" y1="403" x2="372" y2="403" />
+                      <line x1="318" y1="408" x2="372" y2="408" />
+                    </g>
+                    <text x="345" y="402" textAnchor="middle" fill="#ffffff" fontSize="7" opacity="0.65">
+                      UP
+                    </text>
 
                     {/* Powder */}
-                    <rect x="410" y="330" width="70" height="55" fill="#0f0c0c" stroke="#ffffff" strokeWidth="1.2" opacity="0.85" />
-                    <text x="445" y="361" textAnchor="middle" fill="#ffffff" fontSize="9" fontFamily="Outfit, system-ui, sans-serif" fontWeight="bold" opacity="0.8">Powder</text>
-                    <ellipse cx="445" cy="373" rx="9" ry="7" fill="none" stroke="#ffffff" strokeWidth="0.6" opacity="0.4" />
+                    <rect x="410" y="330" width="70" height="55" fill="#0f0c0c" stroke="#ffffff" strokeWidth="1.8" />
+                    <text x="445" y="361" textAnchor="middle" fill="#ffffff" fontSize="9" fontWeight="bold" opacity="0.88">
+                      Powder
+                    </text>
+                    <ellipse cx="445" cy="373" rx="9" ry="7" fill="none" stroke="#ffffff" strokeWidth="0.55" opacity="0.55" />
+                    <path d="M 438 365 A 8 8 0 0 1 445 358" fill="none" stroke="#ffffff" strokeWidth="0.55" />
 
-                    {/* Den */}
-                    <rect x="390" y="395" width="140" height="105" fill="#0f0c0c" stroke="#ffffff" strokeWidth="1.2" opacity="0.85" />
-                    <text x="460" y="432" textAnchor="middle" fill="#ffffff" fontSize="9" fontFamily="Outfit, system-ui, sans-serif" opacity="0.7">12&apos; CLG</text>
-                    <text x="460" y="448" textAnchor="middle" fill="#ffffff" fontSize="13" fontFamily="Outfit, system-ui, sans-serif" fontWeight="bold" opacity="0.9">Den</text>
-                    <text x="460" y="463" textAnchor="middle" fill="#ffffff" fontSize="9" fontFamily="Outfit, system-ui, sans-serif" opacity="0.7">12/0x11/6</text>
+                    {/* Den — compact, stacked under powder (same width) */}
+                    <rect x="410" y="388" width="70" height="78" fill="#0f0c0c" stroke="#ffffff" strokeWidth="1.8" />
+                    <text x="445" y="418" textAnchor="middle" fill="#ffffff" fontSize="7.5" opacity="0.82">
+                      12&apos; CLG
+                    </text>
+                    <text x="445" y="432" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold" opacity="0.95">
+                      Den
+                    </text>
+                    <text x="445" y="445" textAnchor="middle" fill="#ffffff" fontSize="7.5" opacity="0.78">
+                      10/0x9/0
+                    </text>
 
-                    {/* Dimension line */}
-                    <line x1="190" y1="510" x2="490" y2="510" stroke="#ffffff" strokeWidth="0.8" opacity="0.4" />
-                    <line x1="190" y1="505" x2="190" y2="515" stroke="#ffffff" strokeWidth="0.8" opacity="0.4" />
-                    <line x1="490" y1="505" x2="490" y2="515" stroke="#ffffff" strokeWidth="0.8" opacity="0.4" />
-                    <text x="340" y="508" textAnchor="middle" fill="#ffffff" fontSize="9" fontFamily="Outfit, system-ui, sans-serif" opacity="0.5">81/5</text>
+                    {/* Dimension line with tick arrows */}
+                    <line
+                      x1="190"
+                      y1="508"
+                      x2="490"
+                      y2="508"
+                      stroke="#ffffff"
+                      strokeWidth="0.55"
+                      opacity="0.45"
+                      markerStart="url(#bp-dim-arrow)"
+                      markerEnd="url(#bp-dim-arrow)"
+                    />
+                    <line x1="190" y1="503" x2="190" y2="513" stroke="#ffffff" strokeWidth="0.6" opacity="0.45" />
+                    <line x1="490" y1="503" x2="490" y2="513" stroke="#ffffff" strokeWidth="0.6" opacity="0.45" />
+                    <text x="340" y="505" textAnchor="middle" fill="#ffffff" fontSize="9" opacity="0.55">
+                      81/5
+                    </text>
 
-                    {/* Crisp white frame on top so grid/rooms do not soften the outline */}
+                    {/* Area summary (reference sheet style) */}
+                    <text x="472" y="458" textAnchor="start" fill="#ffffff" fontSize="7.5" opacity="0.5">
+                      Main Floor: 2,757 Sq. Ft.
+                    </text>
+                    <text x="472" y="470" textAnchor="start" fill="#ffffff" fontSize="7.5" opacity="0.5">
+                      Upper Floor: 554 Sq. Ft.
+                    </text>
+                    <text x="472" y="482" textAnchor="start" fill="#ffffff" fontSize="7.5" opacity="0.5">
+                      Total: 3,311 Sq. Ft.
+                    </text>
+                    <text x="472" y="494" textAnchor="start" fill="#ffffff" fontSize="7.5" opacity="0.5">
+                      + Garage: 659 Sq. Ft.
+                    </text>
+
                     <rect width="700" height="520" fill="none" stroke="#ffffff" strokeWidth="2.5" rx="4" opacity="0.98" />
                   </svg>
 
@@ -494,7 +672,7 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
                   <div className="pointer-events-none absolute inset-0 z-20">
                     <div
                       className="pointer-events-auto absolute z-20 -translate-x-1/2 -translate-y-1/2"
-                      style={{ left: `${(247 / 700) * 100}%`, top: `${(200 / 520) * 100}%` }}
+                      style={{ left: `${(248 / 700) * 100}%`, top: `${(215 / 520) * 100}%` }}
                       role="button"
                       tabIndex={0}
                       aria-expanded={openPin === 'kitchen'}
@@ -542,7 +720,7 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
                         ref={(el) => {
                           pinDotRefs.current.master = el;
                         }}
-                        className={`heist-glow-orange h-3.5 w-3.5 cursor-pointer rounded-full border border-black/50 bg-orange-500 transition-shadow ${
+                        className={`heist-glow-orange h-3.5 w-3.5 cursor-pointer rounded-full border border-orange-400/40 bg-orange-500 transition-shadow hover:bg-orange-400 ${
                           openPin === 'master' ? 'ring-2 ring-orange-200 ring-offset-2 ring-offset-[#030203]' : ''
                         }`}
                       />
@@ -550,7 +728,7 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
 
                     <div
                       className="pointer-events-auto absolute z-10 -translate-x-1/2 -translate-y-1/2"
-                      style={{ left: `${(397 / 700) * 100}%`, top: `${(260 / 520) * 100}%` }}
+                      style={{ left: `${(393 / 700) * 100}%`, top: `${(233 / 520) * 100}%` }}
                       role="button"
                       tabIndex={0}
                       aria-expanded={openPin === 'great'}
@@ -570,15 +748,15 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
                         ref={(el) => {
                           pinDotRefs.current.great = el;
                         }}
-                        className={`heist-glow-rose h-3 w-3 cursor-pointer rounded-full border border-black/60 bg-rose-500 transition-shadow ${
-                          openPin === 'great' ? 'ring-2 ring-rose-300 ring-offset-2 ring-offset-[#030203]' : ''
+                        className={`heist-glow-white h-3 w-3 cursor-pointer rounded-full border border-zinc-400/70 bg-zinc-600 transition-shadow hover:bg-zinc-500 ${
+                          openPin === 'great' ? 'ring-2 ring-white/50 ring-offset-2 ring-offset-[#030203]' : ''
                         }`}
                       />
                     </div>
 
                     <div
                       className="pointer-events-auto absolute z-10 -translate-x-1/2 -translate-y-1/2"
-                      style={{ left: `${(460 / 700) * 100}%`, top: `${(450 / 520) * 100}%` }}
+                      style={{ left: `${(445 / 700) * 100}%`, top: `${(427 / 520) * 100}%` }}
                       role="button"
                       tabIndex={0}
                       aria-expanded={openPin === 'den'}
@@ -598,11 +776,12 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
                         ref={(el) => {
                           pinDotRefs.current.den = el;
                         }}
-                        className={`h-3 w-3 cursor-pointer rounded-full border border-red-500/50 bg-red-700/90 transition-all hover:bg-red-600 ${
-                          openPin === 'den' ? 'ring-2 ring-red-400 ring-offset-2 ring-offset-[#030203]' : ''
+                        className={`heist-glow-neutral h-3 w-3 cursor-pointer rounded-full border border-zinc-500/70 bg-zinc-600 transition-all hover:bg-zinc-500 ${
+                          openPin === 'den' ? 'ring-2 ring-zinc-300 ring-offset-2 ring-offset-[#030203]' : ''
                         }`}
                       />
                     </div>
+                  </div>
                   </div>
                   </div>
                 </div>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Shield,
@@ -17,7 +17,24 @@ import DeepLedger from './pages/DeepLedger';
 import RestorationProjects from './pages/RestorationProjects';
 import InquiryEstate from './pages/InquiryEstate';
 import CuratorSettings from './pages/CuratorSettings';
+import AuthPage from './pages/AuthPage';
+import OnboardingPage from './pages/OnboardingPage';
+import { hasBrowserSession, loadUser, setBrowserSession, type StoredUser } from './lib/authStorage';
 import type { Screen, TransitionType } from './types/navigation';
+
+type Gate = 'auth' | 'onboarding' | 'app';
+
+/**
+ * Require an active session (set on login/sign-up). Otherwise we always show auth first —
+ * without this, a stored user with incomplete onboarding skipped straight to the intake form.
+ */
+function initialGate(): Gate {
+  if (!hasBrowserSession()) return 'auth';
+  const u = loadUser();
+  if (!u) return 'auth';
+  if (!u.onboardingComplete) return 'onboarding';
+  return 'app';
+}
 
 const TRANSITIONS = {
   push: {
@@ -136,10 +153,17 @@ const TopBar = ({
 );
 
 export default function App() {
+  const [gate, setGate] = useState<Gate>(() => initialGate());
   const [currentScreen, setCurrentScreen] = useState<Screen>('GALLERY');
   const [transition, setTransition] = useState<TransitionType>('push');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showTopBar, setShowTopBar] = useState(true);
+
+  const handleAuthenticated = useCallback((user: StoredUser) => {
+    setBrowserSession();
+    if (user.onboardingComplete) setGate('app');
+    else setGate('onboarding');
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -174,58 +198,99 @@ export default function App() {
     }
   }, [currentScreen]);
 
+  const showAppChrome = gate === 'app';
+
+  const gateContent = useMemo(() => {
+    if (gate === 'auth') {
+      return <AuthPage onSuccess={handleAuthenticated} />;
+    }
+    if (gate === 'onboarding') {
+      return <OnboardingPage onComplete={() => setGate('app')} />;
+    }
+    return null;
+  }, [gate, handleAuthenticated]);
+
   return (
     <div className="min-h-screen bg-background selection:bg-red-600/35 selection:text-white">
       <div className="film-grain" />
 
-      <button
-        onClick={() => setSidebarOpen((prev) => !prev)}
-        className="fixed top-6 left-8 z-[60] w-10 h-10 border border-red-900/50 bg-[#0a0506]/95 text-red-400 hover:bg-red-950/60 hover:text-white transition-colors flex items-center justify-center"
-        aria-label={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
-      >
-        {sidebarOpen ? <DoorClosed size={18} /> : <ListFilter size={18} />}
-      </button>
+      {showAppChrome && (
+        <>
+          <button
+            onClick={() => setSidebarOpen((prev) => !prev)}
+            className="fixed top-6 left-8 z-[60] w-10 h-10 border border-red-900/50 bg-[#0a0506]/95 text-red-400 hover:bg-red-950/60 hover:text-white transition-colors flex items-center justify-center"
+            aria-label={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+          >
+            {sidebarOpen ? <DoorClosed size={18} /> : <ListFilter size={18} />}
+          </button>
 
-      <TopBar isVisible={showTopBar} sidebarOpen={sidebarOpen} />
-      <Sidebar currentScreen={currentScreen} onNavigate={handleNavigate} isOpen={sidebarOpen} />
+          <TopBar isVisible={showTopBar} sidebarOpen={sidebarOpen} />
+          <Sidebar currentScreen={currentScreen} onNavigate={handleNavigate} isOpen={sidebarOpen} />
+        </>
+      )}
 
       <main
-        className={`relative min-w-0 overflow-x-hidden pt-32 pb-24 px-8 transition-[padding] duration-500 ${sidebarOpen ? 'lg:pl-80' : 'lg:pl-8'}`}
+        className={`relative min-w-0 overflow-x-hidden transition-[padding] duration-500 ${
+          showAppChrome
+            ? `pt-32 pb-24 px-8 ${sidebarOpen ? 'lg:pl-80' : 'lg:pl-8'}`
+            : 'min-h-screen pt-16 pb-20 px-4 sm:px-6'
+        }`}
       >
-        <div className="fixed top-[-10%] right-[-10%] w-[500px] h-[500px] bg-red-900/12 blur-[120px] rounded-full pointer-events-none" />
-        <div className="fixed bottom-[-5%] left-[20%] w-[400px] h-[400px] bg-red-950/20 blur-[100px] rounded-full pointer-events-none" />
+        {showAppChrome && (
+          <>
+            <div className="fixed top-[-10%] right-[-10%] w-[500px] h-[500px] bg-red-900/12 blur-[120px] rounded-full pointer-events-none" />
+            <div className="fixed bottom-[-5%] left-[20%] w-[400px] h-[400px] bg-red-950/20 blur-[100px] rounded-full pointer-events-none" />
+          </>
+        )}
 
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={currentScreen}
-            initial={TRANSITIONS[transition].initial}
-            animate={TRANSITIONS[transition].animate}
-            exit={TRANSITIONS[transition].exit}
-            transition={{ type: 'spring', damping: 25, stiffness: 120 }}
-            className="w-full"
-          >
-            {ScreenComponent}
-          </motion.div>
-        </AnimatePresence>
+        {!showAppChrome ? (
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={gate}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25 }}
+              className="w-full"
+            >
+              {gateContent}
+            </motion.div>
+          </AnimatePresence>
+        ) : (
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={currentScreen}
+              initial={TRANSITIONS[transition].initial}
+              animate={TRANSITIONS[transition].animate}
+              exit={TRANSITIONS[transition].exit}
+              transition={{ type: 'spring', damping: 25, stiffness: 120 }}
+              className="w-full"
+            >
+              {ScreenComponent}
+            </motion.div>
+          </AnimatePresence>
+        )}
       </main>
 
-      <footer
-        className={`w-full py-12 flex flex-col items-center justify-center space-y-4 border-t border-red-950/25 bg-[#030203] transition-[padding] duration-500 ${sidebarOpen ? 'lg:pl-80' : 'lg:pl-8'}`}
-      >
-        <div className="font-headline text-sm uppercase tracking-[0.15em] text-white/90">Nocturne ops</div>
-        <div className="flex flex-wrap justify-center gap-x-8 gap-y-2">
-          <a href="#" className="font-label text-[10px] tracking-widest uppercase text-zinc-500 hover:text-red-300 transition-colors">
-            Rules of engagement
-          </a>
-          <a href="#" className="font-label text-[10px] tracking-widest uppercase text-zinc-500 hover:text-red-300 transition-colors">
-            Signal privacy
-          </a>
-          <a href="#" className="font-label text-[10px] tracking-widest uppercase text-zinc-500 hover:text-red-300 transition-colors">
-            Disclosure
-          </a>
-        </div>
-        <p className="font-label text-[10px] tracking-widest uppercase text-zinc-600">© 2026 Nocturne — classified UI demo</p>
-      </footer>
+      {showAppChrome && (
+        <footer
+          className={`w-full py-12 flex flex-col items-center justify-center space-y-4 border-t border-red-950/25 bg-[#030203] transition-[padding] duration-500 ${sidebarOpen ? 'lg:pl-80' : 'lg:pl-8'}`}
+        >
+          <div className="font-headline text-sm uppercase tracking-[0.15em] text-white/90">Nocturne ops</div>
+          <div className="flex flex-wrap justify-center gap-x-8 gap-y-2">
+            <a href="#" className="font-label text-[10px] tracking-widest uppercase text-zinc-500 hover:text-red-300 transition-colors">
+              Rules of engagement
+            </a>
+            <a href="#" className="font-label text-[10px] tracking-widest uppercase text-zinc-500 hover:text-red-300 transition-colors">
+              Signal privacy
+            </a>
+            <a href="#" className="font-label text-[10px] tracking-widest uppercase text-zinc-500 hover:text-red-300 transition-colors">
+              Disclosure
+            </a>
+          </div>
+          <p className="font-label text-[10px] tracking-widest uppercase text-zinc-600">© 2026 Nocturne — classified UI demo</p>
+        </footer>
+      )}
     </div>
   );
 }
