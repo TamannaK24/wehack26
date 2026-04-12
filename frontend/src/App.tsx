@@ -17,14 +17,6 @@ import LandingPage from './pages/LandingPage';
 import CuratorSettings from './pages/CuratorSettings';
 import AuthPage from './pages/AuthPage';
 import OnboardingPage from './pages/OnboardingPage';
-import {
-  clearBrowserSession,
-  clearUser,
-  hasBrowserSession,
-  loadUser,
-  setBrowserSession,
-  type StoredUser,
-} from './lib/authStorage';
 import type { Screen, TransitionType } from './types/navigation';
 
 type Gate = 'auth' | 'onboarding' | 'app';
@@ -33,14 +25,6 @@ type Gate = 'auth' | 'onboarding' | 'app';
  * Require an active session (set on login/sign-up). Otherwise we always show auth first —
  * without this, a stored user with incomplete onboarding skipped straight to the intake form.
  */
-function initialGate(): Gate {
-  if (!hasBrowserSession()) return 'auth';
-  const u = loadUser();
-  if (!u) return 'auth';
-  if (!u.onboardingComplete) return 'onboarding';
-  return 'app';
-}
-
 const TRANSITIONS = {
   push: {
     initial: { x: '100%', opacity: 0 },
@@ -181,13 +165,11 @@ const TopBar = ({
 
 export default function App() {
   const [hasEntered, setHasEntered] = useState(false);
-  const [gate, setGate] = useState<Gate>(() => initialGate());
+  const [gate, setGate] = useState<Gate>('auth');
   const [currentScreen, setCurrentScreen] = useState<Screen>('GALLERY');
   const [transition, setTransition] = useState<TransitionType>('push');
-  const handleAuthenticated = useCallback((user: StoredUser) => {
-    setBrowserSession();
-    if (user.onboardingComplete) setGate('app');
-    else setGate('onboarding');
+  const handleAuthenticated = useCallback(() => {
+    setGate('onboarding');
   }, []);
 
   const handleNavigate = (screen: Screen, type: TransitionType) => {
@@ -196,8 +178,6 @@ export default function App() {
   };
 
   const handleLogout = useCallback(() => {
-    clearUser();
-    clearBrowserSession();
     setCurrentScreen('GALLERY');
     setGate('auth');
   }, []);

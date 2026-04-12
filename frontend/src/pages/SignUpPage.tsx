@@ -1,11 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import { Shield, ArrowRight } from 'lucide-react';
-import { loadUser, saveUser } from '../lib/authStorage';
-import type { StoredUser } from '../lib/authStorage';
-
 type SignUpPageProps = {
   onGoToLogin: () => void;
-  onSuccess: (user: StoredUser) => void;
+  onSuccess: () => void;
 };
 
 export default function SignUpPage({ onGoToLogin, onSuccess }: SignUpPageProps) {
@@ -29,14 +26,7 @@ export default function SignUpPage({ onGoToLogin, onSuccess }: SignUpPageProps) 
       setError('Passwords do not match.');
       return;
     }
-    const existing = loadUser();
-    if (existing && existing.email.toLowerCase() === email.trim().toLowerCase()) {
-      setError('That email already has an account. Sign in instead.');
-      return;
-    }
-    const user: StoredUser = { email: email.trim(), onboardingComplete: false };
-    saveUser(user);
-    onSuccess(user);
+    onSuccess();
   };
 
   return (
