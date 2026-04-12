@@ -16,6 +16,7 @@ import CuratorsGallery from './pages/CuratorsGallery';
 import DeepLedger from './pages/DeepLedger';
 import RestorationProjects from './pages/RestorationProjects';
 import InquiryEstate from './pages/InquiryEstate';
+import LandingPage from './pages/LandingPage';
 import type { Screen, TransitionType } from './types/navigation';
 
 // --- Types & Constants ---
@@ -118,6 +119,7 @@ const TopBar = ({ sidebarOpen, onToggleSidebar }: { sidebarOpen: boolean, onTogg
 // --- Main App ---
 
 export default function App() {
+  const [hasEntered, setHasEntered] = useState(false);
   const [currentScreen, setCurrentScreen] = useState<Screen>('GALLERY');
   const [transition, setTransition] = useState<TransitionType>('push');
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -138,6 +140,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-background selection:bg-primary/30 selection:text-on-primary">
+      {!hasEntered && <LandingPage onEnter={() => setHasEntered(true)} />}
       <div className="film-grain" />
       
       <TopBar sidebarOpen={sidebarOpen} onToggleSidebar={() => setSidebarOpen((prev) => !prev)} />
