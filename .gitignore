@@ -1,1 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
 .env
+venv/
+*.egg-info/
+
+# Node
+node_modules/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# General
+.DS_Store
+*.log
+dist/
+build/
