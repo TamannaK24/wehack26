@@ -1,0 +1,189 @@
+{
+  "referenceDate": "2026-04-12",
+  "sourceFile": "C:\\Projects\\wehack26\\backend\\final.json",
+  "masterScore": 63,
+  "riskTier": "Elevated Risk",
+  "weights": {
+    "roofWeatherScore": 0.25,
+    "waterPlumbingScore": 0.22,
+    "fireElectricalScore": 0.18,
+    "securityScore": 0.15,
+    "structuralScore": 0.12,
+    "claimsHistoryScore": 0.08
+  },
+  "subscores": {
+    "roofWeatherScore": 100,
+    "waterPlumbingScore": 94,
+    "fireElectricalScore": 0,
+    "securityScore": 24,
+    "structuralScore": 62,
+    "claimsHistoryScore": 81
+  },
+  "details": {
+    "roofWeatherScore": [
+      {
+        "reason": "document risk factor roof_hail_damage",
+        "value": 26.4
+      },
+      {
+        "reason": "document risk factor gutters_hail_damage",
+        "value": 13.2
+      },
+      {
+        "reason": "document risk factor roof_moderate_wear",
+        "value": 13.2
+      },
+      {
+        "reason": "document risk factor roof_cracked_shingles",
+        "value": 16.8
+      },
+      {
+        "reason": "photo roof risk roof_damage",
+        "value": 20
+      },
+      {
+        "reason": "roof remaining life 6-10 years",
+        "value": 10
+      },
+      {
+        "reason": "address storm risk score",
+        "value": 2.62
+      }
+    ],
+    "waterPlumbingScore": [
+      {
+        "reason": "document risk factor slab_water_leak",
+        "value": 14.0
+      },
+      {
+        "reason": "document risk factor kitchen_supply_line_failure",
+        "value": 28.0
+      },
+      {
+        "reason": "document risk factor aging_water_heater",
+        "value": 14.0
+      },
+      {
+        "reason": "document risk factor kitchen_sink_prior_leak_signs",
+        "value": 14.0
+      },
+      {
+        "reason": "photo water risk water_intrusion",
+        "value": 18
+      },
+      {
+        "reason": "water/plumbing summary count bonus",
+        "value": 10
+      },
+      {
+        "reason": "water leak detectors deduction",
+        "value": -12
+      },
+      {
+        "reason": "outstanding reserve present",
+        "value": 8
+      }
+    ],
+    "fireElectricalScore": [
+      {
+        "reason": "document risk factor smoke_damage_kitchen_fire",
+        "value": 11.2
+      },
+      {
+        "reason": "smoke detectors missing",
+        "value": 15
+      },
+      {
+        "reason": "document risk factor attic_outdated_wiring",
+        "value": 14.0
+      },
+      {
+        "reason": "protective electrical feature electrical_panel_updated",
+        "value": -10
+      },
+      {
+        "reason": "protective electrical feature electrical_panel_organized",
+        "value": -10
+      },
+      {
+        "reason": "working smoke detectors deduction",
+        "value": -14
+      },
+      {
+        "reason": "monitored fire alarm systems deduction",
+        "value": -6.2
+      }
+    ],
+    "securityScore": [
+      {
+        "reason": "prior theft/burglary factor rear_patio_door_theft_burglary",
+        "value": 20
+      },
+      {
+        "reason": "security factor no_alarm_no_cameras",
+        "value": 12
+      },
+      {
+        "reason": "security factor front_lock_weak",
+        "value": 12
+      },
+      {
+        "reason": "exterior security cameras deduction",
+        "value": -20
+      }
+    ],
+    "structuralScore": [
+      {
+        "reason": "document risk factor possible_slab_moisture",
+        "value": 18.0
+      },
+      {
+        "reason": "possible slab moisture",
+        "value": 12
+      },
+      {
+        "reason": "photo structural risk wall_cracks",
+        "value": 16.5
+      },
+      {
+        "reason": "address year built before 1980",
+        "value": 15
+      }
+    ],
+    "claimsHistoryScore": [
+      {
+        "reason": "closed-partial claim TX-HO-2025-03152",
+        "value": 10
+      },
+      {
+        "reason": "closed-paid claim TX-HO-2026-01477",
+        "value": 8
+      },
+      {
+        "reason": "closed-paid claim TX-HO-2024-11837",
+        "value": 8
+      },
+      {
+        "reason": "open claim TX-HO-2025-19866",
+        "value": 15
+      },
+      {
+        "reason": "closed-paid claim TX-HO-2024-22104",
+        "value": 8
+      },
+      {
+        "reason": "claims within 12 months of 2026-04-12",
+        "value": 10
+      },
+      {
+        "reason": "repeated claims summary count",
+        "value": 12
+      },
+      {
+        "reason": "net payments issued > 30000",
+        "value": 10
+      }
+    ]
+  },
+  "generatedAt": "2026-04-12T11:10:41.308170+00:00"
+}
