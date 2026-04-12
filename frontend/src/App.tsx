@@ -13,6 +13,7 @@ import CuratorsGallery from './pages/GalleryPage';
 import DeepLedger from './pages/DeepLedger';
 import RestorationProjects from './pages/RestorationProjects';
 import InquiryEstate from './pages/InquiryEstate';
+import LandingPage from './pages/LandingPage';
 import CuratorSettings from './pages/CuratorSettings';
 import AuthPage from './pages/AuthPage';
 import OnboardingPage from './pages/OnboardingPage';
@@ -140,7 +141,7 @@ const TopBar = ({
           </button>
           <div className="leading-tight">
             <p className="font-label text-[9px] uppercase tracking-widest text-red-400/90">Field lead</p>
-            <p className="font-headline text-xs tracking-wide text-white">E. Thorne</p>
+            <p className="font-headline text-xs tracking-wide text-white">React Radar</p>
           </div>
         </div>
         <div className="flex items-center gap-3 text-red-400/90">
@@ -154,6 +155,7 @@ const TopBar = ({
 };
 
 export default function App() {
+  const [hasEntered, setHasEntered] = useState(false);
   const [gate, setGate] = useState<Gate>(() => initialGate());
   const [currentScreen, setCurrentScreen] = useState<Screen>('GALLERY');
   const [transition, setTransition] = useState<TransitionType>('push');
@@ -204,6 +206,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-background selection:bg-red-600/35 selection:text-white">
+      {!hasEntered && <LandingPage onEnter={() => setHasEntered(true)} />}
       <div className="film-grain" />
 
       {showAppChrome && <TopBar currentScreen={currentScreen} onNavigate={handleNavigate} />}

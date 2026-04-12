@@ -1,5 +1,6 @@
 import { DoorOpen, DoorClosed, AlertCircle } from 'lucide-react';
 import type { NavigateFn } from '../types/navigation';
+import InteractiveRiskSimulator from '../components/InteractiveRiskSimulator';
 
 const InquiryEstate = ({ onNavigate }: { onNavigate: NavigateFn }) => (
   <div className="max-w-7xl mx-auto">
@@ -61,6 +62,15 @@ const InquiryEstate = ({ onNavigate }: { onNavigate: NavigateFn }) => (
         </div>
       ))}
     </div>
+
+    {/* Interactive Risk Simulator */}
+    <section className="mt-20 mb-8">
+      <div className="mb-6">
+        <h2 className="text-3xl font-headline italic text-primary mb-2">Risk Appraisal Engine</h2>
+        <p className="font-label text-xs uppercase tracking-widest text-zinc-500">Adjust property parameters to model your curatorial risk exposure</p>
+      </div>
+      <InteractiveRiskSimulator />
+    </section>
 
     <section className="mt-32 grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
       <div className="md:col-span-5 order-2 md:order-1">

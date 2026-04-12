@@ -65,7 +65,7 @@ const DeepLedger = ({ onNavigate }: { onNavigate: NavigateFn }) => (
         <div className="pt-8 border-t border-outline-variant/20">
           <div className="flex items-center justify-between">
             <p className="font-headline italic text-primary">Verified Status</p>
-            <p className="font-label text-[10px] text-primary tracking-tighter italic">Signature: G. Thorne</p>
+            <p className="font-label text-[10px] text-primary tracking-tighter italic">Signature: React Radar</p>
           </div>
         </div>
       </div>
