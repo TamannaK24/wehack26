@@ -16,8 +16,10 @@ const InquiryEstate = ({ onNavigate }: { onNavigate: NavigateFn }) => (
     </nav>
 
     <section className="mb-16 text-center">
-      <h1 className="text-5xl md:text-7xl font-headline italic tracking-tighter text-primary mb-4">Inquiry into the Estate</h1>
-      <p className="font-label text-sm uppercase tracking-[0.3em] text-zinc-500">Step I: Architectural Provenance</p>
+      <h1 className="text-5xl md:text-7xl font-headline uppercase tracking-tighter text-white mb-4">
+        Asset <span className="text-red-400">sweep</span>
+      </h1>
+      <p className="font-label text-sm uppercase tracking-[0.3em] text-zinc-500">Phase I · Target profile</p>
     </section>
 
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

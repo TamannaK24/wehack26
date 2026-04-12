@@ -3,9 +3,11 @@ import type { NavigateFn } from '../types/navigation';
 
 const DeepLedger = ({ onNavigate }: { onNavigate: NavigateFn }) => (
   <div className="max-w-7xl mx-auto">
-    <section className="mb-20 relative border-l-2 border-primary/30 pl-8">
-      <p className="font-label text-primary uppercase tracking-[0.3em] text-xs mb-4">Volume IV: Security Ledger</p>
-      <h1 className="text-6xl md:text-8xl font-headline italic text-on-background tracking-tighter mb-6">The Archive: <span className="text-primary/80">Deep Ledger</span></h1>
+    <section className="mb-20 relative border-l-2 border-red-800/40 pl-8">
+      <p className="font-label text-red-400/90 uppercase tracking-[0.3em] text-xs mb-4">Signal log · Encrypted</p>
+      <h1 className="text-6xl md:text-8xl font-headline uppercase text-on-background tracking-tighter mb-6">
+        Deep <span className="text-red-400">ledger</span>
+      </h1>
       <p className="text-xl md:text-2xl text-zinc-400 max-w-2xl leading-relaxed italic">
         A comprehensive cartography of institutional vulnerability. Every entry is a testament to the preservation of the intangible.
       </p>
@@ -28,7 +30,7 @@ const DeepLedger = ({ onNavigate }: { onNavigate: NavigateFn }) => (
           </div>
           <div className="h-48 w-full border-b border-primary/20 relative">
             <svg className="w-full h-full opacity-60" viewBox="0 0 400 100" preserveAspectRatio="none">
-              <path d="M0,80 Q50,75 100,85 T200,60 T300,70 T400,20" fill="none" stroke="#e9c176" strokeDasharray="5,3" strokeWidth="2" />
+              <path d="M0,80 Q50,75 100,85 T200,60 T300,70 T400,20" fill="none" stroke="#f87171" strokeDasharray="5,3" strokeWidth="2" />
               <circle cx="400" cy="20" r="4" fill="#960711" />
             </svg>
             <div className="absolute top-0 right-0 text-[10px] font-label text-primary/40 uppercase rotate-90 translate-x-4">Ink Trace Index</div>
