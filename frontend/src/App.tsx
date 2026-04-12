@@ -66,9 +66,9 @@ const APP_NAV: {
   transition: TransitionType;
 }[] = [
   { id: 'GALLERY', label: 'Floor plan', icon: DoorOpen, transition: 'push_back' },
-  { id: 'RESTORATION', label: 'Vault ops', icon: Lock, transition: 'push' },
+  { id: 'RESTORATION', label: 'Risk Score', icon: Lock, transition: 'push' },
   { id: 'ARCHIVE', label: 'Signal log', icon: ScrollText, transition: 'push' },
-  { id: 'INQUIRY', label: 'Asset sweep', icon: Compass, transition: 'push' },
+  { id: 'INQUIRY', label: 'Simulator', icon: Compass, transition: 'push' },
 ];
 
 const TopBar = ({
@@ -86,7 +86,7 @@ const TopBar = ({
     <div className="mx-auto flex max-w-[1920px] flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6 sm:py-2 lg:px-8">
       <div className="flex shrink-0 items-center justify-between gap-4 sm:min-w-0">
         <span className="font-headline text-xl uppercase tracking-[0.08em] text-white sm:text-2xl">
-          React <span className="text-red-400">Radar</span>
+          Risk <span className="text-red-400">Radar</span>
         </span>
         <div className="flex items-center gap-2 lg:hidden">
           <button
@@ -141,7 +141,7 @@ const TopBar = ({
           </button>
           <div className="leading-tight">
             <p className="font-label text-[9px] uppercase tracking-widest text-red-400/90">Field lead</p>
-            <p className="font-headline text-xs tracking-wide text-white">React Radar</p>
+            <p className="font-headline text-xs tracking-wide text-white">Risk Radar</p>
           </div>
         </div>
         <div className="flex items-center gap-3 text-red-400/90">
@@ -258,7 +258,7 @@ export default function App() {
         <footer
           className="w-full px-4 py-12 sm:px-8 flex flex-col items-center justify-center space-y-4 border-t border-red-950/25 bg-[#030203]"
         >
-          <div className="font-headline text-sm uppercase tracking-[0.15em] text-white/90">React Radar</div>
+          <div className="font-headline text-sm uppercase tracking-[0.15em] text-white/90">Risk Radar</div>
           <div className="flex flex-wrap justify-center gap-x-8 gap-y-2">
             <a href="#" className="font-label text-[10px] tracking-widest uppercase text-zinc-500 hover:text-red-300 transition-colors">
               Rules of engagement
@@ -270,7 +270,7 @@ export default function App() {
               Disclosure
             </a>
           </div>
-          <p className="font-label text-[10px] tracking-widest uppercase text-zinc-600">© 2026 React Radar — UI demo</p>
+          <p className="font-label text-[10px] tracking-widest uppercase text-zinc-600">© 2026 Risk Radar — UI demo</p>
         </footer>
       )}
     </div>

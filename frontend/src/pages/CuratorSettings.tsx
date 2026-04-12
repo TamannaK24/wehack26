@@ -31,7 +31,7 @@ const CuratorSettings = ({
           <UserCircle className="text-primary" size={56} />
         </div>
         <div>
-          <p className="font-headline text-2xl text-on-surface">React Radar</p>
+          <p className="font-headline text-2xl text-on-surface">Risk Radar</p>
           <p className="font-label text-[10px] uppercase tracking-widest text-zinc-500 mt-1">Operator</p>
         </div>
         <button className="w-full border border-outline-variant/30 text-primary py-3 font-label uppercase tracking-[0.2em] text-[10px] hover:bg-primary hover:text-on-primary transition-all">
@@ -43,7 +43,7 @@ const CuratorSettings = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <label className="space-y-2">
             <span className="font-label text-[10px] uppercase tracking-widest text-primary">Full Name</span>
-            <input defaultValue="React Radar" className="w-full bg-background border border-outline-variant/25 px-4 py-3 text-on-surface" />
+            <input defaultValue="Risk Radar" className="w-full bg-background border border-outline-variant/25 px-4 py-3 text-on-surface" />
           </label>
           <label className="space-y-2">
             <span className="font-label text-[10px] uppercase tracking-widest text-primary">Public Alias</span>
