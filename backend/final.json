@@ -26,33 +26,22 @@
     "crime_insurance_score": 20.8,
     "storm_risk_score": 33.0
   },
-  "addressSavedAt": "2026-04-12T15:07:46.248619+00:00",
+  "addressSavedAt": "2026-04-12T15:38:16.143563+00:00",
   "document_risk_extraction": {
     "property": {
       "address": "4127 Meadow Park Dr",
       "city": "Dallas",
       "state": "TX",
       "zip": "75287",
-      "property_type": "single-family home",
+      "property_type": null,
       "occupancy_type": null,
-      "year_built": 1998,
+      "year_built": null,
       "number_of_stories": null,
       "square_footage": null
     },
     "documents": [
       {
-        "document_type": "claim",
-        "source_name": "Lone Star Mutual Insurance",
-        "carrier": "Lone Star Mutual Insurance",
-        "claim_number": "TX-HO-2025-03152",
-        "policy_number": "HOM-TX-88427193",
-        "claim_status": "Closed - Partial Payment",
-        "inspection_date": null,
-        "date_reported": "2025-02-11",
-        "date_of_loss": "2025-02-10"
-      },
-      {
-        "document_type": "claim",
+        "document_type": "Homeowners Property Claim File Summary",
         "source_name": "Lone Star Mutual Insurance",
         "carrier": "Lone Star Mutual Insurance",
         "claim_number": "TX-HO-2026-01477",
@@ -63,18 +52,7 @@
         "date_of_loss": "2026-01-14"
       },
       {
-        "document_type": "claim",
-        "source_name": "Lone Star Mutual Insurance",
-        "carrier": "Lone Star Mutual Insurance",
-        "claim_number": "TX-HO-2024-11837",
-        "policy_number": "HOM-TX-88427193",
-        "claim_status": "Closed - Paid",
-        "inspection_date": null,
-        "date_reported": "2024-04-19",
-        "date_of_loss": "2024-04-16"
-      },
-      {
-        "document_type": "claim",
+        "document_type": "Homeowners Property Claim File Summary",
         "source_name": "Lone Star Mutual Insurance",
         "carrier": "Lone Star Mutual Insurance",
         "claim_number": "TX-HO-2025-19866",
@@ -85,18 +63,7 @@
         "date_of_loss": "2025-08-18"
       },
       {
-        "document_type": "claim",
-        "source_name": "Lone Star Mutual Insurance",
-        "carrier": "Lone Star Mutual Insurance",
-        "claim_number": "TX-HO-2024-22104",
-        "policy_number": "HOM-TX-88427193",
-        "claim_status": "Closed - Paid",
-        "inspection_date": null,
-        "date_reported": "2024-09-08",
-        "date_of_loss": "2024-09-07"
-      },
-      {
-        "document_type": "home_inspection_report",
+        "document_type": "Home Inspection Report",
         "source_name": null,
         "carrier": null,
         "claim_number": null,
@@ -107,29 +74,7 @@
         "date_of_loss": null
       },
       {
-        "document_type": "home_inspection_report",
-        "source_name": null,
-        "carrier": null,
-        "claim_number": null,
-        "policy_number": null,
-        "claim_status": null,
-        "inspection_date": null,
-        "date_reported": null,
-        "date_of_loss": null
-      },
-      {
-        "document_type": "home_inspection_report",
-        "source_name": null,
-        "carrier": null,
-        "claim_number": null,
-        "policy_number": null,
-        "claim_status": null,
-        "inspection_date": null,
-        "date_reported": null,
-        "date_of_loss": null
-      },
-      {
-        "document_type": "home_inspection_report",
+        "document_type": "Home Inspection Report",
         "source_name": null,
         "carrier": null,
         "claim_number": null,
@@ -140,442 +85,299 @@
         "date_of_loss": null
       }
     ],
-    "property_features": [
-      {
-        "feature_key": "year_built",
-        "value": 1998,
-        "unit": null,
-        "evidence": "Built in 1998"
-      },
-      {
-        "feature_key": "roof_remaining_life",
-        "value": "5-7",
-        "unit": "years",
-        "evidence": "Roof remaining life estimated 5-7 years"
-      }
-    ],
+    "property_features": [],
     "risk_factors": [
       {
-        "factor_key": "rear_patio_door_theft_burglary",
-        "category": "prior_loss_history",
-        "subcategory": "theft_burglary",
-        "location": "rear patio door",
-        "severity": "unknown",
+        "factor_key": "kitchen_fire_smoke_damage",
+        "category": "fire",
+        "subcategory": null,
+        "location": "kitchen",
+        "severity": "moderate",
         "count": 1,
-        "year": null,
-        "date": "2025-02-10",
-        "source_type": "claim",
+        "year": 2026,
+        "date": "2026-01-14",
+        "source_type": "Homeowners Property Claim File Summary",
         "source_name": "Lone Star Mutual Insurance",
-        "evidence": "Forced entry through rear patio door, damage to patio door lockset and frame, claim date 2025-02-10"
+        "evidence": "Kitchen stovetop grease flare-up caused fire and smoke damage with smoke residue on range hood, cabinets, ceiling, and window treatments."
       },
       {
-        "factor_key": "smoke_damage_kitchen_fire",
+        "factor_key": "kitchen_fire_smoke_damage",
+        "category": "fire",
+        "subcategory": null,
+        "location": "kitchen",
+        "severity": "moderate",
+        "count": 1,
+        "year": 2026,
+        "date": "2026-01-14",
+        "source_type": "Homeowners Property Claim File Summary",
+        "source_name": "Lone Star Mutual Insurance",
+        "evidence": "Smoke residue affected range hood, upper cabinets, ceiling surfaces, and nearby window treatments at kitchen due to stovetop grease flare-up."
+      },
+      {
+        "factor_key": "kitchen_fire_smoke_damage",
         "category": "fire",
         "subcategory": "smoke",
-        "location": "kitchen area",
-        "severity": "low",
-        "count": 1,
-        "year": null,
-        "date": "2026-01-14",
-        "source_type": "claim",
-        "source_name": "Lone Star Mutual Insurance",
-        "evidence": "Stovetop grease flare-up caused smoke residue on range hood, cabinets, ceiling, claim date 2026-01-14"
-      },
-      {
-        "factor_key": "roof_hail_damage",
-        "category": "hail",
-        "subcategory": "roof",
-        "location": "roof",
-        "severity": "moderate",
-        "count": 2,
-        "year": 2024,
-        "date": "2024-04-16",
-        "source_type": "claim",
-        "source_name": "Lone Star Mutual Insurance",
-        "evidence": "Hail impact to composition shingle roof with granule loss and impact bruising, loss date 2024-04-16"
-      },
-      {
-        "factor_key": "gutters_hail_damage",
-        "category": "hail",
-        "subcategory": "gutters",
-        "location": "gutters and downspouts",
-        "severity": "moderate",
-        "count": 1,
-        "year": 2024,
-        "date": "2024-04-16",
-        "source_type": "claim",
-        "source_name": "Lone Star Mutual Insurance",
-        "evidence": "Hail denting soft metal gutters and downspouts, loss date 2024-04-16"
-      },
-      {
-        "factor_key": "slab_water_leak",
-        "category": "water_damage",
-        "subcategory": "slab_leak",
-        "location": "below slab on first floor",
+        "location": "kitchen",
         "severity": "unknown",
         "count": 1,
+        "year": 2026,
+        "date": null,
+        "source_type": "Homeowners Property Claim File Summary",
+        "source_name": "Lone Star Mutual Insurance",
+        "evidence": "Smoke wipe-down and odor treatment completed for kitchen area after fire incident."
+      },
+      {
+        "factor_key": "prior_loss_history",
+        "category": "prior_loss_history",
+        "subcategory": null,
+        "location": null,
+        "severity": "unknown",
+        "count": 2,
         "year": null,
+        "date": null,
+        "source_type": "Homeowners Property Claim File Summary",
+        "source_name": "Lone Star Mutual Insurance",
+        "evidence": "Prior-loss history entry tied to insured location: 4127 Meadow Park Dr, Dallas, TX 75287."
+      },
+      {
+        "factor_key": "kitchen_plumbing_leak",
+        "category": "plumbing",
+        "subcategory": null,
+        "location": "kitchen",
+        "severity": "moderate",
+        "count": 1,
+        "year": 2025,
         "date": "2025-08-18",
-        "source_type": "claim",
+        "source_type": "Homeowners Property Claim File Summary",
         "source_name": "Lone Star Mutual Insurance",
-        "evidence": "Probable hot water line leak below slab causing moisture migration, date of loss 2025-08-18"
+        "evidence": "Probable hot water line leak below slab causing damage to flooring and lower wall finishes near kitchen."
       },
       {
-        "factor_key": "kitchen_supply_line_failure",
-        "category": "plumbing",
-        "subcategory": "supply_line_failure",
-        "location": "under kitchen sink",
-        "severity": "unknown",
-        "count": 2,
-        "year": null,
-        "date": "2024-09-07",
-        "source_type": "claim",
-        "source_name": "Lone Star Mutual Insurance",
-        "evidence": "Sudden supply line failure under kitchen sink causing water damage, loss date 2024-09-07"
-      },
-      {
-        "factor_key": "roof_moderate_wear",
-        "category": "roof",
-        "subcategory": "wear",
-        "location": "roof",
-        "severity": "moderate",
-        "count": 1,
-        "year": null,
-        "date": null,
-        "source_type": "home_inspection_report",
-        "source_name": null,
-        "evidence": "Roof shows moderate wear, estimated remaining life 5-7 years"
-      },
-      {
-        "factor_key": "aging_water_heater",
-        "category": "plumbing",
-        "subcategory": "water_heater",
-        "location": "water heater",
-        "severity": "unknown",
-        "count": 1,
-        "year": null,
-        "date": null,
-        "source_type": "home_inspection_report",
-        "source_name": null,
-        "evidence": "Water heater aging reported"
-      },
-      {
-        "factor_key": "smoke_detectors_missing",
-        "category": "safety_devices",
-        "subcategory": "smoke_detectors",
-        "location": "2 rooms",
-        "severity": "unknown",
-        "count": 1,
-        "year": null,
-        "date": null,
-        "source_type": "home_inspection_report",
-        "source_name": null,
-        "evidence": "Smoke detectors missing in 2 rooms"
-      },
-      {
-        "factor_key": "attic_outdated_wiring",
-        "category": "electrical",
-        "subcategory": "outdated_wiring",
-        "location": "attic",
-        "severity": "unknown",
-        "count": 1,
-        "year": null,
-        "date": null,
-        "source_type": "home_inspection_report",
-        "source_name": null,
-        "evidence": "Outdated wiring in attic"
-      },
-      {
-        "factor_key": "roof_cracked_shingles",
-        "category": "roof",
-        "subcategory": "hail_damage",
-        "location": "roof",
-        "severity": "high",
-        "count": 1,
-        "year": null,
-        "date": null,
-        "source_type": "home_inspection_report",
-        "source_name": null,
-        "evidence": "Visible hail impact, shingles cracked"
-      },
-      {
-        "factor_key": "siding_minor_dents",
-        "category": "exterior",
-        "subcategory": "siding",
-        "location": "exterior",
-        "severity": "low",
-        "count": 1,
-        "year": null,
-        "date": null,
-        "source_type": "home_inspection_report",
-        "source_name": null,
-        "evidence": "Minor siding dents"
-      },
-      {
-        "factor_key": "kitchen_sink_prior_leak_signs",
-        "category": "water_damage",
-        "subcategory": "prior_leak",
-        "location": "under kitchen sink",
-        "severity": "unknown",
-        "count": 1,
-        "year": null,
-        "date": null,
-        "source_type": "home_inspection_report",
-        "source_name": null,
-        "evidence": "Signs of prior leak under kitchen sink"
-      },
-      {
-        "factor_key": "possible_slab_moisture",
+        "factor_key": "slab_foundation_moisture",
         "category": "foundation",
-        "subcategory": "moisture",
+        "subcategory": null,
         "location": "slab",
         "severity": "unknown",
         "count": 1,
         "year": null,
         "date": null,
-        "source_type": "home_inspection_report",
+        "source_type": "Home Inspection Report",
         "source_name": null,
-        "evidence": "Possible slab moisture detected"
+        "evidence": "Possible slab moisture detected."
       },
       {
-        "factor_key": "no_alarm_no_cameras",
-        "category": "security",
-        "subcategory": "alarm_cameras",
-        "location": "property",
+        "factor_key": "water_damage_adjacent_flooring",
+        "category": "water_damage",
+        "subcategory": null,
+        "location": "adjacent living room flooring and lower baseboards",
+        "severity": "moderate",
+        "count": 1,
+        "year": 2025,
+        "date": null,
+        "source_type": "Homeowners Property Claim File Summary",
+        "source_name": "Lone Star Mutual Insurance",
+        "evidence": "Moisture migration into adjacent living room flooring and lower baseboards confirmed after slab leak."
+      },
+      {
+        "factor_key": "roof_cracked_shingles",
+        "category": "roof",
+        "subcategory": null,
+        "location": "roof",
+        "severity": "high",
+        "count": 1,
+        "year": null,
+        "date": null,
+        "source_type": "Home Inspection Report",
+        "source_name": null,
+        "evidence": "Visible hail impact and cracked shingles noted on roof."
+      },
+      {
+        "factor_key": "weather_hail_damage",
+        "category": "weather",
+        "subcategory": "hail",
+        "location": "roof",
+        "severity": "high",
+        "count": 1,
+        "year": null,
+        "date": null,
+        "source_type": "Home Inspection Report",
+        "source_name": null,
+        "evidence": "Visible hail impact noted on roof."
+      },
+      {
+        "factor_key": "exterior_siding_dents",
+        "category": "structural",
+        "subcategory": "exterior",
+        "location": "siding",
+        "severity": "low",
+        "count": 1,
+        "year": null,
+        "date": null,
+        "source_type": "Home Inspection Report",
+        "source_name": null,
+        "evidence": "Minor siding dents observed on exterior."
+      },
+      {
+        "factor_key": "high_weather_risk",
+        "category": "weather",
+        "subcategory": null,
+        "location": null,
+        "severity": "high",
+        "count": 1,
+        "year": null,
+        "date": null,
+        "source_type": "Home Inspection Report",
+        "source_name": null,
+        "evidence": "Roof replacement recommended within 6 months due to weather-related damage."
+      },
+      {
+        "factor_key": "prior_leak_under_kitchen_sink",
+        "category": "plumbing",
+        "subcategory": null,
+        "location": "kitchen sink",
         "severity": "unknown",
         "count": 1,
         "year": null,
         "date": null,
-        "source_type": "home_inspection_report",
+        "source_type": "Home Inspection Report",
         "source_name": null,
-        "evidence": "No alarm system and no cameras installed"
-      },
-      {
-        "factor_key": "front_lock_weak",
-        "category": "security",
-        "subcategory": "lock_strength",
-        "location": "front door",
-        "severity": "unknown",
-        "count": 1,
-        "year": null,
-        "date": null,
-        "source_type": "home_inspection_report",
-        "source_name": null,
-        "evidence": "Front door lock weak"
+        "evidence": "Signs of prior leak under kitchen sink."
       }
     ],
     "protective_features": [
       {
-        "feature_key": "electrical_panel_updated",
-        "category": "electrical",
-        "value": true,
-        "source_type": "home_inspection_report",
-        "source_name": null,
-        "evidence": "Electrical panel updated"
+        "feature_key": "fire_extinguisher_recommendation",
+        "category": "safety_devices",
+        "value": "install_or_confirm_functioning",
+        "source_type": "Homeowners Property Claim File Summary",
+        "source_name": "Lone Star Mutual Insurance",
+        "evidence": "Install or confirm functioning fire extinguisher in kitchen area."
+      },
+      {
+        "feature_key": "smoke_detectors_verification",
+        "category": "safety_devices",
+        "value": "verify_functioning",
+        "source_type": "Homeowners Property Claim File Summary",
+        "source_name": "Lone Star Mutual Insurance",
+        "evidence": "Verify smoke detectors."
       }
     ],
     "claims_financials": [
       {
         "type": "replacement_cost_value",
-        "amount": 12140,
-        "currency": "USD",
-        "source_name": "Lone Star Mutual Insurance",
-        "evidence": "Replacement Cost Value (RCV) $12,140.00 for theft/burglary claim"
-      },
-      {
-        "type": "depreciation",
-        "amount": 2140,
-        "currency": "USD",
-        "source_name": "Lone Star Mutual Insurance",
-        "evidence": "Depreciation $2,140.00 for theft/burglary claim"
-      },
-      {
-        "type": "deductible_applied",
-        "amount": 1000,
-        "currency": "USD",
-        "source_name": "Lone Star Mutual Insurance",
-        "evidence": "Policy Deductible Applied $1,000.00 for theft/burglary claim"
-      },
-      {
-        "type": "net_payment_issued",
-        "amount": 7200,
-        "currency": "USD",
-        "source_name": "Lone Star Mutual Insurance",
-        "evidence": "Net Payment Issued $7,200.00 for theft/burglary claim"
-      },
-      {
-        "type": "outstanding_reserve",
-        "amount": 1800,
-        "currency": "USD",
-        "source_name": "Lone Star Mutual Insurance",
-        "evidence": "Outstanding Reserve $1,800.00 for theft/burglary claim"
-      },
-      {
-        "type": "replacement_cost_value",
         "amount": 6840,
         "currency": "USD",
         "source_name": "Lone Star Mutual Insurance",
-        "evidence": "Replacement Cost Value (RCV) $6,840.00 for fire/smoke claim"
+        "evidence": "Replacement Cost Value (RCV) $6,840.00 for 2026 claim."
       },
       {
         "type": "depreciation",
         "amount": 540,
         "currency": "USD",
         "source_name": "Lone Star Mutual Insurance",
-        "evidence": "Depreciation $540.00 for fire/smoke claim"
+        "evidence": "Depreciation $540.00 for 2026 claim."
       },
       {
-        "type": "deductible_applied",
+        "type": "deductible",
         "amount": 1000,
         "currency": "USD",
         "source_name": "Lone Star Mutual Insurance",
-        "evidence": "Policy Deductible Applied $1,000.00 for fire/smoke claim"
+        "evidence": "Policy Deductible Applied $1,000.00 for 2026 claim."
       },
       {
         "type": "net_payment_issued",
         "amount": 5300,
         "currency": "USD",
         "source_name": "Lone Star Mutual Insurance",
-        "evidence": "Net Payment Issued $5,300.00 for fire/smoke claim"
+        "evidence": "Net Payment Issued $5,300.00 for 2026 claim."
       },
       {
-        "type": "replacement_cost_value",
-        "amount": 18420,
+        "type": "outstanding_reserve",
+        "amount": 0,
         "currency": "USD",
         "source_name": "Lone Star Mutual Insurance",
-        "evidence": "Replacement Cost Value (RCV) $18,420.00 for wind/hail claim"
-      },
-      {
-        "type": "depreciation",
-        "amount": 3625,
-        "currency": "USD",
-        "source_name": "Lone Star Mutual Insurance",
-        "evidence": "Depreciation $3,625.00 for wind/hail claim"
-      },
-      {
-        "type": "deductible_applied",
-        "amount": 2500,
-        "currency": "USD",
-        "source_name": "Lone Star Mutual Insurance",
-        "evidence": "Policy Deductible Applied $2,500.00 for wind/hail claim"
-      },
-      {
-        "type": "net_payment_issued",
-        "amount": 12295,
-        "currency": "USD",
-        "source_name": "Lone Star Mutual Insurance",
-        "evidence": "Net Payment Issued $12,295.00 for wind/hail claim"
+        "evidence": "Outstanding Reserve $0.00 for 2026 claim."
       },
       {
         "type": "replacement_cost_value",
         "amount": 24780,
         "currency": "USD",
         "source_name": "Lone Star Mutual Insurance",
-        "evidence": "Replacement Cost Value (RCV) $24,780.00 for slab leak/water escape claim"
+        "evidence": "Replacement Cost Value (RCV) $24,780.00 for 2025 claim."
       },
       {
         "type": "depreciation",
         "amount": 3200,
         "currency": "USD",
         "source_name": "Lone Star Mutual Insurance",
-        "evidence": "Depreciation $3,200.00 for slab leak/water escape claim"
+        "evidence": "Depreciation $3,200.00 for 2025 claim."
       },
       {
-        "type": "deductible_applied",
+        "type": "deductible",
         "amount": 2500,
         "currency": "USD",
         "source_name": "Lone Star Mutual Insurance",
-        "evidence": "Policy Deductible Applied $2,500.00 for slab leak/water escape claim"
+        "evidence": "Policy Deductible Applied $2,500.00 for 2025 claim."
       },
       {
         "type": "net_payment_issued",
         "amount": 5000,
         "currency": "USD",
         "source_name": "Lone Star Mutual Insurance",
-        "evidence": "Net Payment Issued $5,000.00 for slab leak/water escape claim"
+        "evidence": "Net Payment Issued $5,000.00 for 2025 claim."
       },
       {
         "type": "outstanding_reserve",
         "amount": 14080,
         "currency": "USD",
         "source_name": "Lone Star Mutual Insurance",
-        "evidence": "Outstanding Reserve $14,080.00 for slab leak/water escape claim"
-      },
-      {
-        "type": "replacement_cost_value",
-        "amount": 9630,
-        "currency": "USD",
-        "source_name": "Lone Star Mutual Insurance",
-        "evidence": "Replacement Cost Value (RCV) $9,630.00 for accidental discharge/water claim"
-      },
-      {
-        "type": "depreciation",
-        "amount": 980,
-        "currency": "USD",
-        "source_name": "Lone Star Mutual Insurance",
-        "evidence": "Depreciation $980.00 for accidental discharge/water claim"
-      },
-      {
-        "type": "deductible_applied",
-        "amount": 1500,
-        "currency": "USD",
-        "source_name": "Lone Star Mutual Insurance",
-        "evidence": "Policy Deductible Applied $1,500.00 for accidental discharge/water claim"
-      },
-      {
-        "type": "net_payment_issued",
-        "amount": 7150,
-        "currency": "USD",
-        "source_name": "Lone Star Mutual Insurance",
-        "evidence": "Net Payment Issued $7,150.00 for accidental discharge/water claim"
+        "evidence": "Outstanding Reserve $14,080.00 for 2025 claim."
       }
     ],
     "summary_counts": {
-      "structural": 0,
+      "structural": 1,
       "foundation": 1,
-      "roof": 3,
-      "water_damage": 3,
-      "plumbing": 3,
-      "electrical": 1,
-      "fire": 1,
+      "roof": 1,
+      "water_damage": 1,
+      "plumbing": 2,
+      "electrical": 0,
+      "fire": 3,
       "smoke": 1,
       "mold": 0,
       "HVAC": 0,
-      "weather": 1,
-      "hail": 2,
-      "wind": 1,
+      "weather": 2,
+      "hail": 1,
+      "wind": 0,
       "flood": 0,
       "drainage": 0,
       "sewer": 0,
       "tree_hazard": 0,
       "pest": 0,
-      "prior_loss_history": 5,
-      "repeated_claims": 1,
-      "safety_devices": 1,
+      "prior_loss_history": 2,
+      "repeated_claims": 0,
+      "safety_devices": 2,
       "deferred_maintenance": 0,
-      "aging_systems": 1
+      "aging_systems": 0
     },
-    "notes": []
+    "notes": [
+      {
+        "type": "general",
+        "text": "Synthetic test data for extraction and scoring workflows only. Not a real insured, carrier file, or payment decision."
+      }
+    ]
   },
   "document_risk_extraction_meta": {
     "model": "gpt-4.1-mini",
     "source_files": [
-      "claim_0f9cc3fe010a4d3faf0434a2f3e6c035_claim_03_burglary_contents_loss.pdf",
-      "claim_1674a4ca424b4a4ca1dd35d61a727cfc_claim_05_minor_fire_smoke_damage.pdf",
-      "claim_5963e8a88ed04cda9e1ca9fee8ffa6a0_claim_01_hail_roof_damage.pdf",
-      "claim_744b1e6bda9249c6bdd6b5ab783683d6_claim_04_foundation_plumbing_escape.pdf",
-      "claim_ae10b1fb3b994ec594aacea38bb646a0_claim_02_kitchen_water_leak.pdf",
-      "claim_c6b94d0a76224f1995e1c76145ca6e82_claim_02_kitchen_water_leak_1.pdf",
-      "inspection_1bbfed6a36e044259163f3d6f2082b45_inspection_01_general_condition.pdf",
-      "inspection_800662ddb81f42a3a885235ec30854e7_inspection_04_fire_safety.pdf",
-      "inspection_aec1a00bf01548febf4109d3e0e31630_inspection_02_post_hail_damage.pdf",
-      "inspection_cd1e1e143bc2491ea52c6219d958955f_inspection_03_plumbing_focus.pdf",
-      "inspection_e78ce141193f47c5ab0e2bd2f7a8a4ed_inspection_05_security.pdf"
+      "claim_83176f8b419f4607b4b729c5be366f00_claim_05_minor_fire_smoke_damage.pdf",
+      "claim_9b9c5375e7154349bbc9551403634e69_claim_04_foundation_plumbing_escape.pdf",
+      "inspection_302befa946ef4f8586af049a713c94c7_inspection_03_plumbing_focus.pdf",
+      "inspection_dae616b5089d4aa9923f18905516fba1_inspection_02_post_hail_damage.pdf"
     ],
-    "saved_at": "2026-04-12T10:54:34.815685+00:00"
+    "saved_at": "2026-04-12T15:38:56.869194+00:00"
   },
   "quiz": {
-    "submittedAt": "2026-04-12T15:08:01.176419+00:00",
+    "submittedAt": "2026-04-12T15:39:12.777314+00:00",
     "responses": [
       {
         "id": "burglar_alarms",
@@ -595,7 +397,7 @@
       {
         "id": "monitored_fire_alarm_systems",
         "question": "How many monitored fire alarm systems does your home have?",
-        "answer": 0
+        "answer": 3
       },
       {
         "id": "water_leak_detectors",
@@ -610,7 +412,7 @@
       {
         "id": "fire_extinguishers",
         "question": "How many fire extinguishers are accessible in your home?",
-        "answer": 0
+        "answer": 2
       },
       {
         "id": "storm_shutters_or_impact_openings",
@@ -632,95 +434,38 @@
           "electrical panel"
         ],
         "quality": "high"
-      },
-      {
-        "source_name": null,
-        "visible_areas": [
-          "roof, shingles"
-        ],
-        "quality": "high"
-      },
-      {
-        "source_name": null,
-        "visible_areas": [
-          "ceiling, water leak"
-        ],
-        "quality": "high"
-      },
-      {
-        "source_name": null,
-        "visible_areas": [
-          "kitchen interior"
-        ],
-        "quality": "high"
-      },
-      {
-        "source_name": null,
-        "visible_areas": [
-          "wall cracks"
-        ],
-        "quality": "high"
-      },
-      {
-        "source_name": null,
-        "visible_areas": [
-          "kitchen interior"
-        ],
-        "quality": "high"
       }
     ],
     "risk_factors": [
       {
-        "factor_key": "roof_damage",
-        "category": "roof",
-        "subcategory": "shingles",
-        "location": "roof",
-        "severity": "high",
+        "factor_key": "electrical_panel_condition",
+        "category": "electrical",
+        "subcategory": "panel",
+        "location": "electrical panel",
+        "severity": "unknown",
         "count": 1,
         "source_type": "photo",
         "source_name": null,
-        "evidence": "Multiple curling and missing shingles exposing underlayment"
-      },
-      {
-        "factor_key": "water_intrusion",
-        "category": "water_damage",
-        "subcategory": "ceiling_leak",
-        "location": "interior ceiling",
-        "severity": "high",
-        "count": 1,
-        "source_type": "photo",
-        "source_name": null,
-        "evidence": "Active water dripping and stain marks on ceiling"
-      },
-      {
-        "factor_key": "wall_cracks",
-        "category": "structural",
-        "subcategory": "interior_wall_cracks",
-        "location": "wall near window",
-        "severity": "medium",
-        "count": 1,
-        "source_type": "photo",
-        "source_name": null,
-        "evidence": "Visible cracks on interior wall around window frame"
+        "evidence": "The electrical panel appears intact with no visible corrosion, burning, or damaged wiring, though internal condition is unverified."
       }
     ],
     "protective_features": [
       {
-        "feature_key": "electrical_panel_organized",
+        "feature_key": "organized_wiring",
         "category": "electrical",
         "value": true,
         "source_type": "photo",
         "source_name": null,
-        "evidence": "Electrical panel wiring appears organized and properly labeled without visible signs of damage"
+        "evidence": "Wiring is neatly bundled and organized inside the electrical panel, reducing risk of shorts or faults."
       }
     ],
     "summary_counts": {
-      "structural": 1,
+      "structural": 0,
       "foundation": 0,
-      "roof": 1,
-      "water_damage": 1,
+      "roof": 0,
+      "water_damage": 0,
       "plumbing": 0,
-      "electrical": 0,
+      "electrical": 1,
       "fire": 0,
       "smoke": 0,
       "mold": 0,
@@ -741,27 +486,16 @@
     },
     "notes": [
       {
-        "type": "general",
-        "text": "Electrical panel condition appears satisfactory but detailed testing beyond visual inspection is not assessed."
+        "type": "inspection_note",
+        "text": "Electrical panel appears intact with well-organized wiring; no visible damage or corrosion noted."
       }
     ]
   },
   "photo_risk_extraction_meta": {
     "model": "gpt-4.1-mini",
     "source_files": [
-      "photo_003ddd553fbf48818e1421311ebdbea6_home_electric_panel.png",
-      "photo_02c428e0970940ceaaf4306e6f5ffbee_roof_shingles.png",
-      "photo_2de6cf71b44349b387805bace23e3bd0_home_electric_panel.png",
-      "photo_3c47f3fbdec54afa9ad33cd3df1a6b05_home_leak.png",
-      "photo_74ba117a96214758a1861edc881e1832_dining_room.png",
-      "photo_8325e34a23914297aaa01fccb666f747_dining_room.png",
-      "photo_96f6075728204df1b5f0ca45ba357adf_bedroom_foundation_cracks.jpg",
-      "photo_bd7f6d4979ad43e3b0880514f0876a65_bedroom_foundation_cracks.jpg",
-      "photo_cb03c2a1c0454a6691194250c84aaedb_home_leak.png",
-      "photo_e57a5013bbc44329858bad3485179575_texas_kitchen.png",
-      "photo_f738b534e7614dafa32873174f430b4f_roof_shingles.png",
-      "photo_fda342babe054a83bedf43872fef260a_texas_kitchen.png"
+      "photo_63cfb316570f4d21a162b7dfce9343bf_home_electric_panel.png"
     ],
-    "saved_at": "2026-04-12T10:55:49.138834+00:00"
+    "saved_at": "2026-04-12T15:39:20.113862+00:00"
   }
 }

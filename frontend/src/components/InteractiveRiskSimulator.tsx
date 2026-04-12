@@ -402,7 +402,13 @@ export default function InteractiveRiskSimulator() {
       setRiskError(null);
 
       try {
-        const response = await fetch(`${apiBaseUrl}/risk`, { signal: controller.signal });
+        const response = await fetch(`${apiBaseUrl}/risk`, {
+          signal: controller.signal,
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+          },
+        });
         const payload = await response.json();
 
         if (!response.ok) {
@@ -457,7 +463,7 @@ export default function InteractiveRiskSimulator() {
     { label: 'Claims history', key: 'claimsHistoryScore' },
   ];
 
-  const displayedScore = backendRisk?.masterScore ?? composite;
+  const displayedScore = backendRisk?.masterScore ?? null;
   const displayedRisk = backendRisk
     ? {
         label: backendRisk.riskTier,
@@ -472,7 +478,7 @@ export default function InteractiveRiskSimulator() {
                   ? 'text-yellow-400'
                   : 'text-green-400',
       }
-    : risk;
+    : null;
   const backendHighlights = useMemo(() => {
     if (!backendRisk?.details) {
       return [];
@@ -600,33 +606,38 @@ export default function InteractiveRiskSimulator() {
         {/* Composite Score */}
         <div className="p-6 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-outline-variant/15 gap-2">
           <p className="font-label text-[10px] uppercase tracking-[0.3em] text-zinc-500">
-            {backendRisk ? 'Backend Risk Score' : 'Composite Score'}
+            Backend Risk Score
           </p>
           <AnimatePresence mode="wait">
             <motion.div
-              key={displayedScore}
+              key={displayedScore ?? 'empty'}
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 1.1, opacity: 0 }}
               transition={{ type: 'spring', damping: 15, stiffness: 200 }}
               className="font-headline text-7xl text-on-surface leading-none"
             >
-              {displayedScore}
+              {riskLoading ? '--' : displayedScore ?? '--'}
             </motion.div>
           </AnimatePresence>
           <p className="font-label text-[10px] uppercase tracking-widest text-zinc-500">
-            {backendRisk ? 'saved underwriting score' : 'composite risk score'}
+            Live score from final.json to risk.json
           </p>
-          <motion.p
-            key={displayedRisk.label}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className={`font-headline text-sm ${displayedRisk.color}`}
-          >
-            {displayedRisk.label}
-          </motion.p>
+          {displayedRisk && (
+            <motion.p
+              key={displayedRisk.label}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className={`font-headline text-sm ${displayedRisk.color}`}
+            >
+              {displayedRisk.label}
+            </motion.p>
+          )}
           {riskLoading && <p className="font-label text-[9px] uppercase tracking-widest text-zinc-500">Loading backend score...</p>}
           {riskError && <p className="font-label text-[9px] uppercase tracking-widest text-red-400">{riskError}</p>}
+          {!riskLoading && !backendRisk && !riskError && (
+            <p className="font-label text-[9px] uppercase tracking-widest text-zinc-500">No live risk score available.</p>
+          )}
           {backendRisk?.generatedAt && (
             <p className="font-label text-[9px] uppercase tracking-widest text-zinc-600">
               Updated {new Date(backendRisk.generatedAt).toLocaleString()}
@@ -636,14 +647,18 @@ export default function InteractiveRiskSimulator() {
 
         {/* Category Breakdown */}
         <div className="p-6 flex flex-col gap-3">
-          <p className="font-label text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-1">
-            {backendRisk ? 'Risk Score Breakdown' : 'Category Breakdown'}
-          </p>
-          {backendRisk
-            ? backendCategories.map(({ label, key }) => (
-                <CategoryBar key={key} label={label} score={backendRisk.subscores[key]} />
-              ))
-            : categories.map(({ label, key }) => <CategoryBar key={key} label={label} score={scores[key]} />)}
+          <p className="font-label text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-1">Risk Score Breakdown</p>
+          {backendRisk ? (
+            backendCategories.map(({ label, key }) => (
+              <CategoryBar key={key} label={label} score={backendRisk.subscores[key]} />
+            ))
+          ) : (
+            <div className="border border-outline-variant/15 bg-background/30 p-4">
+              <p className="font-label text-[9px] uppercase tracking-widest text-zinc-500">
+                {riskLoading ? 'Loading live breakdown...' : riskError ? 'Live breakdown unavailable.' : 'No live breakdown available.'}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 

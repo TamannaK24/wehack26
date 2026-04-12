@@ -101,6 +101,18 @@ Top Risk Drivers:
 
 Weight Source: {property_context.get('weight_source')}
 
+Address Context:
+{json.dumps(property_context.get('address', None), indent=2)}
+
+Quiz Responses:
+{json.dumps(property_context.get('quiz_responses', []), indent=2)}
+
+Document Extraction:
+{json.dumps(property_context.get('document_summary', None), indent=2)}
+
+Photo Extraction:
+{json.dumps(property_context.get('photo_summary', None), indent=2)}
+
 Your job:
 - Answer questions about this specific home's risks using only the data provided above
 - Explain risk drivers in plain, jargon-free English that a homeowner can immediately understand

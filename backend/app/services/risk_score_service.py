@@ -69,6 +69,10 @@ def _normalize_int(value: Any, default: int = 0) -> int:
     return int(round(_normalize_number(value, default)))
 
 
+def _normalize_key(value: Any) -> str:
+    return str(value or "").strip().lower().replace("-", "_").replace(" ", "_")
+
+
 def _quiz_map(final_document: dict[str, Any]) -> dict[str, int]:
     responses = final_document.get("quiz", {}).get("responses", [])
     quiz_lookup: dict[str, int] = {}
@@ -152,7 +156,7 @@ def _calculate_roof_weather_score(final_document: dict[str, Any]) -> dict[str, A
     for factor in document_extraction.get("risk_factors", []):
         if not isinstance(factor, dict):
             continue
-        category = str(factor.get("category", "")).lower()
+        category = _normalize_key(factor.get("category"))
         if category not in {"roof", "hail", "wind"}:
             continue
         occurrences = max(1, _normalize_int(factor.get("count", 1), 1))
@@ -163,9 +167,9 @@ def _calculate_roof_weather_score(final_document: dict[str, Any]) -> dict[str, A
     for factor in photo_extraction.get("risk_factors", []):
         if not isinstance(factor, dict):
             continue
-        if str(factor.get("category", "")).lower() != "roof":
+        if _normalize_key(factor.get("category")) != "roof":
             continue
-        if str(factor.get("severity", "")).lower() != "high":
+        if _normalize_key(factor.get("severity")) != "high":
             continue
         occurrences = max(1, _normalize_int(factor.get("count", 1), 1))
         increment = 20 * occurrences
@@ -193,6 +197,11 @@ def _calculate_roof_weather_score(final_document: dict[str, Any]) -> dict[str, A
         score -= shutters_deduction
         _add_contribution(contributions, "storm shutters or impact openings deduction", -shutters_deduction)
 
+    generator_deduction = min(score, min(10, quiz.get("backup_generators", 0) * 2))
+    if generator_deduction:
+        score -= generator_deduction
+        _add_contribution(contributions, "backup generators resilience deduction", -generator_deduction)
+
     return {"score": round(_cap_score(score)), "contributions": contributions}
 
 
@@ -206,7 +215,7 @@ def _calculate_water_plumbing_score(final_document: dict[str, Any]) -> dict[str,
     for factor in document_extraction.get("risk_factors", []):
         if not isinstance(factor, dict):
             continue
-        category = str(factor.get("category", "")).lower()
+        category = _normalize_key(factor.get("category"))
         if category not in {"water_damage", "plumbing"}:
             continue
         occurrences = max(1, _normalize_int(factor.get("count", 1), 1))
@@ -217,7 +226,7 @@ def _calculate_water_plumbing_score(final_document: dict[str, Any]) -> dict[str,
     for factor in photo_extraction.get("risk_factors", []):
         if not isinstance(factor, dict):
             continue
-        if str(factor.get("category", "")).lower() != "water_damage":
+        if _normalize_key(factor.get("category")) != "water_damage":
             continue
         occurrences = max(1, _normalize_int(factor.get("count", 1), 1))
         increment = 18 * occurrences
@@ -260,14 +269,14 @@ def _calculate_fire_electrical_score(final_document: dict[str, Any]) -> dict[str
     for factor in document_extraction.get("risk_factors", []):
         if not isinstance(factor, dict):
             continue
-        category = str(factor.get("category", "")).lower()
-        factor_key = str(factor.get("factor_key", "")).lower()
+        category = _normalize_key(factor.get("category"))
+        factor_key = _normalize_key(factor.get("factor_key"))
         if category in {"fire", "smoke", "electrical"}:
             occurrences = max(1, _normalize_int(factor.get("count", 1), 1))
             increment = 14 * _normalize_severity_multiplier(factor.get("severity")) * occurrences
             score += increment
             _add_contribution(contributions, f"document risk factor {factor.get('factor_key')}", increment)
-        if factor_key == "smoke_detectors_missing":
+        if factor_key in {"smoke_detectors_missing", "missing_smoke_detectors"}:
             score += 15
             _add_contribution(contributions, "smoke detectors missing", 15)
 
@@ -278,7 +287,7 @@ def _calculate_fire_electrical_score(final_document: dict[str, Any]) -> dict[str
         for feature in feature_group:
             if not isinstance(feature, dict):
                 continue
-            if str(feature.get("category", "")).lower() != "electrical":
+            if _normalize_key(feature.get("category")) not in {"electrical", "electrical_safety"}:
                 continue
             if feature.get("value") is True:
                 deduction = min(score, 10)
@@ -315,10 +324,10 @@ def _calculate_security_score(final_document: dict[str, Any]) -> dict[str, Any]:
     for factor in document_extraction.get("risk_factors", []):
         if not isinstance(factor, dict):
             continue
-        category = str(factor.get("category", "")).lower()
-        subcategory = str(factor.get("subcategory", "")).lower()
+        category = _normalize_key(factor.get("category"))
+        subcategory = _normalize_key(factor.get("subcategory"))
         occurrences = max(1, _normalize_int(factor.get("count", 1), 1))
-        if category == "prior_loss_history" and subcategory == "theft_burglary":
+        if category == "prior_loss_history" and subcategory in {"theft_burglary", "theft", "burglary"}:
             increment = 20 * occurrences
             score += increment
             _add_contribution(contributions, f"prior theft/burglary factor {factor.get('factor_key')}", increment)

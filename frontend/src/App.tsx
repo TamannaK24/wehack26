@@ -12,8 +12,8 @@ import {
 } from 'lucide-react';
 import CuratorsGallery from './pages/GalleryPage';
 import RiskActionPlanPage from './pages/RiskActionPlanPage';
+import RiskScorePage from './pages/RiskScorePage';
 import RiskTimelineDataPage from './pages/RiskTimelineDataPage';
-import RestorationProjects from './pages/RestorationProjects';
 import InquiryEstate from './pages/InquiryEstate';
 import LandingPage from './pages/LandingPage';
 import CuratorSettings from './pages/CuratorSettings';
@@ -194,7 +194,7 @@ export default function App() {
       case 'TIMELINE':
         return <RiskTimelineDataPage onNavigate={handleNavigate} />;
       case 'RESTORATION':
-        return <RestorationProjects onNavigate={handleNavigate} />;
+        return <RiskScorePage />;
       case 'INQUIRY':
         return <InquiryEstate onNavigate={handleNavigate} />;
       case 'SETTINGS':

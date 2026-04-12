@@ -112,7 +112,13 @@ export default function RiskWhatIfSimulator() {
       setError(null);
 
       try {
-        const response = await fetch(`${apiBaseUrl}/risk`, { signal: controller.signal });
+        const response = await fetch(`${apiBaseUrl}/risk`, {
+          signal: controller.signal,
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+          },
+        });
         const payload = await response.json();
 
         if (!response.ok) {

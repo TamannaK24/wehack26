@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, make_response
 
 from app.services.risk_score_service import calculate_risk_scores
 
@@ -31,12 +31,13 @@ def get_final():
 
 @risk_bp.route("/risk", methods=["GET"])
 def get_risk():
-    data = _read_json_file(RISK_JSON_PATH)
-    if data is not None:
-        return jsonify(data)
-
     try:
-        return jsonify(calculate_risk_scores())
+        payload = calculate_risk_scores()
+        response = make_response(jsonify(payload))
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
     except RuntimeError as exc:
         return jsonify({"error": str(exc)}), 400
     except Exception as exc:

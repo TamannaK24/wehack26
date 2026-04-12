@@ -101,9 +101,18 @@ type RiskResponse = {
   details?: Record<string, Array<{ reason: string; value: number }>>;
 };
 
+type FinalResponse = {
+  address?: Record<string, unknown>;
+  quiz?: {
+    responses?: Array<{ id?: string; answer?: number; question?: string }>;
+  };
+  document_risk_extraction?: Record<string, unknown>;
+  photo_risk_extraction?: Record<string, unknown>;
+};
+
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '');
 
-function buildPropertyContext(risk: RiskResponse | null) {
+function buildPropertyContext(risk: RiskResponse | null, finalData: FinalResponse | null) {
   if (!risk) {
     return {
       final_score: null,
@@ -111,6 +120,10 @@ function buildPropertyContext(risk: RiskResponse | null) {
       categories: {},
       top_drivers: [],
       weight_source: 'backend/risk.json',
+      address: finalData?.address ?? null,
+      quiz_responses: finalData?.quiz?.responses ?? [],
+      document_summary: finalData?.document_risk_extraction ?? null,
+      photo_summary: finalData?.photo_risk_extraction ?? null,
     };
   }
 
@@ -134,6 +147,10 @@ function buildPropertyContext(risk: RiskResponse | null) {
     },
     top_drivers,
     weight_source: 'backend/risk.json',
+    address: finalData?.address ?? null,
+    quiz_responses: finalData?.quiz?.responses ?? [],
+    document_summary: finalData?.document_risk_extraction ?? null,
+    photo_summary: finalData?.photo_risk_extraction ?? null,
   };
 }
 
@@ -141,6 +158,7 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
   const [openPin, setOpenPin] = useState<PinId | null>(null);
   const [commsOpen, setCommsOpen] = useState(false);
   const [riskContext, setRiskContext] = useState<RiskResponse | null>(null);
+  const [finalContext, setFinalContext] = useState<FinalResponse | null>(null);
   const [chatPending, setChatPending] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
@@ -187,23 +205,30 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
   useEffect(() => {
     const controller = new AbortController();
 
-    async function loadRiskContext() {
+    async function loadContexts() {
       try {
-        const response = await fetch(`${API_BASE_URL}/risk`, { signal: controller.signal });
-        const payload = (await response.json()) as RiskResponse | { error?: string };
+        const [riskResponse, finalResponse] = await Promise.all([
+          fetch(`${API_BASE_URL}/risk`, { signal: controller.signal, cache: 'no-store' }),
+          fetch(`${API_BASE_URL}/final`, { signal: controller.signal, cache: 'no-store' }),
+        ]);
+        const riskPayload = (await riskResponse.json()) as RiskResponse | { error?: string };
+        const finalPayload = (await finalResponse.json()) as FinalResponse | { error?: string };
 
-        if (!response.ok) {
+        if (!riskResponse.ok) {
           throw new Error('Unable to load risk context for chat.');
         }
 
-        setRiskContext(payload as RiskResponse);
+        setRiskContext(riskPayload as RiskResponse);
+        if (finalResponse.ok) {
+          setFinalContext(finalPayload as FinalResponse);
+        }
       } catch (error) {
         if (controller.signal.aborted) return;
         console.error('Unable to load gallery chat risk context', error);
       }
     }
 
-    void loadRiskContext();
+    void loadContexts();
     return () => controller.abort();
   }, []);
 
@@ -226,7 +251,7 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: trimmed,
-          property_context: buildPropertyContext(riskContext),
+          property_context: buildPropertyContext(riskContext, finalContext),
         }),
       });
 
@@ -255,7 +280,7 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
     } finally {
       setChatPending(false);
     }
-  }, [chatInput, chatPending, riskContext]);
+  }, [chatInput, chatPending, finalContext, riskContext]);
 
   const updateConnector = useCallback(() => {
     if (openPin == null) {
