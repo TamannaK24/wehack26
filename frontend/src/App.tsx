@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Shield,
@@ -12,14 +12,13 @@ import {
   ListFilter,
   DoorClosed,
 } from 'lucide-react';
-import CuratorsGallery from './pages/CuratorsGallery';
+import CuratorsGallery from './pages/GalleryPage';
 import DeepLedger from './pages/DeepLedger';
 import RestorationProjects from './pages/RestorationProjects';
 import InquiryEstate from './pages/InquiryEstate';
 import LandingPage from './pages/LandingPage';
+import CuratorSettings from './pages/CuratorSettings';
 import type { Screen, TransitionType } from './types/navigation';
-
-// --- Types & Constants ---
 
 const TRANSITIONS = {
   push: {
@@ -36,12 +35,18 @@ const TRANSITIONS = {
     initial: { y: '100%', opacity: 0 },
     animate: { y: 0, opacity: 1 },
     exit: { y: '-100%', opacity: 0 },
-  }
+  },
 };
 
-// --- Components ---
-
-const Sidebar = ({ currentScreen, onNavigate, isOpen }: { currentScreen: Screen, onNavigate: (s: Screen, t: TransitionType) => void, isOpen: boolean }) => {
+const Sidebar = ({
+  currentScreen,
+  onNavigate,
+  isOpen,
+}: {
+  currentScreen: Screen;
+  onNavigate: (screen: Screen, transition: TransitionType) => void;
+  isOpen: boolean;
+}) => {
   const navItems = [
     { id: 'GALLERY', label: 'Gallery Floor', icon: DoorOpen, transition: 'push_back' as const },
     { id: 'RESTORATION', label: 'Policy Vault', icon: Lock, transition: 'push' as const },
@@ -51,7 +56,11 @@ const Sidebar = ({ currentScreen, onNavigate, isOpen }: { currentScreen: Screen,
   ];
 
   return (
-    <aside className={`fixed left-0 top-0 h-full w-80 pt-24 pb-8 px-6 bg-[#131313]/90 backdrop-blur-xl border-r border-outline-variant/15 shadow-2xl shadow-black/80 z-40 flex flex-col transition-transform duration-500 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+    <aside
+      className={`fixed left-0 top-0 h-full w-80 pt-24 pb-8 px-6 bg-[#131313]/90 backdrop-blur-xl border-r border-outline-variant/15 shadow-2xl shadow-black/80 z-40 flex flex-col transition-transform duration-500 ${
+        isOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}
+    >
       <div className="mb-10 px-4">
         <h2 className="font-headline text-lg tracking-wide uppercase text-primary">Curatorial Index</h2>
         <p className="font-label text-xs tracking-widest text-zinc-500 uppercase mt-1">Museum Risk Management</p>
@@ -62,10 +71,10 @@ const Sidebar = ({ currentScreen, onNavigate, isOpen }: { currentScreen: Screen,
           return (
             <button
               key={item.id}
-              onClick={() => item.id !== 'SETTINGS' && onNavigate(item.id as Screen, item.transition)}
+              onClick={() => onNavigate(item.id as Screen, item.transition)}
               className={`w-full flex items-center gap-4 px-4 py-4 transition-all duration-500 text-left ${
-                isActive 
-                  ? 'bg-gradient-to-r from-primary-container/10 to-transparent border-l-4 border-primary text-primary translate-x-2' 
+                isActive
+                  ? 'bg-gradient-to-r from-primary-container/10 to-transparent border-l-4 border-primary text-primary translate-x-2'
                   : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/30'
               }`}
             >
@@ -90,16 +99,19 @@ const Sidebar = ({ currentScreen, onNavigate, isOpen }: { currentScreen: Screen,
   );
 };
 
-const TopBar = ({ sidebarOpen, onToggleSidebar }: { sidebarOpen: boolean, onToggleSidebar: () => void }) => (
-  <header className="fixed top-0 w-full z-50 flex justify-between items-center px-8 h-20 bg-[#131313] border-b border-outline-variant/20 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
+const TopBar = ({
+  isVisible,
+  sidebarOpen,
+}: {
+  isVisible: boolean;
+  sidebarOpen: boolean;
+}) => (
+  <header
+    className={`fixed top-0 w-full z-50 flex justify-between items-center h-20 pr-8 pl-24 bg-[#131313] border-b border-outline-variant/20 shadow-[0_10px_30px_rgba(0,0,0,0.8)] transition-[padding,transform,opacity] duration-300 ${
+      isVisible ? 'translate-y-0 opacity-100 pointer-events-auto' : '-translate-y-full opacity-0 pointer-events-none'
+    }`}
+  >
     <div className="flex items-center gap-6">
-      <button
-        onClick={onToggleSidebar}
-        className="w-10 h-10 border border-outline-variant/40 text-primary hover:bg-primary/10 transition-colors flex items-center justify-center"
-        aria-label={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
-      >
-        {sidebarOpen ? <DoorClosed size={18} /> : <ListFilter size={18} />}
-      </button>
       <span className="text-3xl font-headline text-primary italic uppercase tracking-tight">The Nocturne Gallery</span>
     </div>
     <div className="flex items-center gap-8">
@@ -116,13 +128,25 @@ const TopBar = ({ sidebarOpen, onToggleSidebar }: { sidebarOpen: boolean, onTogg
   </header>
 );
 
-// --- Main App ---
-
 export default function App() {
   const [hasEntered, setHasEntered] = useState(false);
   const [currentScreen, setCurrentScreen] = useState<Screen>('GALLERY');
   const [transition, setTransition] = useState<TransitionType>('push');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showTopBar, setShowTopBar] = useState(true);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowTopBar(window.scrollY <= 1);
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   const handleNavigate = (screen: Screen, type: TransitionType) => {
     setTransition(type);
@@ -131,10 +155,16 @@ export default function App() {
 
   const ScreenComponent = useMemo(() => {
     switch (currentScreen) {
-      case 'GALLERY': return <CuratorsGallery onNavigate={handleNavigate} />;
-      case 'ARCHIVE': return <DeepLedger onNavigate={handleNavigate} />;
-      case 'RESTORATION': return <RestorationProjects onNavigate={handleNavigate} />;
-      case 'INQUIRY': return <InquiryEstate onNavigate={handleNavigate} />;
+      case 'GALLERY':
+        return <CuratorsGallery onNavigate={handleNavigate} />;
+      case 'ARCHIVE':
+        return <DeepLedger onNavigate={handleNavigate} />;
+      case 'RESTORATION':
+        return <RestorationProjects onNavigate={handleNavigate} />;
+      case 'INQUIRY':
+        return <InquiryEstate onNavigate={handleNavigate} />;
+      case 'SETTINGS':
+        return <CuratorSettings onNavigate={handleNavigate} />;
     }
   }, [currentScreen]);
 
@@ -142,12 +172,21 @@ export default function App() {
     <div className="min-h-screen bg-background selection:bg-primary/30 selection:text-on-primary">
       {!hasEntered && <LandingPage onEnter={() => setHasEntered(true)} />}
       <div className="film-grain" />
-      
-      <TopBar sidebarOpen={sidebarOpen} onToggleSidebar={() => setSidebarOpen((prev) => !prev)} />
+
+      <button
+        onClick={() => setSidebarOpen((prev) => !prev)}
+        className="fixed top-6 left-8 z-[60] w-10 h-10 border border-outline-variant/40 bg-[#131313]/90 text-primary hover:bg-primary/10 transition-colors flex items-center justify-center"
+        aria-label={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+      >
+        {sidebarOpen ? <DoorClosed size={18} /> : <ListFilter size={18} />}
+      </button>
+
+      <TopBar isVisible={showTopBar} sidebarOpen={sidebarOpen} />
       <Sidebar currentScreen={currentScreen} onNavigate={handleNavigate} isOpen={sidebarOpen} />
 
-      <main className={`pt-32 pb-24 px-8 relative overflow-hidden transition-[padding] duration-500 ${sidebarOpen ? 'lg:pl-80' : 'lg:pl-8'}`}>
-        {/* Atmospheric Light Leaks */}
+      <main
+        className={`relative min-w-0 overflow-x-hidden pt-32 pb-24 px-8 transition-[padding] duration-500 ${sidebarOpen ? 'lg:pl-80' : 'lg:pl-8'}`}
+      >
         <div className="fixed top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full pointer-events-none"></div>
         <div className="fixed bottom-[-5%] left-[20%] w-[400px] h-[400px] bg-secondary-container/5 blur-[100px] rounded-full pointer-events-none"></div>
 
