@@ -6,13 +6,13 @@ const RestorationProjects = ({ onNavigate }: { onNavigate: NavigateFn }) => (
     <section className="mb-16">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div>
-          <span className="font-label text-sm tracking-[0.3em] uppercase text-primary mb-4 block">Operation: Sanctum</span>
-          <h1 className="text-5xl md:text-7xl font-headline italic tracking-tighter text-on-background max-w-2xl">Sanctuary Restoration Projects</h1>
+          <span className="font-label text-sm tracking-[0.3em] uppercase text-red-400/90 mb-4 block">Op · Vault crawl</span>
+          <h1 className="text-5xl md:text-7xl font-headline uppercase tracking-tighter text-on-background max-w-2xl">Vault operations</h1>
         </div>
         <div className="text-right">
           <p className="font-label text-xs uppercase tracking-widest text-zinc-500 mb-2">Total Restoration Progress</p>
           <div className="w-64 h-2 bg-surface-container-highest relative overflow-hidden">
-            <div className="absolute inset-y-0 left-0 bg-primary w-3/4 shadow-[0_0_15px_rgba(233,193,118,0.6)]"></div>
+            <div className="absolute inset-y-0 left-0 bg-primary w-3/4 shadow-[0_0_18px_rgba(248,113,113,0.45)]" />
           </div>
           <span className="font-serif italic text-2xl text-primary mt-2 block">75% Complete</span>
         </div>
@@ -24,7 +24,10 @@ const RestorationProjects = ({ onNavigate }: { onNavigate: NavigateFn }) => (
           { title: 'The Lidar Recalibration', desc: 'Updating the volumetric perimeter sensors around the Marble Atrium.', progress: '42%', img: 'https://picsum.photos/seed/rest2/600/400' },
           { title: 'Preservation Scroll Crypt', desc: 'Securing the digital backups of the insurance archives.', progress: 'Locked', img: 'https://picsum.photos/seed/rest3/600/400' },
         ].map((project, idx) => (
-          <div key={idx} className="group relative bg-surface-container-low border border-outline-variant/15 p-1 transition-all duration-700 hover:shadow-[0_0_40px_rgba(233,193,118,0.15)]">
+          <div
+            key={idx}
+            className="group relative bg-surface-container-low border border-red-950/30 p-1 transition-all duration-700 hover:shadow-[0_0_36px_rgba(127,29,29,0.35)]"
+          >
             <div className="bg-surface p-6 h-full flex flex-col justify-between">
               <div>
                 <div className="arch-mask overflow-hidden h-48 mb-6 relative">
@@ -56,7 +59,7 @@ const RestorationProjects = ({ onNavigate }: { onNavigate: NavigateFn }) => (
     </section>
 
     <section className="mt-32 relative">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-px h-24 bg-gradient-to-b from-transparent via-primary/40 to-transparent"></div>
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-px h-24 bg-gradient-to-b from-transparent via-red-500/35 to-transparent" />
       <div className="text-center mb-20">
         <span className="font-label text-sm tracking-[0.5em] uppercase text-zinc-500 mb-4 block">Legacy Recognition</span>
         <h2 className="text-6xl font-headline tracking-tighter italic">Hall of Honors</h2>
