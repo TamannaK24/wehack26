@@ -8,13 +8,12 @@ venv/
 
 # Node
 node_modules/
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# General
+frontend/node_modules/
+build/
+dist/
+coverage/
 .DS_Store
 *.log
-dist/
-build/
+.env*
+!.env.example
+.claude/

@@ -15,22 +15,25 @@
   --color-secondary-container: #9a3412;
   --color-on-secondary: #fff7ed;
 
+  /* Deeper contrast — surfaces are visibly distinct from the void */
   --color-background: #030203;
-  --color-on-background: #fafaf9;
-  --color-on-surface: #f5f5f4;
-  --color-surface: #0c0a0a;
-  --color-surface-container: #141010;
-  --color-surface-container-low: #0a0808;
-  --color-surface-container-high: #1a1212;
-  --color-surface-container-highest: #1f1416;
+  --color-on-background: #ffffff;
+  --color-on-surface: #f8f7f7;
+  --color-surface: #130e0e;
+  --color-surface-container-lowest: #070505;
+  --color-surface-container-low: #1a1212;
+  --color-surface-container: #221616;
+  --color-surface-container-high: #2c1c1c;
+  --color-surface-container-highest: #361f1f;
 
-  --color-outline: #7f1d1d;
-  --color-outline-variant: #3f1515;
+  /* Borders are now actually visible */
+  --color-outline: #b91c1c;
+  --color-outline-variant: #6b2020;
 }
 
 @layer base {
   body {
-    @apply bg-background text-[#e7e5e4] font-body antialiased selection:bg-red-600/35 selection:text-white;
+    @apply bg-background text-[#f2f0ef] font-body antialiased selection:bg-red-600/35 selection:text-white;
   }
 }
 
