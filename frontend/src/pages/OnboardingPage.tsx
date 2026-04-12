@@ -28,9 +28,13 @@ type AddressSearchResult = {
   city: string;
   state: string;
   zip: string;
+  latitude?: number | string | null;
+  longitude?: number | string | null;
 };
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:5050').replace(/\/$/, '');
+const GOOGLE_MAPS_API_KEY =
+  import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? 'AIzaSyCxSIDI0XMz2AuiKIJBbL3QIxUVy8oCIC8';
 
 export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
   const [step, setStep] = useState<Step>('address');
@@ -44,6 +48,11 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState('');
   const [selectedAddressId, setSelectedAddressId] = useState('');
+  const [selectedAddressLabel, setSelectedAddressLabel] = useState('');
+  const [selectedAddressCoords, setSelectedAddressCoords] = useState<{
+    latitude: number | null;
+    longitude: number | null;
+  }>({ latitude: null, longitude: null });
   const [claimsUploadStatus, setClaimsUploadStatus] = useState('');
   const [inspectionUploadStatus, setInspectionUploadStatus] = useState('');
   const [documentExtractionStatus, setDocumentExtractionStatus] = useState('');
@@ -109,8 +118,23 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
     setAddressInput(selected.label);
     setShowDropdown(false);
     setSelectedAddressId(selected.id);
+    setSelectedAddressLabel(selected.label);
     setSearchResults([]);
     setSearchError('');
+    setSelectedAddressCoords({
+      latitude:
+        typeof selected.latitude === 'number'
+          ? selected.latitude
+          : selected.latitude != null
+            ? Number(selected.latitude)
+            : null,
+      longitude:
+        typeof selected.longitude === 'number'
+          ? selected.longitude
+          : selected.longitude != null
+            ? Number(selected.longitude)
+            : null,
+    });
 
     setAddress({
       street: selected.street,
@@ -134,9 +158,22 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
     setAddressInput(value);
     setShowDropdown(true);
     setSelectedAddressId('');
+    setSelectedAddressLabel('');
+    setSelectedAddressCoords({ latitude: null, longitude: null });
     setSearchError('');
     setAddress(emptyPropertyAddress());
   };
+
+  const selectedMapQuery = selectedAddressCoords.latitude != null && selectedAddressCoords.longitude != null
+    ? `${selectedAddressCoords.latitude},${selectedAddressCoords.longitude}`
+    : selectedAddressLabel;
+
+  const selectedMapSrc =
+    selectedAddressId && GOOGLE_MAPS_API_KEY && selectedMapQuery
+      ? `https://www.google.com/maps/embed/v1/place?key=${encodeURIComponent(
+          GOOGLE_MAPS_API_KEY,
+        )}&q=${encodeURIComponent(selectedMapQuery)}`
+      : '';
 
   const uploadDocument = async (
     file: File,
@@ -382,6 +419,22 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
 
           {!selectedAddressId && addressInput.trim() && (
             <p className="mt-2 text-sm text-zinc-500">Choose one of the search results to continue.</p>
+          )}
+
+          {selectedAddressId && selectedMapSrc && (
+            <div className="mt-6 overflow-hidden rounded-md border border-red-950/40 bg-[#0c0a0a]/80">
+              <div className="border-b border-red-950/30 px-4 py-3">
+                <p className="font-label text-[10px] uppercase tracking-[0.2em] text-red-400/80">Selected Location Map</p>
+                <p className="mt-1 text-sm text-zinc-400">{selectedAddressLabel}</p>
+              </div>
+              <iframe
+                title="Selected property map"
+                src={selectedMapSrc}
+                className="h-[320px] w-full border-0"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
           )}
 
           <div className="flex justify-end mt-6">

@@ -57,6 +57,8 @@ def _format_search_result(item, fallback_id=None):
     city = item.get("parcel_city") or item.get("city") or ""
     state = item.get("parcel_state") or item.get("state") or ""
     zip_code = item.get("parcel_zip") or item.get("zip") or ""
+    latitude = item.get("input_latitude") or item.get("latitude")
+    longitude = item.get("input_longitude") or item.get("longitude")
     item_id = item.get("_id") or item.get("id") or item.get("home_id") or fallback_id
 
     full_address = f"{street}, {city}, {state} {zip_code}".strip()
@@ -68,6 +70,8 @@ def _format_search_result(item, fallback_id=None):
         "city": city,
         "state": state,
         "zip": zip_code,
+        "latitude": latitude,
+        "longitude": longitude,
     }
 
 
@@ -166,7 +170,9 @@ def search_addresses_in_db(query):
                 "parcel_address": 1,
                 "parcel_city": 1,
                 "parcel_state": 1,
-                "parcel_zip": 1
+                "parcel_zip": 1,
+                "input_latitude": 1,
+                "input_longitude": 1,
             }
         ).limit(10)
 
