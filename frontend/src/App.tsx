@@ -8,9 +8,11 @@ import {
   ScrollText,
   Compass,
   UserCircle,
+  Clock3,
 } from 'lucide-react';
 import CuratorsGallery from './pages/GalleryPage';
-import DeepLedger from './pages/DeepLedger';
+import RiskActionPlanPage from './pages/RiskActionPlanPage';
+import RiskTimelineDataPage from './pages/RiskTimelineDataPage';
 import RestorationProjects from './pages/RestorationProjects';
 import InquiryEstate from './pages/InquiryEstate';
 import LandingPage from './pages/LandingPage';
@@ -51,7 +53,8 @@ const APP_NAV: {
 }[] = [
   { id: 'GALLERY', label: 'Floor plan', icon: DoorOpen, transition: 'push_back' },
   { id: 'RESTORATION', label: 'Risk Score', icon: Lock, transition: 'push' },
-  { id: 'ARCHIVE', label: 'Signal log', icon: ScrollText, transition: 'push' },
+  { id: 'ARCHIVE', label: 'Fix plan', icon: ScrollText, transition: 'push' },
+  { id: 'TIMELINE', label: 'Timeline', icon: Clock3, transition: 'push' },
   { id: 'INQUIRY', label: 'Simulator', icon: Compass, transition: 'push' },
 ];
 
@@ -187,7 +190,9 @@ export default function App() {
       case 'GALLERY':
         return <CuratorsGallery onNavigate={handleNavigate} />;
       case 'ARCHIVE':
-        return <DeepLedger onNavigate={handleNavigate} />;
+        return <RiskActionPlanPage onNavigate={handleNavigate} />;
+      case 'TIMELINE':
+        return <RiskTimelineDataPage onNavigate={handleNavigate} />;
       case 'RESTORATION':
         return <RestorationProjects onNavigate={handleNavigate} />;
       case 'INQUIRY':

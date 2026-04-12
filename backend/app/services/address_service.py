@@ -3,6 +3,7 @@ import json
 import time
 from functools import lru_cache
 from pathlib import Path
+from datetime import datetime, timezone
 
 from bson import ObjectId
 from pymongo.errors import PyMongoError
@@ -12,6 +13,7 @@ from app.db import homes_collection
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
 ADDRESS_JSON_PATH = BACKEND_DIR / "address.json"
+FINAL_JSON_PATH = BACKEND_DIR / "final.json"
 MONGO_FALLBACK_COOLDOWN_SECONDS = 60
 
 _mongo_retry_after = 0.0
@@ -98,6 +100,14 @@ def _search_addresses_in_local_file(query):
     return matches
 
 
+def _find_local_address_by_id(address_id):
+    for index, item in enumerate(_load_local_addresses()):
+        local_id = str(item.get("id") or item.get("home_id") or f"local-{index}")
+        if local_id == str(address_id):
+            return item
+    return None
+
+
 def _get_local_addresses(limit=100):
     items = []
     for index, item in enumerate(_load_local_addresses()[:limit]):
@@ -167,15 +177,34 @@ def search_addresses_in_db(query):
 
 
 def get_address_by_id(address_id):
-    if not ObjectId.is_valid(address_id):
+    if _can_query_mongo() and ObjectId.is_valid(address_id):
+        try:
+            home = homes_collection.find_one({"_id": ObjectId(address_id)})
+            if home:
+                return _serialize_home(home)
+        except PyMongoError:
+            _mark_mongo_unavailable()
+
+    local_home = _find_local_address_by_id(address_id)
+    return _serialize_home(local_home) if local_home else None
+
+
+def save_selected_address_to_final_json(address_id):
+    address = get_address_by_id(address_id)
+    if not address:
         return None
 
-    if not _can_query_mongo():
-        return None
+    existing = {}
+    if FINAL_JSON_PATH.exists():
+        try:
+            existing = json.loads(FINAL_JSON_PATH.read_text(encoding="utf-8"))
+            if not isinstance(existing, dict):
+                existing = {}
+        except json.JSONDecodeError:
+            existing = {}
 
-    try:
-        home = homes_collection.find_one({"_id": ObjectId(address_id)})
-        return _serialize_home(home)
-    except PyMongoError:
-        _mark_mongo_unavailable()
-        return None
+    existing["address"] = address
+    existing["addressSavedAt"] = datetime.now(timezone.utc).isoformat()
+
+    FINAL_JSON_PATH.write_text(json.dumps(existing, indent=2), encoding="utf-8")
+    return existing

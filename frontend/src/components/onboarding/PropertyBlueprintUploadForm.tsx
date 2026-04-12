@@ -1,4 +1,5 @@
 import { Image, Layers, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import type { DocumentUploads } from './types';
 
 const MAX_PHOTOS = 12;
@@ -15,6 +16,8 @@ export function PropertyBlueprintUploadForm({
   idPrefix = 'property-media',
 }: PropertyBlueprintUploadFormProps) {
   const p = idPrefix;
+  const [blueprintPreview, setBlueprintPreview] = useState<string | null>(null);
+  const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
 
   const setBlueprint = (file: File | null) => {
     onChange({ ...value, blueprintFile: file });
@@ -27,6 +30,29 @@ export function PropertyBlueprintUploadForm({
   const removePhoto = (index: number) => {
     setPhotos(value.propertyPhotos.filter((_, i) => i !== index));
   };
+
+  useEffect(() => {
+    if (!value.blueprintFile) {
+      setBlueprintPreview(null);
+      return;
+    }
+
+    const url = URL.createObjectURL(value.blueprintFile);
+    setBlueprintPreview(url);
+
+    return () => {
+      URL.revokeObjectURL(url);
+    };
+  }, [value.blueprintFile]);
+
+  useEffect(() => {
+    const urls = value.propertyPhotos.map((file) => URL.createObjectURL(file));
+    setPhotoPreviews(urls);
+
+    return () => {
+      urls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [value.propertyPhotos]);
 
   return (
     <section className="border border-red-950/40 bg-[#0c0a0a]/80 p-8 space-y-6">
@@ -63,19 +89,50 @@ export function PropertyBlueprintUploadForm({
             }}
           />
           {value.blueprintFile ? (
-            <div className="flex items-center justify-between gap-2 pt-1">
-              <p className="min-w-0 truncate text-xs text-zinc-500">{value.blueprintFile.name}</p>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setBlueprint(null);
-                }}
-                className="shrink-0 rounded-sm p-1 text-zinc-500 hover:bg-red-950/50 hover:text-red-200"
-                aria-label="Remove blueprint file"
-              >
-                <X size={14} />
-              </button>
+            <div className="space-y-3 pt-1">
+              <div className="flex items-center justify-between gap-2">
+                <p className="min-w-0 truncate text-xs text-zinc-500">{value.blueprintFile.name}</p>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setBlueprint(null);
+                  }}
+                  className="shrink-0 rounded-sm p-1 text-zinc-500 hover:bg-red-950/50 hover:text-red-200"
+                  aria-label="Remove blueprint file"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+
+              {blueprintPreview &&
+                (value.blueprintFile.type === 'application/pdf' ? (
+                  <div className="space-y-2">
+                    <div className="overflow-hidden border border-red-950/30 bg-[#0a0808]">
+                      <iframe
+                        src={blueprintPreview}
+                        title={value.blueprintFile.name}
+                        className="h-64 w-full bg-white"
+                      />
+                    </div>
+                    <a
+                      href={blueprintPreview}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex text-xs text-red-300 hover:text-red-200"
+                    >
+                      Open blueprint preview
+                    </a>
+                  </div>
+                ) : (
+                  <div className="overflow-hidden border border-red-950/30 bg-[#0a0808]">
+                    <img
+                      src={blueprintPreview}
+                      alt={value.blueprintFile.name}
+                      className="h-64 w-full object-contain bg-black/30"
+                    />
+                  </div>
+                ))}
             </div>
           ) : null}
         </label>
@@ -103,24 +160,35 @@ export function PropertyBlueprintUploadForm({
             />
           </label>
           {value.propertyPhotos.length > 0 ? (
-            <ul className="max-h-40 space-y-1 overflow-y-auto border-t border-red-950/30 pt-2">
-              {value.propertyPhotos.map((file, index) => (
-                <li
-                  key={`${file.name}-${file.size}-${index}`}
-                  className="flex items-center justify-between gap-2 text-xs text-zinc-400"
-                >
-                  <span className="min-w-0 truncate">{file.name}</span>
-                  <button
-                    type="button"
-                    onClick={() => removePhoto(index)}
-                    className="shrink-0 rounded-sm p-1 text-zinc-500 hover:bg-red-950/50 hover:text-red-200"
-                    aria-label={`Remove ${file.name}`}
+            <div className="space-y-3 border-t border-red-950/30 pt-3">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {value.propertyPhotos.map((file, index) => (
+                  <div
+                    key={`${file.name}-${file.size}-${index}`}
+                    className="overflow-hidden border border-red-950/30 bg-[#0a0808]"
                   >
-                    <X size={14} />
-                  </button>
-                </li>
-              ))}
-            </ul>
+                    <div className="aspect-[4/3] bg-black/30">
+                      <img
+                        src={photoPreviews[index]}
+                        alt={file.name}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between gap-2 p-2">
+                      <span className="min-w-0 truncate text-xs text-zinc-400">{file.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => removePhoto(index)}
+                        className="shrink-0 rounded-sm p-1 text-zinc-500 hover:bg-red-950/50 hover:text-red-200"
+                        aria-label={`Remove ${file.name}`}
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           ) : (
             <p className="text-xs text-zinc-600">No photos added yet.</p>
           )}

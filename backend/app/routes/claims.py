@@ -4,6 +4,8 @@ from uuid import uuid4
 from flask import Blueprint, jsonify, request
 from werkzeug.utils import secure_filename
 
+from app.services.document_risk_service import extract_risk_from_uploaded_documents
+
 claims_bp = Blueprint("claims", __name__)
 
 UPLOADS_DIR = Path(__file__).resolve().parents[1] / "uploads"
@@ -31,3 +33,21 @@ def upload_claim():
             "path": str(destination),
         }
     )
+
+
+@claims_bp.route("/documents/extract-risk", methods=["POST"])
+def extract_document_risk():
+    try:
+        result = extract_risk_from_uploaded_documents()
+        return jsonify(
+            {
+                "message": "Document risk extraction saved to final.json",
+                "path": result["final_json_path"],
+                "sourceFiles": result["source_files"],
+                "model": result["model"],
+            }
+        )
+    except RuntimeError as exc:
+        return jsonify({"error": str(exc)}), 400
+    except Exception as exc:
+        return jsonify({"error": f"Unexpected extraction failure: {exc}"}), 500

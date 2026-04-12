@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronDown, ArrowDown, TrendingDown } from 'lucide-react';
 
@@ -30,6 +30,28 @@ interface CategoryScores {
   waterPlumbing: number;
   liability: number;
 }
+
+type BackendRiskSubscores = {
+  roofWeatherScore: number;
+  waterPlumbingScore: number;
+  fireElectricalScore: number;
+  securityScore: number;
+  structuralScore: number;
+  claimsHistoryScore: number;
+};
+
+type BackendRiskDetails = {
+  reason: string;
+  value: number;
+};
+
+type BackendRiskResponse = {
+  masterScore: number;
+  riskTier: string;
+  subscores: BackendRiskSubscores;
+  details?: Record<string, BackendRiskDetails[]>;
+  generatedAt?: string;
+};
 
 // --- Scoring Engine ---
 
@@ -359,14 +381,51 @@ const DEFAULT_INPUTS: SimulatorInputs = {
 };
 
 export default function InteractiveRiskSimulator() {
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
   const [activeTab, setActiveTab] = useState<'scenario' | 'tune'>('tune');
   const [inputs, setInputs] = useState<SimulatorInputs>(DEFAULT_INPUTS);
   const [activeScenario, setActiveScenario] = useState<number | null>(3); // starts on "Historic Estate"
+  const [backendRisk, setBackendRisk] = useState<BackendRiskResponse | null>(null);
+  const [riskLoading, setRiskLoading] = useState(true);
+  const [riskError, setRiskError] = useState<string | null>(null);
 
   const scores = useMemo(() => calculateScores(inputs), [inputs]);
   const composite = useMemo(() => getCompositeScore(scores), [scores]);
   const risk = getRiskLevel(composite);
   const improvements = useMemo(() => getImprovements(inputs), [inputs]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadRiskBreakdown() {
+      setRiskLoading(true);
+      setRiskError(null);
+
+      try {
+        const response = await fetch(`${apiBaseUrl}/risk`, { signal: controller.signal });
+        const payload = await response.json();
+
+        if (!response.ok) {
+          throw new Error(payload?.error || 'Unable to load risk breakdown');
+        }
+
+        setBackendRisk(payload);
+      } catch (error) {
+        if (controller.signal.aborted) {
+          return;
+        }
+        setRiskError(error instanceof Error ? error.message : 'Unable to load risk breakdown');
+      } finally {
+        if (!controller.signal.aborted) {
+          setRiskLoading(false);
+        }
+      }
+    }
+
+    loadRiskBreakdown();
+
+    return () => controller.abort();
+  }, [apiBaseUrl]);
 
   function applyScenario(idx: number) {
     setActiveScenario(idx);
@@ -388,6 +447,49 @@ export default function InteractiveRiskSimulator() {
     { label: 'Water / plumbing', key: 'waterPlumbing' },
     { label: 'Liability', key: 'liability' },
   ];
+
+  const backendCategories: { label: string; key: keyof BackendRiskSubscores }[] = [
+    { label: 'Roof & weather', key: 'roofWeatherScore' },
+    { label: 'Water & plumbing', key: 'waterPlumbingScore' },
+    { label: 'Fire & electrical', key: 'fireElectricalScore' },
+    { label: 'Security & theft', key: 'securityScore' },
+    { label: 'Structural & foundation', key: 'structuralScore' },
+    { label: 'Claims history', key: 'claimsHistoryScore' },
+  ];
+
+  const displayedScore = backendRisk?.masterScore ?? composite;
+  const displayedRisk = backendRisk
+    ? {
+        label: backendRisk.riskTier,
+        color:
+          backendRisk.masterScore >= 85
+            ? 'text-red-400'
+            : backendRisk.masterScore >= 70
+              ? 'text-orange-400'
+              : backendRisk.masterScore >= 50
+                ? 'text-amber-300'
+                : backendRisk.masterScore >= 30
+                  ? 'text-yellow-400'
+                  : 'text-green-400',
+      }
+    : risk;
+  const backendHighlights = useMemo(() => {
+    if (!backendRisk?.details) {
+      return [];
+    }
+
+    return Object.entries(backendRisk.details)
+      .flatMap(([scoreKey, items]) =>
+        (items || []).map((item) => ({
+          scoreKey,
+          reason: item.reason,
+          value: item.value,
+        })),
+      )
+      .filter((item) => item.value > 0)
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 4);
+  }, [backendRisk]);
 
   return (
     <div className="bg-surface-container-low border border-outline-variant/20 shadow-2xl shadow-black/60">
@@ -497,42 +599,105 @@ export default function InteractiveRiskSimulator() {
       <div className="grid grid-cols-1 md:grid-cols-2 border-t border-outline-variant/15">
         {/* Composite Score */}
         <div className="p-6 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-outline-variant/15 gap-2">
-          <p className="font-label text-[10px] uppercase tracking-[0.3em] text-zinc-500">Composite Score</p>
+          <p className="font-label text-[10px] uppercase tracking-[0.3em] text-zinc-500">
+            {backendRisk ? 'Backend Risk Score' : 'Composite Score'}
+          </p>
           <AnimatePresence mode="wait">
             <motion.div
-              key={composite}
+              key={displayedScore}
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 1.1, opacity: 0 }}
               transition={{ type: 'spring', damping: 15, stiffness: 200 }}
               className="font-headline text-7xl text-on-surface leading-none"
             >
-              {composite}
+              {displayedScore}
             </motion.div>
           </AnimatePresence>
-          <p className="font-label text-[10px] uppercase tracking-widest text-zinc-500">composite risk score</p>
+          <p className="font-label text-[10px] uppercase tracking-widest text-zinc-500">
+            {backendRisk ? 'saved underwriting score' : 'composite risk score'}
+          </p>
           <motion.p
-            key={risk.label}
+            key={displayedRisk.label}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className={`font-headline text-sm ${risk.color}`}
+            className={`font-headline text-sm ${displayedRisk.color}`}
           >
-            {risk.label}
+            {displayedRisk.label}
           </motion.p>
+          {riskLoading && <p className="font-label text-[9px] uppercase tracking-widest text-zinc-500">Loading backend score...</p>}
+          {riskError && <p className="font-label text-[9px] uppercase tracking-widest text-red-400">{riskError}</p>}
+          {backendRisk?.generatedAt && (
+            <p className="font-label text-[9px] uppercase tracking-widest text-zinc-600">
+              Updated {new Date(backendRisk.generatedAt).toLocaleString()}
+            </p>
+          )}
         </div>
 
         {/* Category Breakdown */}
         <div className="p-6 flex flex-col gap-3">
-          <p className="font-label text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-1">Category Breakdown</p>
-          {categories.map(({ label, key }) => (
-            <CategoryBar key={key} label={label} score={scores[key]} />
-          ))}
+          <p className="font-label text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-1">
+            {backendRisk ? 'Risk Score Breakdown' : 'Category Breakdown'}
+          </p>
+          {backendRisk
+            ? backendCategories.map(({ label, key }) => (
+                <CategoryBar key={key} label={label} score={backendRisk.subscores[key]} />
+              ))
+            : categories.map(({ label, key }) => <CategoryBar key={key} label={label} score={scores[key]} />)}
         </div>
       </div>
 
       {/* What to Improve */}
       <AnimatePresence mode="wait">
-        {improvements.length > 0 && (
+        {backendRisk ? (
+          backendHighlights.length > 0 && (
+            <motion.div
+              key={backendHighlights.map((item) => item.reason).join()}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="border-t border-outline-variant/20"
+            >
+              <div className="px-6 py-4 flex items-center gap-3 border-b border-outline-variant/10">
+                <TrendingDown size={14} className="text-primary shrink-0" />
+                <p className="font-label text-[10px] uppercase tracking-[0.3em] text-primary">Primary Risk Drivers</p>
+                <div className="flex-1 h-px bg-outline-variant/15" />
+                <span className="font-label text-[9px] uppercase tracking-widest text-zinc-600">
+                  From `risk.json`
+                </span>
+              </div>
+
+              <div className="divide-y divide-outline-variant/10">
+                {backendHighlights.map((item, i) => (
+                  <motion.div
+                    key={`${item.scoreKey}-${item.reason}`}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.25, delay: i * 0.07 }}
+                    className="px-6 py-5 flex items-start gap-4 relative overflow-hidden"
+                  >
+                    <div className="absolute inset-y-0 left-0 w-[3px] bg-red-600" />
+                    <span className="font-headline text-2xl leading-none shrink-0 ml-1 text-red-500/40">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-3 mb-1">
+                        <p className="font-label text-[10px] uppercase tracking-widest text-white/75 leading-relaxed">
+                          {item.reason.replaceAll('_', ' ')}
+                        </p>
+                        <span className="font-headline text-sm shrink-0 text-red-400">
+                          +{item.value}
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )
+        ) : improvements.length > 0 && (
           <motion.div
             key={improvements.map(i => i.action).join()}
             initial={{ opacity: 0, y: 8 }}

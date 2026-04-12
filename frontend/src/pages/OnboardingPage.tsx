@@ -30,7 +30,7 @@ type AddressSearchResult = {
   zip: string;
 };
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:5000').replace(/\/$/, '');
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:5050').replace(/\/$/, '');
 
 export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
   const [step, setStep] = useState<Step>('address');
@@ -46,6 +46,10 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
   const [selectedAddressId, setSelectedAddressId] = useState('');
   const [claimsUploadStatus, setClaimsUploadStatus] = useState('');
   const [inspectionUploadStatus, setInspectionUploadStatus] = useState('');
+  const [documentExtractionStatus, setDocumentExtractionStatus] = useState('');
+  const [isExtractingDocuments, setIsExtractingDocuments] = useState(false);
+  const [propertyUploadStatus, setPropertyUploadStatus] = useState('');
+  const [photoExtractionStatus, setPhotoExtractionStatus] = useState('');
   const blurTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -65,7 +69,7 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
 
       try {
         const response = await fetch(
-          `${API_BASE_URL}/addresses/search?q=${encodeURIComponent(query)}`,
+          `${API_BASE_URL || ''}/addresses/search?q=${encodeURIComponent(query)}`,
           { signal: controller.signal },
         );
 
@@ -79,7 +83,7 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
         if (controller.signal.aborted) return;
         console.error('Address search failed', error);
         setSearchResults([]);
-        setSearchError('Unable to load addresses right now.');
+        setSearchError('Unable to load addresses right now. Make sure the backend is running.');
       } finally {
         if (!controller.signal.aborted) {
           setIsSearching(false);
@@ -114,6 +118,16 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
       state: selected.state,
       zip: selected.zip,
     });
+
+    void fetch(`${API_BASE_URL || ''}/addresses/select`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ addressId: selected.id }),
+    }).catch((error) => {
+      console.error('Saving selected address failed', error);
+    });
   };
 
   const handleAddressInputChange = (value: string) => {
@@ -135,7 +149,7 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
     setStatus(`Uploading ${label}...`);
 
     try {
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      const response = await fetch(`${API_BASE_URL || ''}${endpoint}`, {
         method: 'POST',
         body: formData,
       });
@@ -151,22 +165,38 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
     }
   };
 
-  const handleClaimsFileChange = (file: File | null) => {
-    if (!file) {
+  const handleClaimsFileChange = (files: File[]) => {
+    if (files.length === 0) {
       setClaimsUploadStatus('');
       return;
     }
 
-    void uploadDocument(file, '/claims', setClaimsUploadStatus, 'Claims file');
+    setClaimsUploadStatus(`Uploading ${files.length} claims file${files.length === 1 ? '' : 's'}...`);
+
+    void Promise.all(files.map((file) => uploadDocument(file, '/claims', () => undefined, 'Claims file')))
+      .then(() => {
+        setClaimsUploadStatus(`Uploaded ${files.length} claims file${files.length === 1 ? '' : 's'}.`);
+      })
+      .catch(() => {
+        setClaimsUploadStatus('Some claims files failed to upload.');
+      });
   };
 
-  const handleInspectionFileChange = (file: File | null) => {
-    if (!file) {
+  const handleInspectionFileChange = (files: File[]) => {
+    if (files.length === 0) {
       setInspectionUploadStatus('');
       return;
     }
 
-    void uploadDocument(file, '/inspections', setInspectionUploadStatus, 'Inspection file');
+    setInspectionUploadStatus(`Uploading ${files.length} inspection file${files.length === 1 ? '' : 's'}...`);
+
+    void Promise.all(files.map((file) => uploadDocument(file, '/inspections', () => undefined, 'Inspection file')))
+      .then(() => {
+        setInspectionUploadStatus(`Uploaded ${files.length} inspection file${files.length === 1 ? '' : 's'}.`);
+      })
+      .catch(() => {
+        setInspectionUploadStatus('Some inspection files failed to upload.');
+      });
   };
 
   const finish = () => {
@@ -180,15 +210,62 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
       })),
     };
 
-    void fetch(`${API_BASE_URL}/quiz`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(quizPayload),
-    })
+    const propertyUploads: Promise<unknown>[] = [];
+
+    const hasPropertyUploads = Boolean(documents.blueprintFile) || documents.propertyPhotos.length > 0;
+
+    if (hasPropertyUploads) {
+      setPropertyUploadStatus('Uploading floor plan and photos...');
+      setPhotoExtractionStatus('');
+    }
+
+    if (documents.blueprintFile) {
+      propertyUploads.push(
+        uploadDocument(documents.blueprintFile, '/blueprints', () => undefined, 'Blueprint file'),
+      );
+    }
+
+    for (const photo of documents.propertyPhotos) {
+      propertyUploads.push(uploadDocument(photo, '/photos', () => undefined, 'Property photo'));
+    }
+
+    void Promise.all([
+      ...propertyUploads,
+      fetch(`${API_BASE_URL || ''}/quiz`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(quizPayload),
+      }),
+    ])
+      .then(async () => {
+        if (hasPropertyUploads) {
+          setPropertyUploadStatus('Floor plan and photos uploaded.');
+        }
+
+        if (documents.propertyPhotos.length > 0) {
+          setPhotoExtractionStatus('Extracting homeowner risk from uploaded property photos...');
+          const response = await fetch(`${API_BASE_URL || ''}/photos/extract-risk`, {
+            method: 'POST',
+          });
+          const data = (await response.json()) as { error?: string };
+          if (!response.ok) {
+            throw new Error(data.error || `Photo extraction failed with status ${response.status}`);
+          }
+          setPhotoExtractionStatus('Photo risk extraction complete and saved to final.json.');
+        }
+      })
       .catch((error) => {
-        console.error('Quiz save failed', error);
+        console.error('Onboarding completion failed', error);
+        if (hasPropertyUploads) {
+          setPropertyUploadStatus('Some property uploads failed.');
+        }
+        if (documents.propertyPhotos.length > 0) {
+          setPhotoExtractionStatus(
+            error instanceof Error ? error.message : 'Photo extraction failed.',
+          );
+        }
       })
       .finally(() => {
         const user = loadUser();
@@ -329,10 +406,11 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
             onClaimsFileChange={handleClaimsFileChange}
             onInspectionFileChange={handleInspectionFileChange}
           />
-          {(claimsUploadStatus || inspectionUploadStatus) && (
+          {(claimsUploadStatus || inspectionUploadStatus || documentExtractionStatus) && (
             <div className="mt-4 space-y-1 text-sm text-zinc-400">
               {claimsUploadStatus && <p>{claimsUploadStatus}</p>}
               {inspectionUploadStatus && <p>{inspectionUploadStatus}</p>}
+              {documentExtractionStatus && <p>{documentExtractionStatus}</p>}
             </div>
           )}
           <div className="flex justify-between mt-6">
@@ -346,10 +424,41 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
             </button>
             <button
               type="button"
-              onClick={() => setStep('quiz')}
+              onClick={() => {
+                if (documents.claimsFiles.length === 0 && documents.inspectionFiles.length === 0) {
+                  setDocumentExtractionStatus('');
+                  setStep('quiz');
+                  return;
+                }
+
+                setIsExtractingDocuments(true);
+                setDocumentExtractionStatus('Extracting homeowner risk from uploaded claim and inspection documents...');
+
+                void fetch(`${API_BASE_URL || ''}/documents/extract-risk`, {
+                  method: 'POST',
+                })
+                  .then(async (response) => {
+                    const data = (await response.json()) as { error?: string };
+                    if (!response.ok) {
+                      throw new Error(data.error || `Extraction failed with status ${response.status}`);
+                    }
+                    setDocumentExtractionStatus('Risk extraction complete and saved to final.json.');
+                    setStep('quiz');
+                  })
+                  .catch((error) => {
+                    console.error('Document extraction failed', error);
+                    setDocumentExtractionStatus(
+                      error instanceof Error ? error.message : 'Document extraction failed.',
+                    );
+                  })
+                  .finally(() => {
+                    setIsExtractingDocuments(false);
+                  });
+              }}
+              disabled={isExtractingDocuments}
               className="inline-flex items-center gap-2 border border-red-800/50 bg-red-950/40 px-6 py-3 font-label text-[10px] font-bold uppercase tracking-[0.2em] text-red-100 hover:bg-red-900/50"
             >
-              Continue
+              {isExtractingDocuments ? 'Extracting...' : 'Continue'}
               <ArrowRight size={14} />
             </button>
           </div>
@@ -383,6 +492,8 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
       {step === 'property' && (
         <>
           <PropertyBlueprintUploadForm value={documents} onChange={setDocuments} />
+          {propertyUploadStatus && <p className="mt-4 text-sm text-zinc-400">{propertyUploadStatus}</p>}
+          {photoExtractionStatus && <p className="mt-2 text-sm text-zinc-400">{photoExtractionStatus}</p>}
           <div className="flex flex-col sm:flex-row sm:justify-between gap-4 mt-6 pt-4 border-t border-red-950/25">
             <button
               type="button"
