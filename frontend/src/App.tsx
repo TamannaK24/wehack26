@@ -181,7 +181,9 @@ export default function App() {
       <TopBar isVisible={showTopBar} sidebarOpen={sidebarOpen} />
       <Sidebar currentScreen={currentScreen} onNavigate={handleNavigate} isOpen={sidebarOpen} />
 
-      <main className={`pt-32 pb-24 px-8 relative overflow-hidden transition-[padding] duration-500 ${sidebarOpen ? 'lg:pl-80' : 'lg:pl-8'}`}>
+      <main
+        className={`relative min-w-0 overflow-x-hidden pt-32 pb-24 px-8 transition-[padding] duration-500 ${sidebarOpen ? 'lg:pl-80' : 'lg:pl-8'}`}
+      >
         <div className="fixed top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full pointer-events-none"></div>
         <div className="fixed bottom-[-5%] left-[20%] w-[400px] h-[400px] bg-secondary-container/5 blur-[100px] rounded-full pointer-events-none"></div>
 

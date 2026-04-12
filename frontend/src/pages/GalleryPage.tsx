@@ -1,7 +1,96 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { NavigateFn } from '../types/navigation';
 
-const CuratorsGallery = ({ onNavigate }: { onNavigate: NavigateFn }) => {
+type PinId = 'kitchen' | 'master' | 'great' | 'den';
+
+type PinAccent = 'red' | 'amber' | 'gold';
+
+const PIN_DETAILS: Record<
+  PinId,
+  {
+    accent: PinAccent;
+    exhibitLabel: string;
+    title: string;
+    reportLabel?: string;
+    headline: string;
+    body: string;
+    actionLabel?: string;
+    actionText?: string;
+    badge: string;
+    badgeIcon: string;
+  }
+> = {
+  kitchen: {
+    accent: 'red',
+    exhibitLabel: 'Incident Report 402-A',
+    title: 'Archival Alert: High-Priority Risk',
+    reportLabel: 'Zone 3 — Primary Kitchen',
+    headline: 'Thermal Spike: East Wing Kitchen',
+    body:
+      'Sensors in the Primary Kitchen have registered unprecedented thermal fluctuations exceeding standard archival safety thresholds. This suggests a potential failure in the automated climate suppression system.',
+    actionLabel: 'Recommended Action',
+    actionText:
+      'Execute immediate vault-lock override and dispatch a physical appraisal team to recalibrate primary thermal sensors.',
+    badge: 'Critical Alert',
+    badgeIcon: 'priority_high',
+  },
+  master: {
+    accent: 'amber',
+    exhibitLabel: 'Vault access log',
+    title: 'Inquiry: Unusual timing',
+    headline: 'Master Suite',
+    body:
+      'Vault entry log shows unusual activity timing. Cross-reference with resident schedules and perimeter sensors.',
+    actionLabel: 'Recommended Action',
+    actionText: 'Schedule a discreet review of suite access windows and backup authentication logs.',
+    badge: 'Inquiry Required',
+    badgeIcon: 'info',
+  },
+  great: {
+    accent: 'gold',
+    exhibitLabel: 'Ambient monitoring',
+    title: 'Routine status',
+    headline: 'Great Room',
+    body: 'Ambient monitoring is nominal across all channels. No intervention required at this time.',
+    badge: 'Low Priority',
+    badgeIcon: 'check_circle',
+  },
+  den: {
+    accent: 'gold',
+    exhibitLabel: 'Scheduled review',
+    title: 'Routine status',
+    headline: 'Den',
+    body: 'Quarterly walkthrough is the only pending item; environment and access logs are clear.',
+    badge: 'Low Priority',
+    badgeIcon: 'check_circle',
+  },
+};
+
+const CONNECTOR_STROKE: Record<PinId, string> = {
+  kitchen: 'rgb(185 28 28)',
+  master: 'rgb(217 119 6)',
+  great: 'rgb(233 195 73)',
+  den: 'rgb(233 195 73)',
+};
+
+function panelBorderClass(accent: PinAccent): string {
+  if (accent === 'red') return 'border-red-700';
+  if (accent === 'amber') return 'border-amber-700';
+  return 'border-primary';
+}
+
+function panelIconClass(accent: PinAccent): string {
+  if (accent === 'red') return 'text-red-700';
+  if (accent === 'amber') return 'text-amber-700';
+  return 'text-primary';
+}
+
+const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }) => {
+  const [openPin, setOpenPin] = useState<PinId | null>(null);
+  const [connector, setConnector] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null);
+  const bridgeRef = useRef<HTMLDivElement>(null);
+  const sidePanelRef = useRef<HTMLElement | null>(null);
+  const pinDotRefs = useRef<Partial<Record<PinId, HTMLDivElement | null>>>({});
   useEffect(() => {
     const link1 = document.createElement('link');
     link1.rel = 'stylesheet';
@@ -20,6 +109,76 @@ const CuratorsGallery = ({ onNavigate }: { onNavigate: NavigateFn }) => {
       document.head.removeChild(link2);
     };
   }, []);
+
+  useEffect(() => {
+    if (openPin == null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpenPin(null);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [openPin]);
+
+  const updateConnector = useCallback(() => {
+    if (openPin == null) {
+      setConnector(null);
+      return;
+    }
+    const bridge = bridgeRef.current;
+    const panel = sidePanelRef.current;
+    const dot = pinDotRefs.current[openPin];
+    if (!bridge || !panel || !dot) {
+      setConnector(null);
+      return;
+    }
+    const br = bridge.getBoundingClientRect();
+    const pr = panel.getBoundingClientRect();
+    const dr = dot.getBoundingClientRect();
+    const pcx = pr.left + pr.width / 2;
+    const pcy = pr.top + pr.height / 2;
+    const dcx = dr.left + dr.width / 2;
+    const dcy = dr.top + dr.height / 2;
+    let x1 = pr.right - br.left;
+    let y1 = pcy - br.top;
+    const x2 = dcx - br.left;
+    const y2 = dcy - br.top;
+    if (pr.right <= dcx - 4) {
+      x1 = pr.right - br.left;
+      y1 = pcy - br.top;
+    } else if (pr.left >= dcx + 4) {
+      x1 = pr.left - br.left;
+      y1 = pcy - br.top;
+    } else if (pr.bottom <= dcy - 4) {
+      x1 = pcx - br.left;
+      y1 = pr.bottom - br.top;
+    } else {
+      x1 = pcx - br.left;
+      y1 = pr.top - br.top;
+    }
+    setConnector({ x1, y1, x2, y2 });
+  }, [openPin]);
+
+  useLayoutEffect(() => {
+    updateConnector();
+    const id = requestAnimationFrame(() => updateConnector());
+    return () => cancelAnimationFrame(id);
+  }, [openPin, updateConnector]);
+
+  useEffect(() => {
+    const bridge = bridgeRef.current;
+    if (!bridge) return;
+    const ro = new ResizeObserver(() => updateConnector());
+    ro.observe(bridge);
+    window.addEventListener('scroll', updateConnector, true);
+    window.addEventListener('resize', updateConnector);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('scroll', updateConnector, true);
+      window.removeEventListener('resize', updateConnector);
+    };
+  }, [updateConnector]);
+
+  const openDetail = openPin == null ? null : PIN_DETAILS[openPin];
 
   return (
     <div className="bg-background text-on-surface font-body selection:bg-primary/30 overflow-x-hidden dark">
@@ -42,15 +201,23 @@ const CuratorsGallery = ({ onNavigate }: { onNavigate: NavigateFn }) => {
           transform: perspective(1000px) rotateX(45deg) rotateZ(-45deg) translateX(-3%);
           transform-origin: center center;
         }
+        .blueprint-stage {
+          overscroll-behavior: none;
+          touch-action: manipulation;
+          /* Room for 3D transform — avoids clipping corners (do not use overflow-hidden here) */
+          padding-block: clamp(1.5rem, 6vw, 3.5rem);
+          padding-inline: clamp(0.5rem, 3vw, 1.5rem);
+        }
       `}</style>
 
-    
-      {/* Main Canvas */}
-      <main className="pt-12 min-h-screen museum-spotlight relative">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-12 grid grid-cols-12 gap-8 xl:gap-10 relative z-10">
-
-          {/* Left Column: Header, Score Gauge, Alert Card */}
-          <div className="col-span-12 lg:col-span-5 xl:col-span-4 flex flex-col gap-10">
+      {/* Canvas (nested inside App <main> — avoid duplicate main landmark) */}
+      <div className="museum-spotlight relative pb-12 pt-4 sm:pt-6">
+        <div
+          ref={bridgeRef}
+          className="relative z-10 mx-auto grid max-w-[1400px] grid-cols-12 gap-8 px-4 py-10 sm:px-6 lg:py-12 xl:gap-10"
+        >
+          {/* Left Column: Header, Score Gauge, Exhibit detail (was static alert) */}
+          <div className="col-span-12 flex flex-col gap-10 lg:col-span-5 xl:col-span-4">
 
             <section>
               <h2 className="font-label text-[10px] uppercase tracking-[0.3em] text-primary/60 mb-2">Exhibit 01</h2>
@@ -85,57 +252,79 @@ const CuratorsGallery = ({ onNavigate }: { onNavigate: NavigateFn }) => {
               </svg>
             </div>
 
-            {/* Alert Card */}
-            <div className="relative">
-              <div className="parchment-texture p-8 shadow-2xl border-l-4 border-red-700 relative z-20">
-                <div className="flex items-center gap-2 mb-4 border-b border-surface/10 pb-2">
-                  <span className="material-symbols-outlined text-red-700 text-lg">priority_high</span>
-                  <h3 className="font-headline text-xl italic font-bold text-surface">
-                    Archival Alert: High-Priority Risk
-                  </h3>
+            {openDetail != null && (
+              <aside
+                ref={sidePanelRef}
+                className={`parchment-texture relative z-30 w-full border-l-4 p-8 pr-12 shadow-2xl ${panelBorderClass(openDetail.accent)}`}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  className="absolute right-2 top-2 rounded-sm p-1.5 text-surface/70 transition-colors hover:bg-black/10 hover:text-surface"
+                  aria-label="Close exhibit detail"
+                  onClick={() => setOpenPin(null)}
+                >
+                  <span className="material-symbols-outlined text-xl leading-none">close</span>
+                </button>
+                <div className="mb-4 flex items-start gap-2 border-b border-surface/10 pb-2 pr-8">
+                  <span className={`material-symbols-outlined mt-0.5 text-lg ${panelIconClass(openDetail.accent)}`}>
+                    {openDetail.badgeIcon}
+                  </span>
+                  <h3 className="font-headline text-xl font-bold italic leading-snug text-surface">{openDetail.title}</h3>
                 </div>
                 <div className="space-y-4">
                   <div>
-                    <p className="font-label text-[10px] uppercase tracking-widest text-red-800 font-bold mb-1">
-                      Incident Report 402-A
+                    <p className="font-label mb-1 text-[10px] font-bold uppercase tracking-widest text-surface/80">
+                      {openDetail.exhibitLabel}
                     </p>
-                    <h4 className="font-serif text-lg text-surface leading-tight font-semibold italic">
-                      Thermal Spike: East Wing Kitchen
+                    {openDetail.reportLabel != null && (
+                      <p className="font-label mb-1 text-[9px] uppercase tracking-wider text-surface/60">
+                        {openDetail.reportLabel}
+                      </p>
+                    )}
+                    <h4 className="font-serif text-lg font-semibold italic leading-tight text-surface">
+                      {openDetail.headline}
                     </h4>
                   </div>
-                  <p className="font-body text-xs text-surface/90 leading-relaxed italic">
-                    Sensors in the Primary Kitchen (Zone 3) have registered unprecedented thermal fluctuations
-                    exceeding standard archival safety thresholds. This suggests a potential failure in the
-                    automated climate suppression system.
-                  </p>
-                  <div className="bg-white/30 p-3 border border-red-700/20">
-                    <p className="font-label text-[9px] uppercase tracking-[0.2em] text-red-900 font-bold mb-1">
-                      Recommended Action
-                    </p>
-                    <p className="font-body text-[11px] text-surface font-medium italic">
-                      Execute immediate vault-lock override and dispatch a physical appraisal team to
-                      recalibrate primary thermal sensors.
-                    </p>
+                  <p className="font-body text-xs italic leading-relaxed text-surface/90">{openDetail.body}</p>
+                  {openDetail.actionLabel != null && openDetail.actionText != null && (
+                    <div
+                      className={`border p-3 ${
+                        openDetail.accent === 'red'
+                          ? 'border-red-700/25 bg-white/30'
+                          : openDetail.accent === 'amber'
+                            ? 'border-amber-700/25 bg-white/25'
+                            : 'border-primary/20 bg-white/20'
+                      }`}
+                    >
+                      <p className="font-label mb-1 text-[9px] font-bold uppercase tracking-[0.2em] text-surface">
+                        {openDetail.actionLabel}
+                      </p>
+                      <p className="font-body text-[11px] font-medium italic text-surface">{openDetail.actionText}</p>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between border-t border-surface/10 pt-3">
+                    <span
+                      className={`font-label text-[9px] font-bold uppercase tracking-widest ${panelIconClass(openDetail.accent)}`}
+                    >
+                      {openDetail.badge}
+                    </span>
+                    <span className={`material-symbols-outlined text-lg ${panelIconClass(openDetail.accent)}`}>
+                      {openDetail.badgeIcon}
+                    </span>
                   </div>
                 </div>
-              </div>
-              {/* Connector line toward red pin on blueprint */}
-              <div
-                className="absolute top-1/2 left-[calc(100%-8px)] w-[40vw] h-[1px] bg-red-700/40 hidden lg:block origin-left pointer-events-none z-10"
-                style={{ transform: 'translateY(-50%) rotate(2deg)' }}
-              >
-                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-red-700 rotate-45 opacity-60" />
-              </div>
-            </div>
+              </aside>
+            )}
           </div>
 
-          {/* Right Column: Isometric Blueprint Map */}
-          <div className="col-span-12 lg:col-span-7 xl:col-span-8 relative flex items-center justify-center min-h-[420px] lg:min-h-[500px]">
-            <div className="relative w-full max-w-xl lg:max-w-2xl aspect-[4/3] flex items-center justify-center">
-              <div className="relative w-full h-full isometric-view transition-transform duration-1000 hover:scale-[1.02]">
-
-                {/* Blueprint base */}
-                <div className="absolute inset-0 bg-surface-container-low/10 border border-primary/10 rounded-sm shadow-2xl overflow-hidden backdrop-blur-sm">
+          {/* Right Column: Isometric blueprint (overflow visible so 3D tilt is not cropped) */}
+          <div className="blueprint-stage relative col-span-12 w-full min-w-0 overflow-visible lg:col-span-7 xl:col-span-8">
+            <div className="relative mx-auto w-full max-w-xl lg:max-w-2xl">
+              <div className="relative aspect-[700/520] w-full overflow-visible rounded-sm">
+                <div className="absolute inset-0 isometric-view transition-transform duration-1000 hover:scale-[1.02]">
+                  {/* Blueprint base */}
+                  <div className="absolute inset-0 rounded-sm border border-primary/10 bg-surface-container-low/10 shadow-2xl backdrop-blur-sm">
                   <div
                     className="absolute inset-0 opacity-5"
                     style={{
@@ -144,75 +333,271 @@ const CuratorsGallery = ({ onNavigate }: { onNavigate: NavigateFn }) => {
                       backgroundSize: '30px 30px',
                     }}
                   />
-                </div>
+                  </div>
 
-                <div className="relative w-full h-full p-8 flex items-center justify-center">
-                  <img
-                    alt="architectural floor plan"
-                    className="max-w-[90%] max-h-[90%] object-contain filter grayscale invert brightness-[0.5] contrast-125 opacity-40"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCH01Yc65ZlyC8QvX7W90YkZ6_L-2zO9QfM5e5QoN3Z9G4r_oM7vU8_y9lD_r7YmE6f7n8m9p0q1r2s3t4u5v6w7x8y9z0_A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6"
-                  />
+                  {/* SVG + pins: same aspect as viewBox — fills stage, no nested scroll */}
+                  <div className="relative h-full w-full p-3 sm:p-5">
+                    <div className="relative h-full w-full cursor-default" onClick={() => setOpenPin(null)}>
+                  <svg
+                    viewBox="0 0 700 520"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="absolute inset-0 block h-full w-full"
+                    preserveAspectRatio="xMidYMid meet"
+                  >
+                    <defs>
+                      <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e9c349" strokeWidth="0.3" opacity="0.25" />
+                      </pattern>
+                    </defs>
 
-                  {/* Red Pin — High Priority */}
-                  <div className="absolute top-[38%] left-[32%] z-20 group">
-                    <div className="w-5 h-5 bg-red-500 rounded-full red-glow animate-pulse cursor-pointer border-2 border-white/20" />
-                    <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-700 rounded-full border border-white" />
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-60 parchment-texture p-4 shadow-2xl border border-[#c5b38a] rounded-sm transform origin-bottom scale-0 group-hover:scale-100 transition-all duration-300 z-30">
-                      <h4 className="font-headline text-lg text-surface font-bold border-b border-surface/20 mb-2 pb-1">
-                        Primary Kitchen
-                      </h4>
-                      <p className="font-body text-[11px] text-surface leading-relaxed italic mb-2">
-                        High Priority: Sensor recalibration required immediately due to thermal spikes.
-                      </p>
-                      <div className="flex justify-between items-center">
-                        <span className="font-label text-[9px] uppercase tracking-widest text-red-700 font-bold">
-                          Critical Alert
-                        </span>
-                        <span className="material-symbols-outlined text-red-700 text-base">priority_high</span>
-                      </div>
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 w-3 h-3 parchment-texture rotate-45 -mt-1.5 border-r border-b border-[#c5b38a]" />
+                    <rect width="700" height="520" fill="#111317" rx="4" />
+                    <rect width="700" height="520" fill="url(#grid)" rx="4" />
+
+                    {/* Garage */}
+                    <polygon points="30,340 160,210 245,295 115,425" fill="#1a1d22" stroke="#e9c349" strokeWidth="1.2" opacity="0.85" />
+                    <text x="122" y="330" textAnchor="middle" fill="#e9c349" fontSize="9" fontFamily="serif" opacity="0.7" transform="rotate(-45,122,330)">10&apos; Clg</text>
+                    <text x="122" y="342" textAnchor="middle" fill="#e9c349" fontSize="11" fontFamily="serif" fontWeight="bold" opacity="0.9" transform="rotate(-45,122,342)">Garage</text>
+                    <text x="122" y="354" textAnchor="middle" fill="#e9c349" fontSize="9" fontFamily="serif" opacity="0.7" transform="rotate(-45,122,354)">21/7x29/0</text>
+
+                    {/* Master Suite */}
+                    <rect x="50" y="60" width="130" height="120" fill="#1a1d22" stroke="#e9c349" strokeWidth="1.2" opacity="0.85" />
+                    <text x="115" y="108" textAnchor="middle" fill="#e9c349" fontSize="9" fontFamily="serif" opacity="0.7">Vaulted</text>
+                    <text x="115" y="122" textAnchor="middle" fill="#e9c349" fontSize="12" fontFamily="serif" fontWeight="bold" opacity="0.9">Master Suite</text>
+                    <text x="115" y="137" textAnchor="middle" fill="#e9c349" fontSize="9" fontFamily="serif" opacity="0.7">14/0x16/0</text>
+                    <rect x="56" y="145" width="28" height="28" fill="none" stroke="#e9c349" strokeWidth="0.8" opacity="0.5" />
+                    <text x="70" y="163" textAnchor="middle" fill="#e9c349" fontSize="8" fontFamily="serif" opacity="0.6">M.B.</text>
+                    <rect x="140" y="145" width="30" height="28" fill="none" stroke="#e9c349" strokeWidth="0.8" opacity="0.5" />
+                    <text x="155" y="163" textAnchor="middle" fill="#e9c349" fontSize="8" fontFamily="serif" opacity="0.6">W/I</text>
+
+                    {/* Dining Room */}
+                    <rect x="190" y="60" width="120" height="100" fill="#1e2028" stroke="#e9c349" strokeWidth="1.2" opacity="0.85" />
+                    <text x="250" y="100" textAnchor="middle" fill="#e9c349" fontSize="9" fontFamily="serif" opacity="0.7">9&apos; Clg</text>
+                    <text x="250" y="114" textAnchor="middle" fill="#e9c349" fontSize="11" fontFamily="serif" fontWeight="bold" opacity="0.9">Dining Rm</text>
+                    <text x="250" y="128" textAnchor="middle" fill="#e9c349" fontSize="9" fontFamily="serif" opacity="0.7">13/0x12/0</text>
+
+                    {/* Outdoor Living */}
+                    <rect x="320" y="30" width="150" height="105" fill="#16191e" stroke="#e9c349" strokeWidth="1.2" strokeDasharray="5,3" opacity="0.7" />
+                    <text x="395" y="72" textAnchor="middle" fill="#e9c349" fontSize="11" fontFamily="serif" fontWeight="bold" opacity="0.8">Outdoor</text>
+                    <text x="395" y="86" textAnchor="middle" fill="#e9c349" fontSize="11" fontFamily="serif" fontWeight="bold" opacity="0.8">Living Rm</text>
+                    <text x="395" y="100" textAnchor="middle" fill="#e9c349" fontSize="9" fontFamily="serif" opacity="0.6">20/0x20/4</text>
+
+                    {/* Bed 2 */}
+                    <rect x="490" y="45" width="155" height="110" fill="#1a1d22" stroke="#e9c349" strokeWidth="1.2" opacity="0.85" />
+                    <text x="568" y="86" textAnchor="middle" fill="#e9c349" fontSize="9" fontFamily="serif" opacity="0.7">9&apos; CLG</text>
+                    <text x="568" y="100" textAnchor="middle" fill="#e9c349" fontSize="12" fontFamily="serif" fontWeight="bold" opacity="0.9">Bed #2</text>
+                    <text x="568" y="114" textAnchor="middle" fill="#e9c349" fontSize="9" fontFamily="serif" opacity="0.7">17/0x12/0</text>
+                    <rect x="492" y="135" width="32" height="24" fill="none" stroke="#e9c349" strokeWidth="0.7" opacity="0.5" />
+                    <text x="508" y="151" textAnchor="middle" fill="#e9c349" fontSize="7" opacity="0.5">W/I</text>
+                    <rect x="530" y="135" width="28" height="24" fill="none" stroke="#e9c349" strokeWidth="0.7" opacity="0.5" />
+                    <text x="544" y="151" textAnchor="middle" fill="#e9c349" fontSize="7" opacity="0.5">B</text>
+
+                    {/* Bed 3 */}
+                    <rect x="490" y="175" width="155" height="110" fill="#1a1d22" stroke="#e9c349" strokeWidth="1.2" opacity="0.85" />
+                    <text x="568" y="212" textAnchor="middle" fill="#e9c349" fontSize="9" fontFamily="serif" opacity="0.7">9&apos; Clg</text>
+                    <text x="568" y="226" textAnchor="middle" fill="#e9c349" fontSize="12" fontFamily="serif" fontWeight="bold" opacity="0.9">Bed #3</text>
+                    <text x="568" y="240" textAnchor="middle" fill="#e9c349" fontSize="9" fontFamily="serif" opacity="0.7">13/2x13/0</text>
+                    <rect x="492" y="256" width="32" height="24" fill="none" stroke="#e9c349" strokeWidth="0.7" opacity="0.5" />
+                    <text x="508" y="272" textAnchor="middle" fill="#e9c349" fontSize="7" opacity="0.5">W/I</text>
+                    <rect x="530" y="256" width="28" height="24" fill="none" stroke="#e9c349" strokeWidth="0.7" opacity="0.5" />
+                    <text x="544" y="272" textAnchor="middle" fill="#e9c349" fontSize="7" opacity="0.5">B</text>
+
+                    {/* Great Room */}
+                    <rect x="310" y="145" width="175" height="175" fill="#1e2028" stroke="#e9c349" strokeWidth="1.5" opacity="0.9" />
+                    <text x="397" y="215" textAnchor="middle" fill="#e9c349" fontSize="9" fontFamily="serif" opacity="0.7">10&apos; CLG</text>
+                    <text x="397" y="232" textAnchor="middle" fill="#e9c349" fontSize="9" fontFamily="serif" opacity="0.6">2 Story</text>
+                    <text x="397" y="248" textAnchor="middle" fill="#e9c349" fontSize="14" fontFamily="serif" fontWeight="bold" opacity="0.95">Great Rm</text>
+                    <text x="397" y="264" textAnchor="middle" fill="#e9c349" fontSize="9" fontFamily="serif" opacity="0.7">20/0x20/0</text>
+
+                    {/* Kitchen */}
+                    <rect x="190" y="168" width="115" height="100" fill="#1a1d22" stroke="#e9c349" strokeWidth="1.2" opacity="0.85" />
+                    <text x="247" y="222" textAnchor="middle" fill="#e9c349" fontSize="12" fontFamily="serif" fontWeight="bold" opacity="0.9">Kitchen</text>
+                    <rect x="220" y="230" width="55" height="28" fill="none" stroke="#e9c349" strokeWidth="0.7" opacity="0.4" />
+                    <circle cx="232" cy="244" r="5" fill="none" stroke="#e9c349" strokeWidth="0.7" opacity="0.4" />
+                    <circle cx="248" cy="244" r="5" fill="none" stroke="#e9c349" strokeWidth="0.7" opacity="0.4" />
+                    <circle cx="263" cy="244" r="5" fill="none" stroke="#e9c349" strokeWidth="0.7" opacity="0.4" />
+
+                    {/* Utility */}
+                    <rect x="190" y="275" width="90" height="70" fill="#1a1d22" stroke="#e9c349" strokeWidth="1.2" opacity="0.85" />
+                    <text x="235" y="315" textAnchor="middle" fill="#e9c349" fontSize="11" fontFamily="serif" fontWeight="bold" opacity="0.9">Utility</text>
+
+                    {/* Foyer */}
+                    <rect x="290" y="330" width="110" height="85" fill="#1e2028" stroke="#e9c349" strokeWidth="1.2" opacity="0.85" />
+                    <text x="345" y="362" textAnchor="middle" fill="#e9c349" fontSize="9" fontFamily="serif" opacity="0.6">2 Story</text>
+                    <text x="345" y="377" textAnchor="middle" fill="#e9c349" fontSize="12" fontFamily="serif" fontWeight="bold" opacity="0.9">Foyer</text>
+                    <line x1="300" y1="385" x2="390" y2="385" stroke="#e9c349" strokeWidth="0.5" opacity="0.3" />
+                    <line x1="300" y1="394" x2="390" y2="394" stroke="#e9c349" strokeWidth="0.5" opacity="0.3" />
+                    <line x1="300" y1="403" x2="390" y2="403" stroke="#e9c349" strokeWidth="0.5" opacity="0.3" />
+
+                    {/* Powder */}
+                    <rect x="410" y="330" width="70" height="55" fill="#1a1d22" stroke="#e9c349" strokeWidth="1.2" opacity="0.85" />
+                    <text x="445" y="361" textAnchor="middle" fill="#e9c349" fontSize="9" fontFamily="serif" fontWeight="bold" opacity="0.8">Powder</text>
+                    <ellipse cx="445" cy="373" rx="9" ry="7" fill="none" stroke="#e9c349" strokeWidth="0.6" opacity="0.4" />
+
+                    {/* Den */}
+                    <rect x="390" y="395" width="140" height="105" fill="#1a1d22" stroke="#e9c349" strokeWidth="1.2" opacity="0.85" />
+                    <text x="460" y="432" textAnchor="middle" fill="#e9c349" fontSize="9" fontFamily="serif" opacity="0.7">12&apos; CLG</text>
+                    <text x="460" y="448" textAnchor="middle" fill="#e9c349" fontSize="13" fontFamily="serif" fontWeight="bold" opacity="0.9">Den</text>
+                    <text x="460" y="463" textAnchor="middle" fill="#e9c349" fontSize="9" fontFamily="serif" opacity="0.7">12/0x11/6</text>
+
+                    {/* Dimension line */}
+                    <line x1="190" y1="510" x2="490" y2="510" stroke="#e9c349" strokeWidth="0.8" opacity="0.4" />
+                    <line x1="190" y1="505" x2="190" y2="515" stroke="#e9c349" strokeWidth="0.8" opacity="0.4" />
+                    <line x1="490" y1="505" x2="490" y2="515" stroke="#e9c349" strokeWidth="0.8" opacity="0.4" />
+                    <text x="340" y="508" textAnchor="middle" fill="#e9c349" fontSize="9" opacity="0.5">81/5</text>
+                  </svg>
+
+                  {/* Pin hit targets — detail panel + connector line on selection */}
+                  <div className="pointer-events-none absolute inset-0 z-20">
+                    <div
+                      className="pointer-events-auto absolute z-20 -translate-x-1/2 -translate-y-1/2"
+                      style={{ left: `${(247 / 700) * 100}%`, top: `${(200 / 520) * 100}%` }}
+                      role="button"
+                      tabIndex={0}
+                      aria-expanded={openPin === 'kitchen'}
+                      aria-label="Primary Kitchen — open exhibit detail"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenPin((p) => (p === 'kitchen' ? null : 'kitchen'));
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setOpenPin((p) => (p === 'kitchen' ? null : 'kitchen'));
+                        }
+                      }}
+                    >
+                      <div
+                        ref={(el) => {
+                          pinDotRefs.current.kitchen = el;
+                        }}
+                        className={`red-glow h-5 w-5 cursor-pointer rounded-full border-2 border-white/20 bg-red-500 animate-pulse transition-shadow ${
+                          openPin === 'kitchen' ? 'ring-2 ring-white/90 ring-offset-2 ring-offset-transparent' : ''
+                        }`}
+                      />
+                      <div className="pointer-events-none absolute -right-1 -top-1 h-2 w-2 rounded-full border border-white bg-red-700" />
+                    </div>
+
+                    <div
+                      className="pointer-events-auto absolute z-10 -translate-x-1/2 -translate-y-1/2"
+                      style={{ left: `${(115 / 700) * 100}%`, top: `${(100 / 520) * 100}%` }}
+                      role="button"
+                      tabIndex={0}
+                      aria-expanded={openPin === 'master'}
+                      aria-label="Master Suite — open exhibit detail"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenPin((p) => (p === 'master' ? null : 'master'));
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setOpenPin((p) => (p === 'master' ? null : 'master'));
+                        }
+                      }}
+                    >
+                      <div
+                        ref={(el) => {
+                          pinDotRefs.current.master = el;
+                        }}
+                        className={`amber-glow h-3.5 w-3.5 cursor-pointer rounded-full border border-background bg-amber-500 transition-shadow ${
+                          openPin === 'master' ? 'ring-2 ring-amber-200 ring-offset-2 ring-offset-transparent' : ''
+                        }`}
+                      />
+                    </div>
+
+                    <div
+                      className="pointer-events-auto absolute z-10 -translate-x-1/2 -translate-y-1/2"
+                      style={{ left: `${(397 / 700) * 100}%`, top: `${(260 / 520) * 100}%` }}
+                      role="button"
+                      tabIndex={0}
+                      aria-expanded={openPin === 'great'}
+                      aria-label="Great Room — open exhibit detail"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenPin((p) => (p === 'great' ? null : 'great'));
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setOpenPin((p) => (p === 'great' ? null : 'great'));
+                        }
+                      }}
+                    >
+                      <div
+                        ref={(el) => {
+                          pinDotRefs.current.great = el;
+                        }}
+                        className={`gold-glow h-3 w-3 cursor-pointer rounded-full border border-background bg-primary transition-shadow ${
+                          openPin === 'great' ? 'ring-2 ring-primary ring-offset-2 ring-offset-transparent' : ''
+                        }`}
+                      />
+                    </div>
+
+                    <div
+                      className="pointer-events-auto absolute z-10 -translate-x-1/2 -translate-y-1/2"
+                      style={{ left: `${(460 / 700) * 100}%`, top: `${(450 / 520) * 100}%` }}
+                      role="button"
+                      tabIndex={0}
+                      aria-expanded={openPin === 'den'}
+                      aria-label="Den — open exhibit detail"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenPin((p) => (p === 'den' ? null : 'den'));
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setOpenPin((p) => (p === 'den' ? null : 'den'));
+                        }
+                      }}
+                    >
+                      <div
+                        ref={(el) => {
+                          pinDotRefs.current.den = el;
+                        }}
+                        className={`h-3 w-3 cursor-pointer rounded-full border border-primary/40 bg-primary/80 transition-all hover:bg-primary ${
+                          openPin === 'den' ? 'ring-2 ring-primary ring-offset-2 ring-offset-transparent' : ''
+                        }`}
+                      />
                     </div>
                   </div>
-
-                  {/* Amber Pin — Medium Priority */}
-                  <div className="absolute top-[22%] left-[55%] z-10 group">
-                    <div className="w-3.5 h-3.5 bg-amber-500 rounded-full amber-glow cursor-pointer border border-background" />
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-60 parchment-texture p-4 shadow-2xl border border-[#c5b38a] rounded-sm transform origin-bottom scale-0 group-hover:scale-100 transition-all duration-300 z-30">
-                      <h4 className="font-headline text-lg text-surface font-bold border-b border-surface/20 mb-2 pb-1">
-                        Master Suite
-                      </h4>
-                      <p className="font-body text-[11px] text-surface leading-relaxed italic mb-2">
-                        Medium Priority: Vault entry log shows unusual activity timing.
-                      </p>
-                      <div className="flex justify-between items-center">
-                        <span className="font-label text-[9px] uppercase tracking-widest text-amber-700 font-bold">
-                          Inquiry Required
-                        </span>
-                        <span className="material-symbols-outlined text-amber-700 text-base">info</span>
-                      </div>
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 w-3 h-3 parchment-texture rotate-45 -mt-1.5 border-r border-b border-[#c5b38a]" />
-                    </div>
-                  </div>
-
-                  {/* Gold Pin — Low Priority */}
-                  <div className="absolute top-[68%] left-[42%] z-10 group">
-                    <div className="w-3 h-3 bg-primary rounded-full gold-glow cursor-pointer border border-background" />
-                  </div>
-
-                  {/* Gold Pin — Low Priority */}
-                  <div className="absolute top-[52%] left-[68%] z-10 group">
-                    <div className="w-3 h-3 bg-primary/80 rounded-full border border-primary/40 hover:bg-primary transition-all cursor-pointer" />
                   </div>
                 </div>
               </div>
             </div>
+            </div>
 
-            {/* Ambient glows */}
-            <div className="absolute bottom-[-10%] right-[-5%] w-96 h-96 bg-primary/5 rounded-full blur-[120px]" />
-            <div className="absolute top-[-5%] left-[-5%] w-72 h-72 bg-primary/5 rounded-full blur-[100px]" />
+            {/* Ambient glows (positioned to blueprint column) */}
+            <div className="pointer-events-none absolute bottom-[-10%] right-[-5%] z-0 h-96 w-96 rounded-full bg-primary/5 blur-[120px]" />
+            <div className="pointer-events-none absolute left-[-5%] top-[-5%] z-0 h-72 w-72 rounded-full bg-primary/5 blur-[100px]" />
           </div>
+
+          {connector != null && openPin != null && (
+            <svg
+              className="pointer-events-none absolute inset-0 z-[25] h-full w-full overflow-visible"
+              aria-hidden
+            >
+              <line
+                x1={connector.x1}
+                y1={connector.y1}
+                x2={connector.x2}
+                y2={connector.y2}
+                stroke={CONNECTOR_STROKE[openPin]}
+                strokeWidth={2}
+                strokeOpacity={0.72}
+                strokeLinecap="round"
+              />
+              <circle
+                cx={connector.x2}
+                cy={connector.y2}
+                r={5}
+                fill={CONNECTOR_STROKE[openPin]}
+                fillOpacity={0.92}
+              />
+            </svg>
+          )}
         </div>
-      </main>
+      </div>
 
       {/* Chatbot FAB */}
       <div className="fixed bottom-10 right-10 z-[60] group">
