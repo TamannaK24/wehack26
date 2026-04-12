@@ -85,8 +85,20 @@ function panelIconClass(accent: PinAccent): string {
   return 'text-rose-300';
 }
 
+type ChatMessage = { id: string; role: 'user' | 'bot'; text: string };
+
 const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }) => {
   const [openPin, setOpenPin] = useState<PinId | null>(null);
+  const [commsOpen, setCommsOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
+    {
+      id: 'welcome',
+      role: 'bot',
+      text: 'Nocturne comms online. Ask about the floor plan, zones, or vault status.',
+    },
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const chatEndRef = useRef<HTMLDivElement>(null);
   const [blueprintLockedFlat, setBlueprintLockedFlat] = useState(false);
   const [connector, setConnector] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null);
   const bridgeRef = useRef<HTMLDivElement>(null);
@@ -105,13 +117,43 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
   }, []);
 
   useEffect(() => {
-    if (openPin == null) return;
+    if (openPin == null && !commsOpen) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpenPin(null);
+      if (e.key === 'Escape') {
+        if (commsOpen) setCommsOpen(false);
+        else setOpenPin(null);
+      }
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [openPin]);
+  }, [openPin, commsOpen]);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages, commsOpen]);
+
+  const sendChatMessage = useCallback(() => {
+    const trimmed = chatInput.trim();
+    if (!trimmed) return;
+    const userMsg: ChatMessage = {
+      id: `u-${Date.now()}`,
+      role: 'user',
+      text: trimmed,
+    };
+    setChatMessages((prev) => [...prev, userMsg]);
+    setChatInput('');
+    window.setTimeout(() => {
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          id: `b-${Date.now()}`,
+          role: 'bot',
+          text:
+            'Message received. Field routing is simulated for this demo — connect your API to enable live intel.',
+        },
+      ]);
+    }, 600);
+  }, [chatInput]);
 
   const updateConnector = useCallback(() => {
     if (openPin == null) {
@@ -265,48 +307,78 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
       <div className="heist-spotlight relative min-h-[calc(100vh-3rem)] pb-10 pt-5 sm:min-h-[calc(100vh-4rem)] sm:pt-8">
         <div
           ref={bridgeRef}
-          className="relative z-10 mx-auto grid w-full max-w-[min(100%,1920px)] grid-cols-12 items-start gap-6 px-4 py-6 sm:gap-8 sm:px-6 sm:py-8 lg:gap-10 lg:px-8 lg:py-10 xl:px-12"
+          className="relative z-10 mx-auto w-full max-w-[min(100%,1920px)] px-0 sm:px-2 lg:px-4"
         >
-          {/* Left column: hero + row with gauge + intel side‑by‑side (lg+) so both stay visible */}
-          <div className="col-span-12 flex min-h-0 flex-col gap-6 sm:gap-8 lg:col-span-6 xl:col-span-5">
-            <section className="shrink-0">
-              <h2 className="font-label text-[10px] uppercase tracking-[0.35em] text-white/80 mb-2 sm:mb-3">Crew brief · Run 01</h2>
-              <h1 className="font-headline text-5xl font-normal uppercase tracking-[0.02em] text-white leading-[0.95] sm:text-6xl lg:text-7xl">
-                Target <br />
-                <span className="text-red-400">floor plan</span>
-              </h1>
-            </section>
+          {/* Pin↔panel connector: overlay on bridge (not a grid row — avoids breaking the 12-col layout) */}
+          {connector != null && openPin != null && (
+            <svg
+              className="pointer-events-none absolute inset-0 z-[25] h-full min-h-[320px] w-full overflow-visible"
+              aria-hidden
+            >
+              <line
+                x1={connector.x1}
+                y1={connector.y1}
+                x2={connector.x2}
+                y2={connector.y2}
+                stroke={CONNECTOR_STROKE[openPin]}
+                strokeWidth={2}
+                strokeOpacity={0.88}
+                strokeLinecap="round"
+              />
+              <circle
+                cx={connector.x2}
+                cy={connector.y2}
+                r={5}
+                fill={CONNECTOR_STROKE[openPin]}
+                fillOpacity={0.92}
+              />
+            </svg>
+          )}
 
-            <div className="flex min-h-0 flex-col gap-5 lg:flex-row lg:items-start lg:gap-4">
-              {/* Risk score — fixed square; do not stretch with aside height or SVG warps to ellipse */}
-              <div className="relative z-20 mx-auto aspect-square w-[11.5rem] shrink-0 self-start sm:w-[12.5rem] lg:mx-0 lg:w-[13rem]">
-                {/* viewBox scales the arc with the box; r=110 in 240×240 matches strokeDash math */}
-                <svg
-                  className="absolute inset-0 h-full w-full overflow-visible -rotate-90"
-                  viewBox="0 0 240 240"
-                  preserveAspectRatio="xMidYMid meet"
-                  aria-hidden
+          <div className="relative z-10 grid w-full grid-cols-12 items-start gap-6 py-6 sm:gap-8 sm:py-8 lg:gap-10 lg:py-10">
+          {/* Left column: hero + row with gauge + intel side‑by‑side (lg+) so both stay visible */}
+          <div className="col-span-12 flex min-h-0 w-full min-w-0 flex-col gap-6 sm:gap-8 lg:col-span-6 xl:col-span-5">
+            <section className="shrink-0">
+              <h2 className="font-label text-[10px] uppercase tracking-[0.35em] text-white/80 mb-3 sm:mb-4">Crew brief · Run 01</h2>
+              <div className="flex flex-col items-stretch gap-6 sm:flex-row sm:items-center sm:justify-between sm:gap-6 lg:gap-10">
+                <h1 className="min-w-0 flex-1 font-headline text-5xl font-normal uppercase tracking-[0.02em] text-white leading-[0.95] sm:text-6xl lg:text-7xl">
+                  Target <br />
+                  <span className="text-red-400">floor plan</span>
+                </h1>
+                {/* Risk score — aligned with title row */}
+                <div
+                  className="relative z-20 mx-auto aspect-square w-[10rem] shrink-0 sm:mx-0 sm:w-[11.25rem] lg:w-[12rem]"
+                  aria-label="Heat index 84, elevated"
                 >
-                  <circle
-                    className="text-red-500/90"
-                    cx="120"
-                    cy="120"
-                    r="110"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeDasharray="691"
-                    strokeDashoffset="110"
-                    strokeLinecap="round"
-                    strokeWidth="10"
-                  />
-                </svg>
-                <div className="absolute inset-[14%] flex flex-col items-center justify-center rounded-full bg-[#0a0506] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]">
-                  <span className="font-label text-[9px] uppercase tracking-widest text-white/85 mb-0.5 sm:text-[10px]">Heat index</span>
-                  <div className="font-headline text-4xl font-normal text-white sm:text-5xl">84</div>
-                  <span className="font-body italic text-white/80 text-xs mt-0.5 sm:text-sm">Elevated</span>
+                  <svg
+                    className="absolute inset-0 h-full w-full overflow-visible -rotate-90"
+                    viewBox="0 0 240 240"
+                    preserveAspectRatio="xMidYMid meet"
+                    aria-hidden
+                  >
+                    <circle
+                      className="text-red-500/90"
+                      cx="120"
+                      cy="120"
+                      r="110"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeDasharray="691"
+                      strokeDashoffset="110"
+                      strokeLinecap="round"
+                      strokeWidth="10"
+                    />
+                  </svg>
+                  <div className="absolute inset-[14%] flex flex-col items-center justify-center rounded-full bg-[#0a0506] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]">
+                    <span className="font-label text-[8px] uppercase tracking-widest text-white/85 mb-0.5 sm:text-[9px]">Heat index</span>
+                    <div className="font-headline text-3xl font-normal text-white sm:text-4xl">84</div>
+                    <span className="font-body italic text-white/80 text-[11px] mt-0.5 sm:text-xs">Elevated</span>
+                  </div>
                 </div>
               </div>
+            </section>
 
+            <div className="flex min-h-0 w-full flex-col gap-5 lg:flex-row lg:items-stretch lg:gap-5">
               {openDetail != null && (
                 <aside
                   ref={sidePanelRef}
@@ -651,17 +723,17 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
                       81/5
                     </text>
 
-                    {/* Area summary (reference sheet style) */}
-                    <text x="472" y="458" textAnchor="start" fill="#ffffff" fontSize="7.5" opacity="0.5">
+                    {/* Area summary (reference sheet style) — nudged right to clear Den / blueprint */}
+                    <text x="492" y="458" textAnchor="start" fill="#ffffff" fontSize="7.5" opacity="0.5">
                       Main Floor: 2,757 Sq. Ft.
                     </text>
-                    <text x="472" y="470" textAnchor="start" fill="#ffffff" fontSize="7.5" opacity="0.5">
+                    <text x="492" y="470" textAnchor="start" fill="#ffffff" fontSize="7.5" opacity="0.5">
                       Upper Floor: 554 Sq. Ft.
                     </text>
-                    <text x="472" y="482" textAnchor="start" fill="#ffffff" fontSize="7.5" opacity="0.5">
+                    <text x="492" y="482" textAnchor="start" fill="#ffffff" fontSize="7.5" opacity="0.5">
                       Total: 3,311 Sq. Ft.
                     </text>
-                    <text x="472" y="494" textAnchor="start" fill="#ffffff" fontSize="7.5" opacity="0.5">
+                    <text x="492" y="494" textAnchor="start" fill="#ffffff" fontSize="7.5" opacity="0.5">
                       + Garage: 659 Sq. Ft.
                     </text>
 
@@ -794,53 +866,122 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
             <div className="pointer-events-none absolute left-[-5%] top-[-5%] z-0 h-72 w-72 rounded-full bg-red-950/25 blur-[100px]" />
           </div>
 
-          {connector != null && openPin != null && (
-            <svg
-              className="pointer-events-none absolute inset-0 z-[25] h-full w-full overflow-visible"
-              aria-hidden
-            >
-              <line
-                x1={connector.x1}
-                y1={connector.y1}
-                x2={connector.x2}
-                y2={connector.y2}
-                stroke={CONNECTOR_STROKE[openPin]}
-                strokeWidth={2}
-                strokeOpacity={0.88}
-                strokeLinecap="round"
-              />
-              <circle
-                cx={connector.x2}
-                cy={connector.y2}
-                r={5}
-                fill={CONNECTOR_STROKE[openPin]}
-                fillOpacity={0.92}
-              />
-            </svg>
-          )}
+          </div>
         </div>
       </div>
 
-      {/* Chatbot FAB */}
-      <div className="fixed bottom-10 right-10 z-[60] group">
-        <div className="relative">
-          <div className="absolute bottom-full right-0 mb-4 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap translate-y-2 group-hover:translate-y-0 duration-300">
-            <span className="bg-[#140808] text-white px-6 py-3 font-label text-sm border border-red-900/60 shadow-2xl shadow-red-950/50 block">
-              Open comms
-            </span>
+      {/* Chatbot FAB + popup */}
+      {commsOpen && (
+        <button
+          type="button"
+          className="fixed inset-0 z-[55] cursor-default bg-black/55 backdrop-blur-[2px]"
+          aria-label="Close comms"
+          onClick={() => setCommsOpen(false)}
+        />
+      )}
+      {commsOpen && (
+        <div
+          id="comms-chat-panel"
+          className="fixed bottom-28 right-4 z-[60] flex max-h-[min(72vh,520px)] w-[min(100vw-2rem,400px)] flex-col overflow-hidden rounded-sm border border-red-900/50 bg-[#0a0606] shadow-[0_24px_64px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(248,113,113,0.08)] sm:right-10 sm:bottom-32"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="comms-panel-title"
+        >
+          <div className="flex shrink-0 items-center justify-between border-b border-red-950/50 bg-[#120808] px-4 py-3">
+            <div>
+              <p id="comms-panel-title" className="font-headline text-sm uppercase tracking-wide text-white">
+                Field comms
+              </p>
+              <p className="font-label text-[9px] uppercase tracking-widest text-red-400/70">Encrypted · sim</p>
+            </div>
+            <button
+              type="button"
+              className="rounded-sm p-2 text-white/60 transition-colors hover:bg-red-950/50 hover:text-white"
+              aria-label="Close chat"
+              onClick={() => setCommsOpen(false)}
+            >
+              <span className="material-symbols-outlined text-xl leading-none">close</span>
+            </button>
           </div>
+          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-4 py-4">
+            {chatMessages.map((m) => (
+              <div
+                key={m.id}
+                className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
+                  className={`max-w-[90%] rounded-sm px-3 py-2 font-body text-xs leading-relaxed sm:text-sm ${
+                    m.role === 'user'
+                      ? 'bg-red-950/50 text-white/95 border border-red-900/40'
+                      : 'bg-[#141010] text-white/90 border border-red-950/35'
+                  }`}
+                >
+                  {m.text}
+                </div>
+              </div>
+            ))}
+            <div ref={chatEndRef} />
+          </div>
+          <form
+            className="shrink-0 border-t border-red-950/45 bg-[#080505] p-3"
+            onSubmit={(e) => {
+              e.preventDefault();
+              sendChatMessage();
+            }}
+          >
+            <div className="flex gap-2">
+              <label htmlFor="comms-input" className="sr-only">
+                Message
+              </label>
+              <input
+                id="comms-input"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                placeholder="Type a message…"
+                className="min-w-0 flex-1 border border-red-950/40 bg-[#030203] px-3 py-2.5 font-body text-sm text-white placeholder:text-zinc-600 focus:border-red-800/50 focus:outline-none focus:ring-1 focus:ring-red-900/40"
+                autoComplete="off"
+              />
+              <button
+                type="submit"
+                className="shrink-0 border border-red-800/50 bg-red-950/50 px-4 py-2 font-label text-[10px] font-bold uppercase tracking-wider text-red-100 transition hover:bg-red-900/60"
+              >
+                Send
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+      <div className="fixed bottom-10 right-4 z-[60] sm:right-10">
+        <div className="group relative">
+          {!commsOpen && (
+            <div className="pointer-events-none absolute bottom-full right-0 mb-3 hidden opacity-0 transition-opacity group-hover:opacity-100 sm:block">
+              <span className="bg-[#140808] px-4 py-2 font-label text-xs text-white/90 shadow-lg shadow-black/50 ring-1 ring-red-900/50">
+                Open comms
+              </span>
+            </div>
+          )}
           <button
             type="button"
-            className="w-16 h-16 bg-[#120606] border-2 border-red-700/70 rounded-sm shadow-[0_0_28px_rgba(220,38,38,0.35)] flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+            onClick={() => setCommsOpen((o) => !o)}
+            className={`group flex h-16 w-16 items-center justify-center rounded-sm border-2 shadow-[0_0_28px_rgba(220,38,38,0.35)] transition hover:scale-105 active:scale-95 ${
+              commsOpen
+                ? 'border-red-500/80 bg-red-950/60 ring-2 ring-red-500/30'
+                : 'border-red-700/70 bg-[#120606]'
+            }`}
+            aria-expanded={commsOpen}
+            aria-controls="comms-chat-panel"
+            aria-label={commsOpen ? 'Close comms chat' : 'Open comms chat'}
           >
-            <div className="relative w-8 h-8 flex items-center justify-center">
+            <div className="relative flex h-8 w-8 items-center justify-center">
               <span
-                className="material-symbols-outlined text-red-400 text-3xl"
+                className="material-symbols-outlined text-3xl text-red-400"
                 style={{ fontVariationSettings: "'FILL' 1" }}
               >
-                forum
+                {commsOpen ? 'chat' : 'forum'}
               </span>
-              <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-[#030203]" />
+              {!commsOpen && (
+                <div className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-[#030203]" />
+              )}
             </div>
           </button>
         </div>

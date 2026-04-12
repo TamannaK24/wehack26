@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Shield,
@@ -7,10 +7,7 @@ import {
   Lock,
   ScrollText,
   Compass,
-  Settings,
   UserCircle,
-  ListFilter,
-  DoorClosed,
 } from 'lucide-react';
 import CuratorsGallery from './pages/GalleryPage';
 import DeepLedger from './pages/DeepLedger';
@@ -19,7 +16,14 @@ import InquiryEstate from './pages/InquiryEstate';
 import CuratorSettings from './pages/CuratorSettings';
 import AuthPage from './pages/AuthPage';
 import OnboardingPage from './pages/OnboardingPage';
-import { hasBrowserSession, loadUser, setBrowserSession, type StoredUser } from './lib/authStorage';
+import {
+  clearBrowserSession,
+  clearUser,
+  hasBrowserSession,
+  loadUser,
+  setBrowserSession,
+  type StoredUser,
+} from './lib/authStorage';
 import type { Screen, TransitionType } from './types/navigation';
 
 type Gate = 'auth' | 'onboarding' | 'app';
@@ -54,134 +58,122 @@ const TRANSITIONS = {
   },
 };
 
-const Sidebar = ({
+const APP_NAV: {
+  id: Screen;
+  label: string;
+  icon: typeof DoorOpen;
+  transition: TransitionType;
+}[] = [
+  { id: 'GALLERY', label: 'Floor plan', icon: DoorOpen, transition: 'push_back' },
+  { id: 'RESTORATION', label: 'Vault ops', icon: Lock, transition: 'push' },
+  { id: 'ARCHIVE', label: 'Signal log', icon: ScrollText, transition: 'push' },
+  { id: 'INQUIRY', label: 'Asset sweep', icon: Compass, transition: 'push' },
+];
+
+const TopBar = ({
   currentScreen,
   onNavigate,
-  isOpen,
 }: {
   currentScreen: Screen;
   onNavigate: (screen: Screen, transition: TransitionType) => void;
-  isOpen: boolean;
 }) => {
-  const navItems = [
-    { id: 'GALLERY', label: 'Floor plan', icon: DoorOpen, transition: 'push_back' as const },
-    { id: 'RESTORATION', label: 'Vault ops', icon: Lock, transition: 'push' as const },
-    { id: 'ARCHIVE', label: 'Signal log', icon: ScrollText, transition: 'push' as const },
-    { id: 'INQUIRY', label: 'Asset sweep', icon: Compass, transition: 'push' as const },
-    { id: 'SETTINGS', label: 'Cover ID', icon: Settings, transition: 'push' as const },
-  ];
+  const openSettings = () => onNavigate('SETTINGS', 'push');
+  const settingsActive = currentScreen === 'SETTINGS';
 
   return (
-    <aside
-      className={`fixed left-0 top-0 h-full w-80 pt-24 pb-8 px-6 bg-[#060304]/95 backdrop-blur-xl border-r border-red-950/35 shadow-2xl shadow-black/90 z-40 flex flex-col transition-transform duration-500 ${
-        isOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}
-    >
-      <div className="mb-10 px-4">
-        <h2 className="font-headline text-xl tracking-[0.12em] uppercase text-white">Operations</h2>
-        <p className="font-label text-[10px] tracking-widest text-red-400/70 uppercase mt-2">Nocturne · red cell</p>
+  <header className="fixed top-0 z-50 w-full bg-background/90 backdrop-blur-md">
+    <div className="mx-auto flex max-w-[1920px] flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6 sm:py-2 lg:px-8">
+      <div className="flex shrink-0 items-center justify-between gap-4 sm:min-w-0">
+        <span className="font-headline text-xl uppercase tracking-[0.08em] text-white sm:text-2xl">
+          Nocturne <span className="text-red-400">ops</span>
+        </span>
+        <div className="flex items-center gap-2 lg:hidden">
+          <button
+            type="button"
+            onClick={openSettings}
+            aria-label="Open settings"
+            className={`flex h-8 w-8 items-center justify-center border border-red-900/50 bg-red-950/40 transition-colors hover:bg-red-950/60 ${
+              settingsActive ? 'ring-1 ring-red-400/50' : ''
+            }`}
+          >
+            <UserCircle className="text-red-300" size={18} aria-hidden />
+          </button>
+        </div>
       </div>
-      <nav className="flex-1 space-y-1">
-        {navItems.map((item) => {
+
+      <nav
+        className="-mx-1 flex min-w-0 flex-1 items-center justify-start gap-1 overflow-x-auto pb-1 sm:mx-0 sm:justify-center sm:pb-0 sm:pt-0.5"
+        aria-label="Primary"
+      >
+        {APP_NAV.map((item) => {
           const isActive = currentScreen === item.id;
+          const Icon = item.icon;
           return (
             <button
               key={item.id}
-              onClick={() => onNavigate(item.id as Screen, item.transition)}
-              className={`w-full flex items-center gap-4 px-4 py-3.5 transition-all duration-300 text-left rounded-sm ${
+              type="button"
+              onClick={() => onNavigate(item.id, item.transition)}
+              className={`flex shrink-0 items-center gap-2 rounded-sm px-3 py-2 font-label text-[10px] uppercase tracking-[0.12em] transition-colors sm:px-3.5 sm:py-2 sm:text-[11px] ${
                 isActive
-                  ? 'bg-red-950/40 border-l-4 border-red-500 text-red-300 translate-x-1 shadow-[inset_0_0_0_1px_rgba(248,113,113,0.12)]'
-                  : 'text-zinc-400 hover:text-white hover:bg-white/5 border-l-4 border-transparent'
+                  ? 'bg-red-950/50 text-red-200 shadow-[inset_0_0_0_1px_rgba(248,113,113,0.2)]'
+                  : 'text-zinc-500 hover:bg-white/5 hover:text-red-200/90'
               }`}
             >
-              <item.icon size={20} className={isActive ? 'text-red-400' : 'text-zinc-500'} />
-              <span className="font-headline text-base tracking-wide uppercase">{item.label}</span>
+              <Icon size={16} className={isActive ? 'text-red-400' : 'text-zinc-500'} aria-hidden />
+              <span className="whitespace-nowrap">{item.label}</span>
             </button>
           );
         })}
       </nav>
-      <div className="mt-auto pt-8 border-t border-red-950/25">
-        <div className="flex items-center space-x-3 p-4 bg-[#0a0506] ring-1 ring-red-950/40">
-          <div className="w-10 h-10 bg-red-950/50 border border-red-800/40 flex items-center justify-center">
-            <UserCircle className="text-red-300" size={24} />
-          </div>
-          <div>
-            <p className="font-label text-[10px] uppercase tracking-widest text-red-400/90">Field lead</p>
-            <p className="font-headline text-xs text-white tracking-wide">E. Thorne</p>
+
+      <div className="hidden shrink-0 items-center gap-4 border-red-950/40 sm:flex sm:border-l sm:pl-5">
+        <div className="hidden items-center gap-2 lg:flex">
+          <button
+            type="button"
+            onClick={openSettings}
+            aria-label="Open settings"
+            className={`flex h-9 w-9 shrink-0 items-center justify-center border border-red-900/50 bg-[#0a0506] transition-colors hover:bg-red-950/40 ${
+              settingsActive ? 'ring-1 ring-red-400/50' : ''
+            }`}
+          >
+            <UserCircle className="text-red-300" size={22} aria-hidden />
+          </button>
+          <div className="leading-tight">
+            <p className="font-label text-[9px] uppercase tracking-widest text-red-400/90">Field lead</p>
+            <p className="font-headline text-xs tracking-wide text-white">E. Thorne</p>
           </div>
         </div>
-      </div>
-    </aside>
-  );
-};
-
-const TopBar = ({
-  isVisible,
-  sidebarOpen,
-}: {
-  isVisible: boolean;
-  sidebarOpen: boolean;
-}) => (
-  <header
-    className={`fixed top-0 w-full z-50 flex justify-between items-center h-20 pr-8 pl-24 bg-[#060304]/95 border-b border-red-950/30 shadow-[0_12px_40px_rgba(0,0,0,0.85)] backdrop-blur-md transition-[padding,transform,opacity] duration-300 ${
-      isVisible ? 'translate-y-0 opacity-100 pointer-events-auto' : '-translate-y-full opacity-0 pointer-events-none'
-    }`}
-  >
-    <div className="flex items-center gap-6">
-      <span className="text-2xl sm:text-3xl font-headline text-white uppercase tracking-[0.08em]">
-        Nocturne <span className="text-red-400">ops</span>
-      </span>
-    </div>
-    <div className="flex items-center gap-8">
-      <nav className="hidden md:flex space-x-8 font-label text-[11px] uppercase tracking-[0.2em]">
-        <a href="#" className="text-red-300/90 hover:text-white transition-colors">
-          Brief
-        </a>
-        <a href="#" className="text-zinc-500 hover:text-red-300 transition-colors">
-          Intel
-        </a>
-        <a href="#" className="text-zinc-500 hover:text-red-300 transition-colors">
-          Comms
-        </a>
-      </nav>
-      <div className="flex items-center gap-4 border-l border-red-950/40 pl-6 text-red-400/90">
-        <Shield size={20} />
-        <Landmark size={20} />
+        <div className="flex items-center gap-3 text-red-400/90">
+          <Shield size={20} aria-hidden />
+          <Landmark size={20} aria-hidden />
+        </div>
       </div>
     </div>
   </header>
-);
+  );
+};
 
 export default function App() {
   const [gate, setGate] = useState<Gate>(() => initialGate());
   const [currentScreen, setCurrentScreen] = useState<Screen>('GALLERY');
   const [transition, setTransition] = useState<TransitionType>('push');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [showTopBar, setShowTopBar] = useState(true);
-
   const handleAuthenticated = useCallback((user: StoredUser) => {
     setBrowserSession();
     if (user.onboardingComplete) setGate('app');
     else setGate('onboarding');
   }, []);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setShowTopBar(window.scrollY <= 1);
-    };
-
-    handleScroll();
-    window.addEventListener('scroll', handleScroll, { passive: true });
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
-
   const handleNavigate = (screen: Screen, type: TransitionType) => {
     setTransition(type);
     setCurrentScreen(screen);
   };
+
+  const handleLogout = useCallback(() => {
+    clearUser();
+    clearBrowserSession();
+    setCurrentScreen('GALLERY');
+    setGate('auth');
+  }, []);
 
   const ScreenComponent = useMemo(() => {
     switch (currentScreen) {
@@ -194,7 +186,7 @@ export default function App() {
       case 'INQUIRY':
         return <InquiryEstate onNavigate={handleNavigate} />;
       case 'SETTINGS':
-        return <CuratorSettings onNavigate={handleNavigate} />;
+        return <CuratorSettings onNavigate={handleNavigate} onLogout={handleLogout} />;
     }
   }, [currentScreen]);
 
@@ -214,25 +206,12 @@ export default function App() {
     <div className="min-h-screen bg-background selection:bg-red-600/35 selection:text-white">
       <div className="film-grain" />
 
-      {showAppChrome && (
-        <>
-          <button
-            onClick={() => setSidebarOpen((prev) => !prev)}
-            className="fixed top-6 left-8 z-[60] w-10 h-10 border border-red-900/50 bg-[#0a0506]/95 text-red-400 hover:bg-red-950/60 hover:text-white transition-colors flex items-center justify-center"
-            aria-label={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
-          >
-            {sidebarOpen ? <DoorClosed size={18} /> : <ListFilter size={18} />}
-          </button>
-
-          <TopBar isVisible={showTopBar} sidebarOpen={sidebarOpen} />
-          <Sidebar currentScreen={currentScreen} onNavigate={handleNavigate} isOpen={sidebarOpen} />
-        </>
-      )}
+      {showAppChrome && <TopBar currentScreen={currentScreen} onNavigate={handleNavigate} />}
 
       <main
-        className={`relative min-w-0 overflow-x-hidden transition-[padding] duration-500 ${
+        className={`relative min-w-0 overflow-x-hidden ${
           showAppChrome
-            ? `pt-32 pb-24 px-8 ${sidebarOpen ? 'lg:pl-80' : 'lg:pl-8'}`
+            ? 'bg-background px-4 pb-24 pt-[calc(env(safe-area-inset-top,0px)+6.75rem)] sm:px-8 sm:pt-[calc(env(safe-area-inset-top,0px)+4.75rem)]'
             : 'min-h-screen pt-16 pb-20 px-4 sm:px-6'
         }`}
       >
@@ -274,7 +253,7 @@ export default function App() {
 
       {showAppChrome && (
         <footer
-          className={`w-full py-12 flex flex-col items-center justify-center space-y-4 border-t border-red-950/25 bg-[#030203] transition-[padding] duration-500 ${sidebarOpen ? 'lg:pl-80' : 'lg:pl-8'}`}
+          className="w-full px-4 py-12 sm:px-8 flex flex-col items-center justify-center space-y-4 border-t border-red-950/25 bg-[#030203]"
         >
           <div className="font-headline text-sm uppercase tracking-[0.15em] text-white/90">Nocturne ops</div>
           <div className="flex flex-wrap justify-center gap-x-8 gap-y-2">

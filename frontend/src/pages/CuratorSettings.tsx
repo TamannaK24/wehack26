@@ -5,10 +5,17 @@ import {
   Crown,
   ArrowRight,
   AlertTriangle,
+  LogOut,
 } from 'lucide-react';
 import type { NavigateFn } from '../types/navigation';
 
-const CuratorSettings = ({ onNavigate }: { onNavigate: NavigateFn }) => (
+const CuratorSettings = ({
+  onNavigate,
+  onLogout,
+}: {
+  onNavigate: NavigateFn;
+  onLogout: () => void;
+}) => (
   <div className="max-w-7xl mx-auto space-y-12">
     <section className="mb-8 border-l-2 border-red-800/40 pl-8">
       <p className="font-label text-red-400/90 uppercase tracking-[0.3em] text-xs mb-4">Cover ID · Backstop</p>
@@ -98,12 +105,24 @@ const CuratorSettings = ({ onNavigate }: { onNavigate: NavigateFn }) => (
         <p className="text-sm text-zinc-300">Danger zone actions are permanent and cannot be undone.</p>
       </div>
       <button
+        type="button"
         onClick={() => onNavigate('GALLERY', 'push_back')}
         className="text-primary border border-primary/30 px-6 py-2 font-label text-[10px] uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-all"
       >
         Return to Gallery
       </button>
     </section>
+
+    <div className="flex justify-center border-t border-outline-variant/20 pt-10">
+      <button
+        type="button"
+        onClick={onLogout}
+        className="inline-flex items-center gap-2 border border-zinc-600/50 px-8 py-3 font-label text-[10px] uppercase tracking-widest text-zinc-400 transition-colors hover:border-red-900/60 hover:bg-red-950/30 hover:text-red-300"
+      >
+        <LogOut size={16} aria-hidden />
+        Log out
+      </button>
+    </div>
   </div>
 );
 
