@@ -1,0 +1,41 @@
+photo,final_score,label,area_detected,top_driver_1,top_driver_2,top_driver_3,roof_score,water_score,fire_score,theft_score,foundation_score,disaster_score,maintenance_score
+photo_001.jpg,30,Low Risk,none,none,none,none,30,30,30,30,30,30,30
+photo_002.jpg,30,Low Risk,none,none,none,none,30,30,30,30,30,30,30
+photo_003.jpg,31,Low Risk,theft,No security camera visible,No deadbolt visible,none,30,30,30,54,30,30,30
+photo_004.jpg,31,Low Risk,theft,No security camera visible,none,none,30,30,30,42,30,30,30
+photo_005.jpg,31,Low Risk,theft,No security camera visible,none,none,30,30,30,42,30,30,30
+photo_006.jpg,31,Low Risk,fire,No smoke detector visible,none,none,30,30,42,30,30,30,30
+photo_007.jpg,30,Low Risk,fire,No fire extinguisher visible,none,none,30,30,35,30,30,30,30
+photo_008.jpg,30,Low Risk,none,none,none,none,30,30,30,30,30,30,30
+photo_009.jpg,30,Low Risk,none,none,none,none,30,30,30,30,30,30,30
+photo_010.jpg,30,Low Risk,none,none,none,none,30,30,30,30,30,30,30
+photo_011.jpg,30,Low Risk,none,none,none,none,30,30,30,30,30,30,30
+photo_012.jpg,30,Low Risk,none,none,none,none,30,30,30,30,30,30,30
+photo_013.jpg,30,Low Risk,none,none,none,none,30,30,30,30,30,30,30
+photo_014.jpg,30,Low Risk,none,none,none,none,30,30,30,30,30,30,30
+photo_015.jpg,30,Low Risk,none,none,none,none,30,30,30,30,30,30,30
+photo_016.jpg,33,Low Risk,water_damage,No sump pump detected,none,none,30,42,30,30,30,30,30
+photo_017.jpg,30,Low Risk,none,none,none,none,30,30,30,30,30,30,30
+photo_018.jpg,38,Low Risk,roof,Roof in fair condition,Moss/algae on roof,none,54,30,30,30,30,30,30
+photo_019.jpg,30,Low Risk,none,none,none,none,30,30,30,30,30,30,30
+photo_020.jpg,31,Low Risk,theft,No security camera visible,Vegetation overgrowth,none,30,30,30,42,30,35,30
+photo_021.jpg,30,Low Risk,none,none,none,none,30,30,30,30,30,30,30
+photo_022.jpg,30,Low Risk,fire,No fire extinguisher visible,none,none,30,30,35,30,30,30,30
+photo_023.jpg,30,Low Risk,none,none,none,none,30,30,30,30,30,30,30
+photo_024.jpg,30,Low Risk,none,none,none,none,30,30,30,30,30,30,30
+photo_025.jpg,30,Low Risk,none,none,none,none,30,30,30,30,30,30,30
+photo_026.jpg,30,Low Risk,none,none,none,none,30,30,30,30,30,30,30
+photo_027.jpg,32,Low Risk,theft,No security camera visible,No deadbolt visible,Vegetation overgrowth,30,30,30,54,30,35,30
+photo_028.jpg,30,Low Risk,none,none,none,none,30,30,30,30,30,30,30
+photo_029.jpg,30,Low Risk,none,none,none,none,30,30,30,30,30,30,30
+photo_030.jpg,30,Low Risk,none,none,none,none,30,30,30,30,30,30,30
+photo_031.jpg,31,Low Risk,maintenance,Poor overall condition,none,none,30,30,30,30,30,30,55
+photo_032.jpg,36,Low Risk,foundation,Moderate foundation cracks,Water signs at foundation,none,30,42,30,30,55,30,30
+photo_033.jpg,41,Low Risk,water_damage,Mold in bathroom,Water stains in bathroom,none,30,67,30,30,30,30,30
+photo_034.jpg,30,Low Risk,none,none,none,none,30,30,30,30,30,30,30
+photo_035.jpg,36,Low Risk,foundation,Foundation cracks in basement,No sump pump detected,none,30,42,30,30,55,30,30
+photo_036.jpg,30,Low Risk,none,none,none,none,30,30,30,30,30,30,30
+photo_037.jpg,30,Low Risk,none,none,none,none,30,30,30,30,30,30,30
+photo_038.jpg,33,Low Risk,fire,Flammable materials in garage,High clutter in garage,none,30,30,55,30,30,30,42
+photo_039.jpg,30,Low Risk,none,none,none,none,30,30,30,30,30,30,30
+photo_040.jpg,38,Low Risk,foundation,Severe foundation cracks,Water signs at foundation,none,30,42,30,30,70,30,30
