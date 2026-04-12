@@ -14,7 +14,6 @@ def create_app():
     def home():
         return "Backend is running!"
 
-   
     app.register_blueprint(addresses_bp)
     app.register_blueprint(claims_bp)
     app.register_blueprint(photos_bp)
