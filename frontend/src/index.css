@@ -76,4 +76,21 @@
       background-position: 200% 50%;
     }
   }
+
+  /* Contact agents — risk summary card mount */
+  @keyframes contact-summary-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-contact-summary-fade-in {
+    animation: contact-summary-fade-in 0.55s ease-out forwards;
+    opacity: 0;
+  }
 }

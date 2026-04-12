@@ -7,6 +7,7 @@ import {
   Lock,
   ScrollText,
   Compass,
+  Phone,
   UserCircle,
 } from 'lucide-react';
 import CuratorsGallery from './pages/GalleryPage';
@@ -15,9 +16,10 @@ import RestorationProjects from './pages/RestorationProjects';
 import InquiryEstate from './pages/InquiryEstate';
 import LandingPage from './pages/LandingPage';
 import CuratorSettings from './pages/CuratorSettings';
+import ContactAgentsPage from './pages/ContactAgentsPage';
 import AuthPage from './pages/AuthPage';
 import OnboardingPage from './pages/OnboardingPage';
-import type { Screen, TransitionType } from './types/navigation';
+import type { ContactAgentSummary, Screen, TransitionType } from './types/navigation';
 
 type Gate = 'auth' | 'onboarding' | 'app';
 
@@ -53,6 +55,7 @@ const APP_NAV: {
   { id: 'RESTORATION', label: 'Risk Score', icon: Lock, transition: 'push' },
   { id: 'ARCHIVE', label: 'Signal log', icon: ScrollText, transition: 'push' },
   { id: 'INQUIRY', label: 'Simulator', icon: Compass, transition: 'push' },
+  { id: 'CONTACT_AGENTS', label: 'Contact', icon: Phone, transition: 'push' },
 ];
 
 const TopBar = ({
@@ -168,6 +171,12 @@ export default function App() {
   const [gate, setGate] = useState<Gate>('auth');
   const [currentScreen, setCurrentScreen] = useState<Screen>('GALLERY');
   const [transition, setTransition] = useState<TransitionType>('push');
+  const [contactSummary, setContactSummary] = useState<ContactAgentSummary>({
+    riskScore: 67,
+    topRiskFactor: 'Electrical Systems — elevated exposure on your last assessment.',
+    coverageType: 'home',
+  });
+
   const handleAuthenticated = useCallback(() => {
     setGate('onboarding');
   }, []);
@@ -176,6 +185,17 @@ export default function App() {
     setTransition(type);
     setCurrentScreen(screen);
   };
+
+  const openContactAgents = useCallback((summary: ContactAgentSummary) => {
+    setContactSummary(summary);
+    setTransition('push');
+    setCurrentScreen('CONTACT_AGENTS');
+  }, []);
+
+  const backFromContactAgents = useCallback(() => {
+    setTransition('push_back');
+    setCurrentScreen('RESTORATION');
+  }, []);
 
   const handleLogout = useCallback(() => {
     setCurrentScreen('GALLERY');
@@ -189,13 +209,22 @@ export default function App() {
       case 'ARCHIVE':
         return <DeepLedger onNavigate={handleNavigate} />;
       case 'RESTORATION':
-        return <RestorationProjects onNavigate={handleNavigate} />;
+        return <RestorationProjects onNavigate={handleNavigate} onOpenContactAgents={openContactAgents} />;
       case 'INQUIRY':
         return <InquiryEstate onNavigate={handleNavigate} />;
       case 'SETTINGS':
         return <CuratorSettings onNavigate={handleNavigate} onLogout={handleLogout} />;
+      case 'CONTACT_AGENTS':
+        return (
+          <ContactAgentsPage
+            riskScore={contactSummary.riskScore}
+            topRiskFactor={contactSummary.topRiskFactor}
+            coverageType={contactSummary.coverageType}
+            onBack={backFromContactAgents}
+          />
+        );
     }
-  }, [currentScreen]);
+  }, [currentScreen, contactSummary, openContactAgents, backFromContactAgents, handleLogout]);
 
   const showAppChrome = gate === 'app';
 

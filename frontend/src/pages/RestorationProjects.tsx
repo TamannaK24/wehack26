@@ -5,7 +5,7 @@ import {
   AlertTriangle, Zap, Droplets, Flame, Shield,
   Wind, Home, Layers, Clock, Activity,
 } from 'lucide-react';
-import type { NavigateFn } from '../types/navigation';
+import type { ContactAgentSummary, NavigateFn } from '../types/navigation';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 type RiskCategory = {
@@ -339,12 +339,28 @@ function InterventionCard({ cat, rank }: { cat: RiskCategory; rank: number }) {
 }
 
 // ── Page ───────────────────────────────────────────────────────────────────────
-const RestorationProjects = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }) => {
+const RestorationProjects = ({
+  onNavigate: _onNavigate,
+  onOpenContactAgents,
+}: {
+  onNavigate: NavigateFn;
+  onOpenContactAgents: (summary: ContactAgentSummary) => void;
+}) => {
   const sorted = [...REPORT.categories].sort((a, b) => b.score - a.score);
   const topPriorities = sorted.slice(0, 3);
+  const topCat = sorted[0];
   const compositeColor = riskColor(REPORT.composite);
   const criticalCount = sorted.filter((c) => c.score >= 65).length;
   const elevatedCount = sorted.filter((c) => c.score >= 50 && c.score < 65).length;
+
+  const goToContactAgents = () => {
+    const summary: ContactAgentSummary = {
+      riskScore: REPORT.composite,
+      topRiskFactor: topCat ? `${topCat.label} — ${topCat.detail}` : 'Composite property exposure',
+      coverageType: 'home',
+    };
+    onOpenContactAgents(summary);
+  };
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -499,6 +515,24 @@ const RestorationProjects = ({ onNavigate: _onNavigate }: { onNavigate: Navigate
           {topPriorities.map((cat, i) => (
             <InterventionCard key={cat.id} cat={cat} rank={i} />
           ))}
+        </div>
+      </section>
+
+      {/* ── Licensed agents (handoff to flat contact flow) ───────────────────── */}
+      <section className="mt-20 border border-outline-variant/20 bg-surface-container-low px-6 py-10 sm:px-10 sm:py-12">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="mb-3 font-headline text-3xl uppercase tracking-wide text-white">Ready to talk it through?</h2>
+          <p className="mb-8 font-body text-sm leading-relaxed text-white/50">
+            Your score is a starting point. A licensed agent can translate it into coverage options, discounts you may
+            already qualify for, and a clear next step before your renewal window.
+          </p>
+          <button
+            type="button"
+            onClick={goToContactAgents}
+            className="inline-flex items-center justify-center border border-primary/60 bg-primary/15 px-8 py-3.5 font-label text-[11px] font-bold uppercase tracking-[0.2em] text-primary transition hover:bg-primary/25"
+          >
+            Contact an insurance agent
+          </button>
         </div>
       </section>
 
