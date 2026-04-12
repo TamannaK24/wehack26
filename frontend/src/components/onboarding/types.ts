@@ -3,6 +3,8 @@
  * use remoteIds after your API stores GridFS/S3 references.
  */
 
+import { PROTECTION_QUIZ_ITEMS } from './quizItems';
+
 export type PropertyAddress = {
   street: string;
   city: string;
@@ -34,10 +36,8 @@ export const emptyDocumentUploads = (): DocumentUploads => ({
   inspectionFile: null,
 });
 
-export type ProtectionAnswer = 'yes' | 'no' | null;
-
-/** Keys match stable ids for Mongo fields */
-export type ProtectionQuizAnswers = Record<string, ProtectionAnswer>;
+/** Non-negative whole counts per feature; 0 = not installed / none */
+export type ProtectionQuizAnswers = Record<string, number>;
 
 /** Payload you might POST to an API or merge into a Mongo document */
 export type OnboardingPayload = {
@@ -55,6 +55,20 @@ export function fileToMeta(file: File | null): FileMeta | null {
   return { name: file.name, size: file.size, type: file.type };
 }
 
+function normalizeProtectionQuizAnswers(raw: ProtectionQuizAnswers): ProtectionQuizAnswers {
+  const out: ProtectionQuizAnswers = {};
+  for (const item of PROTECTION_QUIZ_ITEMS) {
+    const v = raw[item.id];
+    if (typeof v === 'number' && Number.isFinite(v)) {
+      const n = Math.floor(v);
+      out[item.id] = n >= 0 ? n : 0;
+    } else {
+      out[item.id] = 0;
+    }
+  }
+  return out;
+}
+
 export function buildOnboardingPayload(
   address: PropertyAddress,
   uploads: DocumentUploads,
@@ -66,6 +80,6 @@ export function buildOnboardingPayload(
       claims: fileToMeta(uploads.claimsFile),
       inspections: fileToMeta(uploads.inspectionFile),
     },
-    protectionQuiz: { ...protectionQuiz },
+    protectionQuiz: normalizeProtectionQuizAnswers(protectionQuiz),
   };
 }

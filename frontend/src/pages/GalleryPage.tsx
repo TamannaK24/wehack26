@@ -94,7 +94,7 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
     {
       id: 'welcome',
       role: 'bot',
-      text: 'Nocturne comms online. Ask about the floor plan, zones, or vault status.',
+      text: 'React Radar comms online. Ask about the floor plan, zones, or vault status.',
     },
   ]);
   const [chatInput, setChatInput] = useState('');
