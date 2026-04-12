@@ -3,6 +3,7 @@ import { ArrowRight, ChevronLeft, CheckCircle2 } from 'lucide-react';
 import { loadUser, saveUser } from '../lib/authStorage';
 import {
   DocumentsUploadForm,
+  PROTECTION_QUIZ_ITEMS,
   ProtectionQuizForm,
   emptyPropertyAddress,
   emptyDocumentUploads,
@@ -171,12 +172,31 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
   const finish = () => {
     const payload = buildOnboardingPayload(address, documents, quiz);
     void payload;
+    const quizPayload = {
+      responses: PROTECTION_QUIZ_ITEMS.map((item) => ({
+        id: item.id,
+        question: item.label,
+        answer: typeof quiz[item.id] === 'number' ? quiz[item.id] : 0,
+      })),
+    };
 
-    const user = loadUser();
-    if (user) {
-      saveUser({ ...user, onboardingComplete: true });
-    }
-    onComplete();
+    void fetch(`${API_BASE_URL}/quiz`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(quizPayload),
+    })
+      .catch((error) => {
+        console.error('Quiz save failed', error);
+      })
+      .finally(() => {
+        const user = loadUser();
+        if (user) {
+          saveUser({ ...user, onboardingComplete: true });
+        }
+        onComplete();
+      });
   };
 
   const stepIndex = step === 'address' ? 0 : step === 'documents' ? 1 : 2;
