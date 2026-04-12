@@ -43,6 +43,8 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState('');
   const [selectedAddressId, setSelectedAddressId] = useState('');
+  const [claimsUploadStatus, setClaimsUploadStatus] = useState('');
+  const [inspectionUploadStatus, setInspectionUploadStatus] = useState('');
   const blurTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -119,6 +121,51 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
     setSelectedAddressId('');
     setSearchError('');
     setAddress(emptyPropertyAddress());
+  };
+
+  const uploadDocument = async (
+    file: File,
+    endpoint: string,
+    setStatus: (message: string) => void,
+    label: string,
+  ) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    setStatus(`Uploading ${label}...`);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`${label} upload failed with status ${response.status}`);
+      }
+
+      setStatus(`${label} uploaded.`);
+    } catch (error) {
+      console.error(`${label} upload failed`, error);
+      setStatus(`${label} upload failed.`);
+    }
+  };
+
+  const handleClaimsFileChange = (file: File | null) => {
+    if (!file) {
+      setClaimsUploadStatus('');
+      return;
+    }
+
+    void uploadDocument(file, '/claims', setClaimsUploadStatus, 'Claims file');
+  };
+
+  const handleInspectionFileChange = (file: File | null) => {
+    if (!file) {
+      setInspectionUploadStatus('');
+      return;
+    }
+
+    void uploadDocument(file, '/inspections', setInspectionUploadStatus, 'Inspection file');
   };
 
   const finish = () => {
@@ -254,7 +301,18 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
 
       {step === 'documents' && (
         <>
-          <DocumentsUploadForm value={documents} onChange={setDocuments} />
+          <DocumentsUploadForm
+            value={documents}
+            onChange={setDocuments}
+            onClaimsFileChange={handleClaimsFileChange}
+            onInspectionFileChange={handleInspectionFileChange}
+          />
+          {(claimsUploadStatus || inspectionUploadStatus) && (
+            <div className="mt-4 space-y-1 text-sm text-zinc-400">
+              {claimsUploadStatus && <p>{claimsUploadStatus}</p>}
+              {inspectionUploadStatus && <p>{inspectionUploadStatus}</p>}
+            </div>
+          )}
           <div className="flex justify-between mt-6">
             <button
               type="button"
