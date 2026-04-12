@@ -66,9 +66,9 @@ const APP_NAV: {
   transition: TransitionType;
 }[] = [
   { id: 'GALLERY', label: 'Floor plan', icon: DoorOpen, transition: 'push_back' },
-  { id: 'RESTORATION', label: 'Vault ops', icon: Lock, transition: 'push' },
+  { id: 'RESTORATION', label: 'Risk Score', icon: Lock, transition: 'push' },
   { id: 'ARCHIVE', label: 'Signal log', icon: ScrollText, transition: 'push' },
-  { id: 'INQUIRY', label: 'Asset sweep', icon: Compass, transition: 'push' },
+  { id: 'INQUIRY', label: 'Simulator', icon: Compass, transition: 'push' },
 ];
 
 const TopBar = ({
@@ -81,76 +81,101 @@ const TopBar = ({
   const openSettings = () => onNavigate('SETTINGS', 'push');
   const settingsActive = currentScreen === 'SETTINGS';
 
-  return (
-  <header className="fixed top-0 z-50 w-full bg-background/90 backdrop-blur-md">
-    <div className="mx-auto flex max-w-[1920px] flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6 sm:py-2 lg:px-8">
-      <div className="flex shrink-0 items-center justify-between gap-4 sm:min-w-0">
-        <span className="font-headline text-xl uppercase tracking-[0.08em] text-white sm:text-2xl">
-          React <span className="text-red-400">Radar</span>
-        </span>
-        <div className="flex items-center gap-2 lg:hidden">
+  const NavItems = ({ mobile }: { mobile?: boolean }) => (
+    <>
+      {APP_NAV.map((item) => {
+        const isActive = currentScreen === item.id;
+        const Icon = item.icon;
+        return (
           <button
+            key={item.id}
             type="button"
-            onClick={openSettings}
-            aria-label="Open settings"
-            className={`flex h-8 w-8 items-center justify-center border border-red-900/50 bg-red-950/40 transition-colors hover:bg-red-950/60 ${
-              settingsActive ? 'ring-1 ring-red-400/50' : ''
-            }`}
-          >
-            <UserCircle className="text-red-300" size={18} aria-hidden />
-          </button>
-        </div>
-      </div>
-
-      <nav
-        className="-mx-1 flex min-w-0 flex-1 items-center justify-start gap-1 overflow-x-auto pb-1 sm:mx-0 sm:justify-center sm:pb-0 sm:pt-0.5"
-        aria-label="Primary"
-      >
-        {APP_NAV.map((item) => {
-          const isActive = currentScreen === item.id;
-          const Icon = item.icon;
-          return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => onNavigate(item.id, item.transition)}
-              className={`flex shrink-0 items-center gap-2 rounded-sm px-3 py-2 font-label text-[10px] uppercase tracking-[0.12em] transition-colors sm:px-3.5 sm:py-2 sm:text-[11px] ${
-                isActive
-                  ? 'bg-red-950/50 text-red-200 shadow-[inset_0_0_0_1px_rgba(248,113,113,0.2)]'
-                  : 'text-zinc-500 hover:bg-white/5 hover:text-red-200/90'
+            onClick={() => onNavigate(item.id, item.transition)}
+            className={`relative flex shrink-0 items-center gap-2 px-4 font-label text-[11px] uppercase tracking-[0.15em] transition-all duration-200
+              ${mobile ? 'py-2.5' : 'py-4'}
+              ${isActive
+                ? 'text-primary'
+                : 'text-white/40 hover:text-white/80'
               }`}
-            >
-              <Icon size={16} className={isActive ? 'text-red-400' : 'text-zinc-500'} aria-hidden />
-              <span className="whitespace-nowrap">{item.label}</span>
-            </button>
-          );
-        })}
-      </nav>
+          >
+            <Icon size={15} aria-hidden />
+            <span className="whitespace-nowrap">{item.label}</span>
+            {/* Active underline */}
+            {isActive && (
+              <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary" />
+            )}
+          </button>
+        );
+      })}
+    </>
+  );
 
-      <div className="hidden shrink-0 items-center gap-4 border-red-950/40 sm:flex sm:border-l sm:pl-5">
-        <div className="hidden items-center gap-2 lg:flex">
+  return (
+    <header className="fixed top-0 z-50 w-full border-b border-outline-variant/40 bg-surface-container-lowest/95 backdrop-blur-md">
+      {/* ── Desktop: true 3-col grid so nav is always centred ── */}
+      <div className="mx-auto hidden max-w-[1920px] grid-cols-[1fr_auto_1fr] items-stretch sm:grid sm:px-6 lg:px-8">
+        {/* Left — brand */}
+        <div className="flex items-center py-3">
+          <span className="font-headline text-xl uppercase tracking-[0.1em] text-white lg:text-2xl">
+            Risk <span className="text-primary">Radar</span>
+          </span>
+        </div>
+
+        {/* Centre — nav (auto width, perfectly centred in grid) */}
+        <nav className="flex items-stretch gap-0" aria-label="Primary">
+          <NavItems />
+        </nav>
+
+        {/* Right — user section */}
+        <div className="flex items-center justify-end gap-4 border-l border-outline-variant/30 pl-5">
           <button
             type="button"
             onClick={openSettings}
             aria-label="Open settings"
-            className={`flex h-9 w-9 shrink-0 items-center justify-center border border-red-900/50 bg-[#0a0506] transition-colors hover:bg-red-950/40 ${
-              settingsActive ? 'ring-1 ring-red-400/50' : ''
-            }`}
+            className={`flex h-8 w-8 shrink-0 items-center justify-center border transition-colors
+              ${settingsActive
+                ? 'border-primary/50 bg-primary/10 text-primary'
+                : 'border-outline-variant/50 bg-surface-container-low text-white/50 hover:border-primary/40 hover:text-primary/80'
+              }`}
           >
-            <UserCircle className="text-red-300" size={22} aria-hidden />
+            <UserCircle size={20} aria-hidden />
           </button>
-          <div className="leading-tight">
-            <p className="font-label text-[9px] uppercase tracking-widest text-red-400/90">Field lead</p>
-            <p className="font-headline text-xs tracking-wide text-white">React Radar</p>
+          <div className="leading-tight hidden lg:block">
+            <p className="font-label text-[9px] uppercase tracking-widest text-primary/70">Field Lead</p>
+            <p className="font-headline text-xs tracking-wide text-white">Risk Radar</p>
+          </div>
+          <div className="flex items-center gap-3 text-primary/60 border-l border-outline-variant/30 pl-4">
+            <Shield size={18} aria-hidden />
+            <Landmark size={18} aria-hidden />
           </div>
         </div>
-        <div className="flex items-center gap-3 text-red-400/90">
-          <Shield size={20} aria-hidden />
-          <Landmark size={20} aria-hidden />
-        </div>
       </div>
-    </div>
-  </header>
+
+      {/* ── Mobile: brand row + scrollable nav row ── */}
+      <div className="flex items-center justify-between px-4 py-3 sm:hidden">
+        <span className="font-headline text-xl uppercase tracking-[0.1em] text-white">
+          Risk <span className="text-primary">Radar</span>
+        </span>
+        <button
+          type="button"
+          onClick={openSettings}
+          aria-label="Open settings"
+          className={`flex h-8 w-8 items-center justify-center border transition-colors
+            ${settingsActive
+              ? 'border-primary/50 bg-primary/10 text-primary'
+              : 'border-outline-variant/50 bg-surface-container-low text-white/50'
+            }`}
+        >
+          <UserCircle size={18} aria-hidden />
+        </button>
+      </div>
+      <nav
+        className="flex items-stretch gap-0 overflow-x-auto border-t border-outline-variant/25 px-2 sm:hidden"
+        aria-label="Primary"
+      >
+        <NavItems mobile />
+      </nav>
+    </header>
   );
 };
 
@@ -258,7 +283,7 @@ export default function App() {
         <footer
           className="w-full px-4 py-12 sm:px-8 flex flex-col items-center justify-center space-y-4 border-t border-red-950/25 bg-[#030203]"
         >
-          <div className="font-headline text-sm uppercase tracking-[0.15em] text-white/90">React Radar</div>
+          <div className="font-headline text-sm uppercase tracking-[0.15em] text-white/90">Risk Radar</div>
           <div className="flex flex-wrap justify-center gap-x-8 gap-y-2">
             <a href="#" className="font-label text-[10px] tracking-widest uppercase text-zinc-500 hover:text-red-300 transition-colors">
               Rules of engagement
@@ -270,7 +295,7 @@ export default function App() {
               Disclosure
             </a>
           </div>
-          <p className="font-label text-[10px] tracking-widest uppercase text-zinc-600">© 2026 React Radar — UI demo</p>
+          <p className="font-label text-[10px] tracking-widest uppercase text-zinc-600">© 2026 Risk Radar — UI demo</p>
         </footer>
       )}
     </div>
