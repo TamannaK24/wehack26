@@ -1,133 +1,229 @@
-import { Shield, Compass, AlertCircle, AlertTriangle, LockOpen, Droplets } from 'lucide-react';
+import { motion } from 'motion/react';
+import { Shield, AlertCircle, AlertTriangle, LockOpen, Droplets, Activity, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import type { NavigateFn } from '../types/navigation';
+
+// ── Dummy data — swap with real API payloads ──────────────────────────────────
+const SIGNAL_SUMMARY = {
+  total: 142,
+  critical: 4,
+  elevated: 17,
+  resolved: 121,
+  lastUpdated: '2026-04-11 · 14:32 UTC',
+};
+
+const RECENT_SIGNALS = [
+  { id: 'SIG-0441', ts: '14:29', severity: 'critical', category: 'Access', title: 'Unauthorized entry attempt', detail: 'Key-turn recorded at Archive Sub-Level 3 at 03:42. No physical entry confirmed — digital ghost pattern suspected.', trend: 'up' },
+  { id: 'SIG-0440', ts: '13:57', severity: 'elevated', category: 'Water', title: 'Condensation buildup', detail: 'Hydric accumulation behind the west-facing wall exceeds baseline by 22%. Fungal activation risk elevated.', trend: 'up' },
+  { id: 'SIG-0439', ts: '12:14', severity: 'elevated', category: 'Environmental', title: 'UV threshold breach', detail: "Ultraviolet seepage in the 'Vignette Room' exceeds safety threshold by 4%. Shutter inspection recommended.", trend: 'stable' },
+  { id: 'SIG-0438', ts: '09:03', severity: 'moderate', category: 'Structural', title: 'Foundation variance', detail: 'Nominal variance detected in the North sector. Within acceptable bounds — flagged for monitoring.', trend: 'down' },
+  { id: 'SIG-0437', ts: '08:41', severity: 'moderate', category: 'Environmental', title: 'Humidity spike', detail: 'Relative humidity in Wing B reached 68% during overnight hours. Dehumidifier schedule adjusted.', trend: 'down' },
+  { id: 'SIG-0436', ts: '06:22', severity: 'low', category: 'Access', title: 'Scheduled maintenance window', detail: 'Alarm system temporarily suspended for quarterly testing. All checkpoints nominal.', trend: 'stable' },
+];
+
+const CATEGORY_STATS = [
+  { label: 'Access Control', active: 2, resolved: 38, icon: LockOpen, color: '#f87171' },
+  { label: 'Water & Hydric', active: 3, resolved: 24, icon: Droplets, color: '#60a5fa' },
+  { label: 'Environmental', active: 5, resolved: 41, icon: Activity, color: '#a78bfa' },
+  { label: 'Structural', active: 7, resolved: 18, icon: Shield, color: '#fb923c' },
+];
+
+const SEVERITY_CONFIG = {
+  critical: { color: '#dc2626', bg: 'bg-red-950/50', border: 'border-red-600/40', label: 'Critical' },
+  elevated: { color: '#f87171', bg: 'bg-red-950/30', border: 'border-red-700/30', label: 'Elevated' },
+  moderate: { color: '#fbbf24', bg: 'bg-amber-950/30', border: 'border-amber-700/30', label: 'Moderate' },
+  low: { color: '#4ade80', bg: 'bg-green-950/20', border: 'border-green-800/25', label: 'Low' },
+};
+
+const TrendIcon = ({ trend }: { trend: string }) => {
+  if (trend === 'up') return <TrendingUp size={12} className="text-red-400" />;
+  if (trend === 'down') return <TrendingDown size={12} className="text-green-400" />;
+  return <Minus size={12} className="text-white/30" />;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 const DeepLedger = ({ onNavigate }: { onNavigate: NavigateFn }) => (
   <div className="max-w-7xl mx-auto">
-    <section className="mb-20 relative border-l-2 border-red-800/40 pl-8">
-      <p className="font-label text-red-400/90 uppercase tracking-[0.3em] text-xs mb-4">Signal log · Encrypted</p>
-      <h1 className="text-6xl md:text-8xl font-headline uppercase text-on-background tracking-tighter mb-6">
-        Deep <span className="text-red-400">ledger</span>
+
+    {/* ── Header ────────────────────────────────────────────────────────── */}
+    <section className="mb-12 border-l-2 border-primary/40 pl-8">
+      <p className="font-label text-[10px] text-primary uppercase tracking-[0.35em] mb-4">
+        Signal Log · Encrypted · Live Feed
+      </p>
+      <h1 className="text-6xl md:text-8xl font-headline uppercase tracking-[0.02em] text-white leading-[0.95] mb-4">
+        Signal <span className="text-primary">Ledger</span>
       </h1>
-      <p className="text-xl md:text-2xl text-zinc-400 max-w-2xl leading-relaxed italic">
-        A comprehensive cartography of institutional vulnerability. Every entry is a testament to the preservation of the intangible.
+      <p className="font-body text-white/55 text-lg max-w-xl leading-relaxed">
+        A real-time index of detected risk events, environmental anomalies, and access alerts — ranked by severity and impact.
       </p>
     </section>
 
-    <section className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-24">
-      <div className="md:col-span-8 bg-surface-container-low p-1 rounded-none overflow-hidden group">
-        <div className="h-32 bg-primary/5 flex items-end justify-center pb-4 mb-8 arch-mask">
-          <h3 className="font-headline text-3xl text-primary tracking-widest uppercase">Environmental Decay</h3>
-        </div>
-        <div className="px-8 pb-12">
-          <div className="flex justify-between items-end mb-12">
-            <div className="space-y-1">
-              <p className="font-label text-xs text-zinc-500 uppercase tracking-widest">Atmospheric Stability</p>
-              <p className="text-4xl font-headline italic">94.2% Consistency</p>
-            </div>
-            <div className="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center shadow-lg">
-              <Shield className="text-white/40" size={20} />
-            </div>
-          </div>
-          <div className="h-48 w-full border-b border-primary/20 relative">
-            <svg className="w-full h-full opacity-60" viewBox="0 0 400 100" preserveAspectRatio="none">
-              <path d="M0,80 Q50,75 100,85 T200,60 T300,70 T400,20" fill="none" stroke="#f87171" strokeDasharray="5,3" strokeWidth="2" />
-              <circle cx="400" cy="20" r="4" fill="#960711" />
-            </svg>
-            <div className="absolute top-0 right-0 text-[10px] font-label text-primary/40 uppercase rotate-90 translate-x-4">Ink Trace Index</div>
-          </div>
-          <p className="mt-6 text-sm text-zinc-400 italic leading-relaxed">
-            Fluctuations in the western corridor noted during the winter solstice. Recommended recalibration of hydro-regulators in Wing B.
-          </p>
-        </div>
-      </div>
+    {/* ── Summary stat bar ──────────────────────────────────────────────── */}
+    <motion.section
+      className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-12"
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
+      {[
+        { label: 'Total signals', value: SIGNAL_SUMMARY.total, color: 'text-white' },
+        { label: 'Critical active', value: SIGNAL_SUMMARY.critical, color: 'text-red-400' },
+        { label: 'Elevated active', value: SIGNAL_SUMMARY.elevated, color: 'text-primary' },
+        { label: 'Resolved (30d)', value: SIGNAL_SUMMARY.resolved, color: 'text-green-400' },
+      ].map((s, i) => (
+        <motion.div
+          key={s.label}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.06 * i }}
+          className="bg-surface-container-low border border-outline-variant/20 p-5"
+        >
+          <p className={`font-headline text-4xl leading-none mb-1 ${s.color}`}>{s.value}</p>
+          <p className="font-label text-[9px] uppercase tracking-widest text-white/35">{s.label}</p>
+        </motion.div>
+      ))}
+    </motion.section>
 
-      <div className="md:col-span-4 bg-surface-container-high p-8 flex flex-col justify-between border-t-4 border-primary/40">
-        <div>
-          <Compass className="text-primary mb-6" size={40} />
-          <h3 className="font-headline text-2xl text-on-surface mb-4">Structural Integrity</h3>
-          <ul className="space-y-6">
-            <li className="flex items-start space-x-3">
-              <div className="w-1.5 h-1.5 rounded-full bg-secondary-container mt-1.5"></div>
-              <div>
-                <p className="font-label text-xs text-zinc-500 uppercase">Foundation Stress</p>
-                <p className="text-sm italic">Nominal variance detected in the North Vault.</p>
-              </div>
-            </li>
-            <li className="flex items-start space-x-3">
-              <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5"></div>
-              <div>
-                <p className="font-label text-xs text-zinc-500 uppercase">Load Bearing</p>
-                <p className="text-sm italic">Optimal across all primary pedestals.</p>
-              </div>
-            </li>
-          </ul>
-        </div>
-        <div className="pt-8 border-t border-outline-variant/20">
-          <div className="flex items-center justify-between">
-            <p className="font-headline italic text-primary">Verified Status</p>
-            <p className="font-label text-[10px] text-primary tracking-tighter italic">Signature: Risk Radar</p>
-          </div>
-        </div>
-      </div>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
 
-      <div className="md:col-span-12 bg-secondary-container/10 p-12 border border-secondary-container/20 relative overflow-hidden">
-        <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-secondary-container/5 rounded-full blur-3xl"></div>
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12">
-          <div>
-            <h3 className="font-headline text-4xl text-secondary mb-2">Critical Concerns</h3>
-            <p className="font-label text-xs tracking-widest text-secondary uppercase">High-Tier Exposure Risks</p>
-          </div>
-          <div className="w-16 h-16 rounded-full bg-secondary-container flex items-center justify-center mt-6 md:mt-0 shadow-xl">
-            <AlertCircle className="text-white/50" size={32} />
-          </div>
+      {/* ── Signal feed ──────────────────────────────────────────────────── */}
+      <section className="lg:col-span-2">
+        <div className="flex items-center gap-4 mb-5">
+          <h2 className="font-headline text-2xl uppercase tracking-[0.04em] text-white">Recent Signals</h2>
+          <div className="flex-1 h-px bg-outline-variant/20" />
+          <span className="font-label text-[9px] uppercase tracking-widest text-white/30">{SIGNAL_SUMMARY.lastUpdated}</span>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-          {[
-            { icon: AlertTriangle, title: 'Light Exposure', desc: "Ultraviolet seepage in the 'Vignette Room' exceeds safety thresholds by 4%. Immediate shutter inspection required." },
-            { icon: LockOpen, title: 'Access Breach', desc: "Unauthorized key-turn recorded at 03:42 in the Archive Sub-Level. No physical entry confirmed, digital ghosting suspected." },
-            { icon: Droplets, title: 'Hydric Siphon', desc: "Condensation buildup behind the 17th-century tapestry wall. Risk of fungal spore activation: Elevated." },
-          ].map((concern, idx) => (
-            <div key={idx} className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <concern.icon className="text-secondary" size={16} />
-                <h4 className="font-headline text-lg text-on-surface uppercase tracking-wide">{concern.title}</h4>
-              </div>
-              <p className="text-sm text-zinc-400 leading-relaxed italic">{concern.desc}</p>
-              <button className="text-primary text-[10px] font-label uppercase tracking-widest hover:underline">Draft Intervention</button>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
 
-    <section className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mb-20">
-      <div className="arch-mask bg-surface-container-highest overflow-hidden aspect-[4/5] relative">
-        <img 
-          src="https://picsum.photos/seed/paper/800/1000" 
-          alt="Archival Paper" 
-          className="w-full h-full object-cover grayscale opacity-60 mix-blend-luminosity"
-          referrerPolicy="no-referrer"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent"></div>
-      </div>
-      <div className="space-y-8">
-        <h2 className="text-5xl font-headline italic leading-tight">Preserving the <span className="text-primary">Untouchable</span></h2>
-        <p className="text-zinc-400 leading-relaxed">
-          The Archive is more than a record of damage—it is a map of our collective memory. Each scratch on a marble bust or fade in a pigment is a note in the symphony of time. Our role is not just to prevent, but to document the inevitable passage.
-        </p>
-        <div className="flex space-x-8">
-          <button 
+        <div className="space-y-2">
+          {RECENT_SIGNALS.map((sig, i) => {
+            const cfg = SEVERITY_CONFIG[sig.severity as keyof typeof SEVERITY_CONFIG];
+            return (
+              <motion.div
+                key={sig.id}
+                initial={{ opacity: 0, x: -12 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.35, delay: 0.05 * i }}
+                className={`${cfg.bg} border ${cfg.border} p-4 group hover:border-primary/30 transition-colors`}
+              >
+                <div className="flex items-start gap-4">
+                  {/* Severity indicator */}
+                  <div className="flex flex-col items-center gap-1 shrink-0 pt-0.5">
+                    <div className="w-2 h-2 rounded-full" style={{ background: cfg.color, boxShadow: `0 0 6px ${cfg.color}66` }} />
+                    <TrendIcon trend={sig.trend} />
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="font-label text-[9px] uppercase tracking-widest" style={{ color: cfg.color }}>{cfg.label}</span>
+                      <span className="font-label text-[9px] uppercase tracking-widest text-white/25">·</span>
+                      <span className="font-label text-[9px] uppercase tracking-widest text-white/30">{sig.category}</span>
+                      <span className="font-label text-[9px] uppercase tracking-widest text-white/25 ml-auto">{sig.ts}</span>
+                    </div>
+                    <p className="font-label text-[11px] text-white/80 mb-1">{sig.title}</p>
+                    <p className="font-body text-[11px] text-white/35 leading-relaxed">{sig.detail}</p>
+                  </div>
+
+                  {/* Signal ID */}
+                  <span className="font-label text-[9px] text-white/20 shrink-0 hidden sm:block">{sig.id}</span>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ── Right sidebar ────────────────────────────────────────────────── */}
+      <aside className="space-y-6">
+
+        {/* Category breakdown */}
+        <div className="bg-surface-container-low border border-outline-variant/20 p-5">
+          <p className="font-label text-[9px] uppercase tracking-widest text-white/30 mb-5">By Category</p>
+          <div className="space-y-4">
+            {CATEGORY_STATS.map((cat, i) => {
+              const total = cat.active + cat.resolved;
+              const pct = Math.round((cat.active / total) * 100);
+              const Icon = cat.icon;
+              return (
+                <motion.div
+                  key={cat.label}
+                  initial={{ opacity: 0, x: 8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.35, delay: 0.08 * i }}
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <Icon size={12} style={{ color: cat.color }} />
+                      <span className="font-label text-[10px] uppercase tracking-widest text-white/50">{cat.label}</span>
+                    </div>
+                    <span className="font-label text-[9px] text-white/30">{cat.active} active</span>
+                  </div>
+                  <div className="h-1 bg-surface-container-highest rounded-none overflow-hidden">
+                    <motion.div
+                      className="h-full"
+                      style={{ background: cat.color }}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${pct}%` }}
+                      transition={{ duration: 0.7, delay: 0.1 * i, ease: 'easeOut' }}
+                    />
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Critical alerts */}
+        <div className="bg-red-950/20 border border-red-700/25 p-5">
+          <div className="flex items-center gap-3 mb-5">
+            <AlertCircle size={16} className="text-red-400 shrink-0" />
+            <p className="font-label text-[9px] uppercase tracking-widest text-red-400">Critical Alerts</p>
+          </div>
+          <div className="space-y-4">
+            {[
+              { icon: AlertTriangle, label: 'Light Exposure', sub: 'UV exceeds threshold by 4%' },
+              { icon: LockOpen, label: 'Access Breach', sub: 'Digital ghost at Sub-Level 3' },
+              { icon: Droplets, label: 'Hydric Siphon', sub: 'Condensation at risk level' },
+              { icon: Activity, label: 'Sensor Dropout', sub: '2 sensors offline >1h' },
+            ].map(({ icon: Icon, label, sub }) => (
+              <div key={label} className="flex items-start gap-3">
+                <Icon size={13} className="text-red-400/70 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-label text-[10px] text-white/70">{label}</p>
+                  <p className="font-body text-[10px] text-white/30">{sub}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <button
             onClick={() => onNavigate('INQUIRY', 'slide_up')}
-            className="bg-primary-container text-on-primary font-label text-xs uppercase tracking-[0.2em] px-8 py-4 shadow-xl hover:shadow-primary/20 transition-all"
+            className="mt-5 w-full font-label text-[9px] uppercase tracking-widest text-primary border border-primary/30 py-2.5 hover:bg-primary/5 transition-colors"
           >
-            Request Transcript
-          </button>
-          <button className="text-primary font-label text-xs uppercase tracking-[0.2em] border-b border-primary/40 pb-2 hover:border-primary transition-all">
-            Curator Guidelines
+            Run Risk Assessment
           </button>
         </div>
-      </div>
-    </section>
+
+        {/* Signal health minimap */}
+        <div className="bg-surface-container-low border border-outline-variant/20 p-5">
+          <p className="font-label text-[9px] uppercase tracking-widest text-white/30 mb-4">24-Hour Activity</p>
+          <svg viewBox="0 0 200 60" className="w-full" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="sig-fill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#f87171" stopOpacity="0.25" />
+                <stop offset="100%" stopColor="#f87171" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <path d="M0,55 L10,52 L20,48 L30,50 L40,42 L50,38 L60,35 L70,40 L80,28 L90,22 L100,30 L110,18 L120,12 L130,20 L140,15 L150,22 L160,18 L170,25 L180,20 L190,15 L200,10" fill="none" stroke="#f87171" strokeWidth="1.5" />
+            <path d="M0,55 L10,52 L20,48 L30,50 L40,42 L50,38 L60,35 L70,40 L80,28 L90,22 L100,30 L110,18 L120,12 L130,20 L140,15 L150,22 L160,18 L170,25 L180,20 L190,15 L200,10 L200,60 L0,60 Z" fill="url(#sig-fill)" />
+            <circle cx="200" cy="10" r="2.5" fill="#f87171" />
+          </svg>
+          <div className="flex justify-between mt-1">
+            <span className="font-label text-[8px] text-white/20">00:00</span>
+            <span className="font-label text-[8px] text-white/20">Now</span>
+          </div>
+        </div>
+      </aside>
+    </div>
   </div>
 );
 

@@ -19,15 +19,15 @@ function Fanlight({ className }: { className?: string }) {
         return (
           <line key={i} x1={cx} y1={cy}
             x2={cx + r * Math.cos(angle)} y2={cy + r * Math.sin(angle)}
-            stroke="#3f1515" strokeWidth="1" />
+            stroke="#7f2020" strokeWidth="1.2" />
         );
       })}
       <path d={`M ${cx - 32} ${cy} A 32 32 0 0 1 ${cx + 32} ${cy} Z`}
-        fill="none" stroke="#f87171" strokeWidth="0.8" strokeOpacity="0.4" />
+        fill="none" stroke="#f87171" strokeWidth="1" strokeOpacity="0.55" />
       <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
-        fill="none" stroke="#3f1515" strokeWidth="2" />
+        fill="none" stroke="#8b2c2c" strokeWidth="2.5" />
       <path d={`M ${cx - r + 12} ${cy} A ${r - 12} ${r - 12} 0 0 1 ${cx + r - 12} ${cy}`}
-        fill="none" stroke="#2a0d0d" strokeWidth="1" />
+        fill="none" stroke="#5a1a1a" strokeWidth="1.2" />
     </svg>
   );
 }
@@ -40,59 +40,63 @@ function DoorPanel({ side, isOpening, isHovered, onClick, onHover, onLeave }: {
   const isLeft = side === 'left';
   const rotateY = isOpening ? (isLeft ? -108 : 108) : 0;
   const origin = isLeft ? '0% 50%' : '100% 50%';
+  // Lighter gradient so the door reads clearly against the void background
   const gradient = isLeft
-    ? 'linear-gradient(to right, #130808, #180c0c, #130808)'
-    : 'linear-gradient(to left,  #130808, #180c0c, #130808)';
+    ? 'linear-gradient(to right, #1f0d0d, #2e1414, #241010)'
+    : 'linear-gradient(to left,  #1f0d0d, #2e1414, #241010)';
 
   return (
     <motion.div
-      style={{ transformOrigin: origin, background: gradient }}
+      style={{ transformOrigin: origin, background: gradient, boxShadow: isHovered ? '0 0 24px rgba(248,113,113,0.15)' : '0 0 12px rgba(0,0,0,0.8)' }}
       animate={{ rotateY }}
       transition={{ duration: 1.5, ease: [0.76, 0, 0.24, 1] }}
       onClick={onClick} onMouseEnter={onHover} onMouseLeave={onLeave}
-      className="relative w-32 h-[221px] sm:w-40 sm:h-[277px] lg:w-48 lg:h-[332px] cursor-pointer border border-[#3f1515]/60 select-none shrink-0"
+      className="relative w-32 h-[221px] sm:w-40 sm:h-[277px] lg:w-48 lg:h-[332px] cursor-pointer border border-[#8b2c2c]/70 select-none shrink-0"
     >
+      {/* Outer highlight edge (simulates a light source from above) */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#f87171]/20 to-transparent" />
+
       {/* Molding frame */}
-      <div className="absolute inset-[5px] sm:inset-[6px] border border-[#2a0d0d]/70">
-        <div className="absolute top-[8px] inset-x-[6px] sm:inset-x-[8px] h-[42%] border border-[#3f1515]/50"
-          style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.7), 0 1px 0 rgba(63,21,21,0.3)' }} />
-        <div className="absolute top-[calc(42%+11px)] sm:top-[calc(42%+14px)] inset-x-0 h-[7px] sm:h-[9px] bg-[#100606] border-y border-[#2a0d0d]/40" />
-        <div className="absolute bottom-[8px] inset-x-[6px] sm:inset-x-[8px] h-[43%] border border-[#3f1515]/50"
-          style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.7), 0 1px 0 rgba(63,21,21,0.3)' }} />
+      <div className="absolute inset-[5px] sm:inset-[6px] border border-[#7f2020]/60">
+        <div className="absolute top-[8px] inset-x-[6px] sm:inset-x-[8px] h-[42%] border border-[#8b2c2c]/55"
+          style={{ boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.8), 0 1px 0 rgba(139,44,44,0.25)' }} />
+        <div className="absolute top-[calc(42%+11px)] sm:top-[calc(42%+14px)] inset-x-0 h-[7px] sm:h-[9px] bg-[#160909] border-y border-[#7f2020]/35" />
+        <div className="absolute bottom-[8px] inset-x-[6px] sm:inset-x-[8px] h-[43%] border border-[#8b2c2c]/55"
+          style={{ boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.8), 0 1px 0 rgba(139,44,44,0.25)' }} />
       </div>
 
       {/* Corner medallions */}
       {[{ top: '9px', left: '9px' }, { top: '9px', right: '9px' }].map((pos, i) => (
-        <div key={i} className="absolute w-2 h-2 sm:w-2.5 sm:h-2.5 border border-[#f87171]/20 rotate-45" style={pos} />
+        <div key={i} className="absolute w-2 h-2 sm:w-2.5 sm:h-2.5 border border-[#f87171]/35 rotate-45" style={pos} />
       ))}
 
       {/* Top ornament */}
       <div className="absolute top-3 sm:top-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 sm:gap-1">
-        <div className="w-3 h-3 sm:w-4 sm:h-4 border border-[#f87171]/25 rotate-45" />
-        <div className="w-1 h-1 bg-[#f87171]/20 rotate-45" />
+        <div className="w-3 h-3 sm:w-4 sm:h-4 border border-[#f87171]/40 rotate-45" />
+        <div className="w-1 h-1 bg-[#f87171]/30 rotate-45" />
       </div>
 
       {/* Handle */}
       <div className="absolute top-1/2 -translate-y-1/2" style={{ [isLeft ? 'right' : 'left']: '9px' }}>
-        <div className="w-2 h-9 sm:w-2.5 sm:h-11 bg-[#1a0808] border border-[#f87171]/25 flex flex-col items-center justify-between py-1 rounded-sm">
+        <div className="w-2 h-9 sm:w-2.5 sm:h-11 bg-[#2a0e0e] border border-[#f87171]/40 flex flex-col items-center justify-between py-1 rounded-sm">
           <div className="w-1 h-1 rounded-full"
-            style={{ background: isHovered ? '#f87171' : '#7f1d1d', transition: 'background 0.3s', boxShadow: isHovered ? '0 0 5px #f87171aa' : 'none' }} />
+            style={{ background: isHovered ? '#f87171' : '#a83030', transition: 'background 0.3s', boxShadow: isHovered ? '0 0 5px #f87171aa' : 'none' }} />
           <div className="w-0.5 h-4 sm:h-5 rounded-full"
             style={{
-              background: isHovered ? 'linear-gradient(to bottom, #f87171, #dc2626)' : 'linear-gradient(to bottom, #7f1d1d, #4d0f0f)',
+              background: isHovered ? 'linear-gradient(to bottom, #f87171, #dc2626)' : 'linear-gradient(to bottom, #c0392b, #7f1d1d)',
               transition: 'background 0.3s, box-shadow 0.3s',
-              boxShadow: isHovered ? '0 0 6px #f8717188' : 'none',
+              boxShadow: isHovered ? '0 0 8px #f8717199' : 'none',
             }} />
           <div className="w-1 h-1 rounded-full"
-            style={{ background: isHovered ? '#f87171' : '#7f1d1d', transition: 'background 0.3s' }} />
+            style={{ background: isHovered ? '#f87171' : '#a83030', transition: 'background 0.3s' }} />
         </div>
       </div>
 
       {/* Keyhole */}
       {isLeft && (
         <div className="absolute bottom-[28%] right-[10px] sm:right-[12px] flex flex-col items-center">
-          <div className="w-1.5 h-1.5 rounded-full border border-[#f87171]/20" />
-          <div className="w-0.5 h-1.5 bg-[#f87171]/10" style={{ clipPath: 'polygon(0 0, 100% 0, 80% 100%, 20% 100%)' }} />
+          <div className="w-1.5 h-1.5 rounded-full border border-[#f87171]/35" />
+          <div className="w-0.5 h-1.5 bg-[#f87171]/20" style={{ clipPath: 'polygon(0 0, 100% 0, 80% 100%, 20% 100%)' }} />
         </div>
       )}
 
