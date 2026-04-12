@@ -203,8 +203,8 @@ function ScoreGauge({ score }: { score: number }) {
         })}
       </svg>
 
-      {/* Score overlay */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ paddingBottom: '18px' }}>
+      {/* Score overlay — vertically aligned to gauge centre (CY=145 in 240-tall viewBox ≈ 60%) */}
+      <div className="absolute inset-0 flex flex-col items-center" style={{ paddingTop: '38%' }}>
         <motion.span
           className="font-headline leading-none"
           style={{ fontSize: '82px', color, textShadow: `0 0 40px ${color}50` }}
