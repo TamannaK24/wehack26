@@ -1,6 +1,20 @@
+import re
+import json
+import time
+from functools import lru_cache
+from pathlib import Path
+
 from bson import ObjectId
+from pymongo.errors import PyMongoError
 
 from app.db import homes_collection
+
+
+BACKEND_DIR = Path(__file__).resolve().parents[2]
+ADDRESS_JSON_PATH = BACKEND_DIR / "address.json"
+MONGO_FALLBACK_COOLDOWN_SECONDS = 60
+
+_mongo_retry_after = 0.0
 
 
 def _serialize_home(home):
@@ -35,55 +49,133 @@ def _serialize_home(home):
         "storm_risk_score": home.get("storm_risk_score"),
     }
 
+
+def _format_search_result(item, fallback_id=None):
+    street = item.get("parcel_address") or item.get("address") or ""
+    city = item.get("parcel_city") or item.get("city") or ""
+    state = item.get("parcel_state") or item.get("state") or ""
+    zip_code = item.get("parcel_zip") or item.get("zip") or ""
+    item_id = item.get("_id") or item.get("id") or item.get("home_id") or fallback_id
+
+    full_address = f"{street}, {city}, {state} {zip_code}".strip()
+
+    return {
+        "id": str(item_id),
+        "label": full_address,
+        "street": street,
+        "city": city,
+        "state": state,
+        "zip": zip_code,
+    }
+
+
+@lru_cache(maxsize=1)
+def _load_local_addresses():
+    with ADDRESS_JSON_PATH.open("r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    if isinstance(data, dict):
+        return [data]
+
+    return data
+
+
+def _search_addresses_in_local_file(query):
+    plain_query = query.strip().lower()
+    if not plain_query:
+        return []
+
+    matches = []
+    for index, item in enumerate(_load_local_addresses()):
+        street = (item.get("parcel_address") or "").lower()
+        if plain_query not in street:
+            continue
+
+        matches.append(_format_search_result(item, fallback_id=f"local-{index}"))
+        if len(matches) >= 10:
+            break
+
+    return matches
+
+
+def _get_local_addresses(limit=100):
+    items = []
+    for index, item in enumerate(_load_local_addresses()[:limit]):
+        formatted = _format_search_result(item, fallback_id=f"local-{index}")
+        items.append(
+            {
+                "id": formatted["id"],
+                "address": formatted["street"],
+                "city": formatted["city"],
+                "state": formatted["state"],
+                "zip": formatted["zip"],
+            }
+        )
+    return items
+
+
+def _can_query_mongo():
+    return time.monotonic() >= _mongo_retry_after
+
+
+def _mark_mongo_unavailable():
+    global _mongo_retry_after
+    _mongo_retry_after = time.monotonic() + MONGO_FALLBACK_COOLDOWN_SECONDS
+
+
 def get_all_addresses():
-    homes = homes_collection.find().limit(100)
-    return [_serialize_home(home) for home in homes]
+    if not _can_query_mongo():
+        return _get_local_addresses()
+
+    try:
+        homes = homes_collection.find().limit(100)
+        return [_serialize_home(home) for home in homes]
+    except PyMongoError:
+        _mark_mongo_unavailable()
+        return _get_local_addresses()
 
 def search_addresses_in_db(query):
     if not query or not query.strip():
         return []
 
-    results = homes_collection.find(
-        {
-            "parcel_address": {
-                "$regex": query,
-                "$options": "i"
+    if not _can_query_mongo():
+        return _search_addresses_in_local_file(query)
+
+    plain_text_query = re.escape(query.strip())
+
+    try:
+        results = homes_collection.find(
+            {
+                "parcel_address": {
+                    "$regex": plain_text_query,
+                    "$options": "i"
+                }
+            },
+            {
+                "_id": 1,
+                "parcel_address": 1,
+                "parcel_city": 1,
+                "parcel_state": 1,
+                "parcel_zip": 1
             }
-        },
-        {
-            "_id": 1,
-            "parcel_address": 1,
-            "parcel_city": 1,
-            "parcel_state": 1,
-            "parcel_zip": 1
-        }
-    ).limit(10)
+        ).limit(10)
 
-    formatted_results = []
-
-    for item in results:
-        street = item.get("parcel_address", "")
-        city = item.get("parcel_city", "")
-        state = item.get("parcel_state", "")
-        zip_code = item.get("parcel_zip", "")
-
-        full_address = f"{street}, {city}, {state} {zip_code}".strip()
-
-        formatted_results.append({
-            "id": str(item.get("_id")),
-            "label": full_address,
-            "street": street,
-            "city": city,
-            "state": state,
-            "zip": zip_code
-        })
-
-    return formatted_results
+        return [_format_search_result(item) for item in results]
+    except PyMongoError:
+        _mark_mongo_unavailable()
+        return _search_addresses_in_local_file(query)
 
 
 def get_address_by_id(address_id):
     if not ObjectId.is_valid(address_id):
         return None
 
-    home = homes_collection.find_one({"_id": ObjectId(address_id)})
-    return _serialize_home(home)
+    if not _can_query_mongo():
+        return None
+
+    try:
+        home = homes_collection.find_one({"_id": ObjectId(address_id)})
+        return _serialize_home(home)
+    except PyMongoError:
+        _mark_mongo_unavailable()
+        return None

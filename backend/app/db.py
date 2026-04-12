@@ -1,12 +1,18 @@
-from pymongo import MongoClient
-from dotenv import load_dotenv
+from pathlib import Path
 import os
 import json
 
-load_dotenv()
+from dotenv import load_dotenv
+from pymongo import MongoClient
+
+BACKEND_DIR = Path(__file__).resolve().parents[1]
+load_dotenv(BACKEND_DIR / ".env")
 
 mongo_uri = os.getenv("MONGO_URI")
-client = MongoClient(mongo_uri)
+if not mongo_uri:
+    raise RuntimeError("MONGO_URI is not set. Expected it in backend/.env.")
+
+client = MongoClient(mongo_uri, serverSelectionTimeoutMS=750)
 
 db = client["riskdb"]
 risk_reports = db["risk_reports"]
