@@ -1,0 +1,11 @@
+{
+  "burglar_alarms": 2,
+  "exterior_security_cameras": 1,
+  "smoke_detectors": 3,
+  "monitored_fire_alarm_systems": 1,
+  "water_leak_detectors": 0,
+  "smart_water_shutoff_valves": 0,
+  "fire_extinguishers": 2,
+  "storm_shutters_or_impact_windows": 0,
+  "backup_generators": 1
+}
