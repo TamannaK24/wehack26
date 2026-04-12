@@ -257,7 +257,7 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
             </div>
 
             <h1 className="font-headline text-6xl md:text-8xl uppercase text-[#f87171] tracking-tight leading-none mb-3">
-              React Radar
+              Risk Radar
             </h1>
 
             <div className="flex items-center justify-center gap-4 mt-3">

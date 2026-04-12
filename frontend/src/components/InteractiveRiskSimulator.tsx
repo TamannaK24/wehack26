@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronDown, ArrowDown } from 'lucide-react';
+import { ChevronDown, ArrowDown, TrendingDown } from 'lucide-react';
 
 // --- Types ---
 
@@ -91,6 +91,122 @@ function calculateScores(inputs: SimulatorInputs): CategoryScores {
 function getCompositeScore(scores: CategoryScores): number {
   const values = Object.values(scores);
   return Math.round(values.reduce((a, b) => a + b, 0) / values.length);
+}
+
+// ── Improvement engine ────────────────────────────────────────────────────────
+type Improvement = {
+  action: string;
+  why: string;
+  delta: number;       // estimated composite score reduction
+  impact: 'high' | 'medium' | 'low';
+};
+
+function getImprovements(inputs: SimulatorInputs): Improvement[] {
+  const items: Improvement[] = [];
+
+  // Electrical panel
+  if (inputs.electricalPanel === 'outdated') {
+    items.push({
+      action: 'Upgrade to a modern 200A electrical panel',
+      why: 'Outdated 60A / fuse panels are the #1 driver of residential fire claims.',
+      delta: 18,
+      impact: 'high',
+    });
+  } else if (inputs.electricalPanel === 'older') {
+    items.push({
+      action: 'Upgrade the 100A panel to a modern 200A breaker box',
+      why: 'Older panels lack arc-fault protection and cannot handle modern load demands.',
+      delta: 9,
+      impact: 'medium',
+    });
+  }
+
+  // Security system
+  if (inputs.securitySystem === 'none') {
+    items.push({
+      action: 'Install a professionally monitored alarm with motion sensors',
+      why: 'Unmonitored properties are 3× more likely to sustain theft losses — this is the fastest win.',
+      delta: 17,
+      impact: 'high',
+    });
+  } else if (inputs.securitySystem === 'basic') {
+    items.push({
+      action: 'Upgrade from a basic alarm to a monitored system with cameras',
+      why: 'Monitoring reduces response time to under 4 min and qualifies for most insurer discounts.',
+      delta: 8,
+      impact: 'medium',
+    });
+  }
+
+  // Roof age
+  if (inputs.roofAge === '20plus') {
+    items.push({
+      action: 'Replace the roof — prioritise Class 4 impact-resistant shingles',
+      why: 'A 20+ year roof contributes to fire, water, and structural risk simultaneously.',
+      delta: 16,
+      impact: 'high',
+    });
+  } else if (inputs.roofAge === '16_20') {
+    items.push({
+      action: 'Schedule a full roof inspection and replace worn shingles',
+      why: 'Catching degradation now avoids exponential damage from the next weather event.',
+      delta: 8,
+      impact: 'medium',
+    });
+  }
+
+  // Crawlspace moisture
+  if (inputs.crawlspaceMoisture === 'active') {
+    items.push({
+      action: 'Remediate active moisture — install a vapor barrier and fix drainage',
+      why: 'Active moisture drives structural, maintenance, and plumbing risk across three categories at once.',
+      delta: 14,
+      impact: 'high',
+    });
+  } else if (inputs.crawlspaceMoisture === 'minor') {
+    items.push({
+      action: 'Install a vapor barrier before minor moisture becomes active mold',
+      why: 'A $400 vapor barrier now prevents a $12,000+ remediation claim later.',
+      delta: 6,
+      impact: 'medium',
+    });
+  }
+
+  // FEMA flood zone — can mitigate but not relocate
+  if (inputs.femaZone === 'zone_v') {
+    items.push({
+      action: 'Install a sump pump, flood barriers, and add an NFIP flood policy',
+      why: 'Zone V carries severe coastal surge risk that standard homeowner policies explicitly exclude.',
+      delta: 10,
+      impact: 'high',
+    });
+  } else if (inputs.femaZone === 'zone_a') {
+    items.push({
+      action: 'Install a sump pump with battery backup and supplement with NFIP coverage',
+      why: 'Zone AE has a 26% chance of flooding over a 30-year mortgage — flood exclusions are common.',
+      delta: 7,
+      impact: 'medium',
+    });
+  }
+
+  // Claims history
+  if (inputs.claims === '5plus') {
+    items.push({
+      action: 'Implement a documented preventive maintenance programme',
+      why: '5+ claims flags you as a high-frequency claimant — underwriters price this aggressively.',
+      delta: 9,
+      impact: 'medium',
+    });
+  } else if (inputs.claims === '3_4') {
+    items.push({
+      action: 'Address the root causes of prior claims to break the pattern',
+      why: '3–4 claims in 5 years places you in the upper 12% of risk profiles in our database.',
+      delta: 5,
+      impact: 'low',
+    });
+  }
+
+  return items.sort((a, b) => b.delta - a.delta).slice(0, 3);
 }
 
 function getRiskLevel(score: number): { label: string; color: string } {
@@ -250,6 +366,7 @@ export default function InteractiveRiskSimulator() {
   const scores = useMemo(() => calculateScores(inputs), [inputs]);
   const composite = useMemo(() => getCompositeScore(scores), [scores]);
   const risk = getRiskLevel(composite);
+  const improvements = useMemo(() => getImprovements(inputs), [inputs]);
 
   function applyScenario(idx: number) {
     setActiveScenario(idx);
@@ -376,7 +493,7 @@ export default function InteractiveRiskSimulator() {
         <ArrowDown className="text-zinc-600" size={16} />
       </div>
 
-      {/* Results */}
+      {/* Results: score + breakdown */}
       <div className="grid grid-cols-1 md:grid-cols-2 border-t border-outline-variant/15">
         {/* Composite Score */}
         <div className="p-6 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-outline-variant/15 gap-2">
@@ -412,6 +529,86 @@ export default function InteractiveRiskSimulator() {
           ))}
         </div>
       </div>
+
+      {/* What to Improve */}
+      <AnimatePresence mode="wait">
+        {improvements.length > 0 && (
+          <motion.div
+            key={improvements.map(i => i.action).join()}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="border-t border-outline-variant/20"
+          >
+            <div className="px-6 py-4 flex items-center gap-3 border-b border-outline-variant/10">
+              <TrendingDown size={14} className="text-primary shrink-0" />
+              <p className="font-label text-[10px] uppercase tracking-[0.3em] text-primary">What to Improve</p>
+              <div className="flex-1 h-px bg-outline-variant/15" />
+              <span className="font-label text-[9px] uppercase tracking-widest text-zinc-600">
+                Est. −{improvements.reduce((s, i) => s + i.delta, 0)} pts composite
+              </span>
+            </div>
+
+            <div className="divide-y divide-outline-variant/10">
+              {improvements.map((imp, i) => (
+                <motion.div
+                  key={imp.action}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.25, delay: i * 0.07 }}
+                  className="px-6 py-5 flex items-start gap-4 relative overflow-hidden"
+                >
+                  {/* Impact colour strip */}
+                  <div
+                    className="absolute inset-y-0 left-0 w-[3px]"
+                    style={{
+                      background:
+                        imp.impact === 'high' ? '#dc2626'
+                        : imp.impact === 'medium' ? '#fb923c'
+                        : '#fbbf24',
+                    }}
+                  />
+
+                  {/* Rank */}
+                  <span
+                    className="font-headline text-2xl leading-none shrink-0 ml-1"
+                    style={{
+                      color:
+                        imp.impact === 'high' ? '#dc2626'
+                        : imp.impact === 'medium' ? '#fb923c'
+                        : '#fbbf24',
+                      opacity: 0.4,
+                    }}
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-3 mb-1">
+                      <p className="font-label text-[10px] uppercase tracking-widest text-white/75 leading-relaxed">
+                        {imp.action}
+                      </p>
+                      <span
+                        className="font-headline text-sm shrink-0"
+                        style={{
+                          color:
+                            imp.impact === 'high' ? '#dc2626'
+                            : imp.impact === 'medium' ? '#fb923c'
+                            : '#fbbf24',
+                        }}
+                      >
+                        −{imp.delta}
+                      </span>
+                    </div>
+                    <p className="font-body text-[11px] text-white/35 leading-relaxed">{imp.why}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
