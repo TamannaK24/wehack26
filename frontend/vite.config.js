@@ -28,6 +28,7 @@ export default defineConfig(({mode}) => {
         '/photos': apiTarget,
         '/quiz': apiTarget,
         '/documents': apiTarget,
+        '/api': apiTarget,
         '/risk': apiTarget,
         '/final': apiTarget,
       },

@@ -87,14 +87,66 @@ function panelIconClass(accent: PinAccent): string {
 
 type ChatMessage = { id: string; role: 'user' | 'bot'; text: string };
 
+type RiskResponse = {
+  masterScore: number;
+  riskTier: string;
+  subscores: {
+    roofWeatherScore: number;
+    waterPlumbingScore: number;
+    fireElectricalScore: number;
+    securityScore: number;
+    structuralScore: number;
+    claimsHistoryScore: number;
+  };
+  details?: Record<string, Array<{ reason: string; value: number }>>;
+};
+
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '');
+
+function buildPropertyContext(risk: RiskResponse | null) {
+  if (!risk) {
+    return {
+      final_score: null,
+      label: 'Unknown',
+      categories: {},
+      top_drivers: [],
+      weight_source: 'backend/risk.json',
+    };
+  }
+
+  const top_drivers = Object.values(risk.details ?? {})
+    .flat()
+    .filter((item) => item.value > 0)
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 5)
+    .map((item) => ({ reason: item.reason, value: item.value }));
+
+  return {
+    final_score: risk.masterScore,
+    label: risk.riskTier,
+    categories: {
+      roof_weather: risk.subscores.roofWeatherScore,
+      water_plumbing: risk.subscores.waterPlumbingScore,
+      fire_electrical: risk.subscores.fireElectricalScore,
+      security_theft: risk.subscores.securityScore,
+      structural_foundation: risk.subscores.structuralScore,
+      claims_history: risk.subscores.claimsHistoryScore,
+    },
+    top_drivers,
+    weight_source: 'backend/risk.json',
+  };
+}
+
 const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }) => {
   const [openPin, setOpenPin] = useState<PinId | null>(null);
   const [commsOpen, setCommsOpen] = useState(false);
+  const [riskContext, setRiskContext] = useState<RiskResponse | null>(null);
+  const [chatPending, setChatPending] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome',
       role: 'bot',
-      text: 'Risk Radar comms online. Ask about the floor plan, zones, or vault status.',
+      text: 'Risk Radar comms online. Ask about your risk score, top drivers, or which issues matter most.',
     },
   ]);
   const [chatInput, setChatInput] = useState('');
@@ -132,9 +184,33 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, commsOpen]);
 
-  const sendChatMessage = useCallback(() => {
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadRiskContext() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/risk`, { signal: controller.signal });
+        const payload = (await response.json()) as RiskResponse | { error?: string };
+
+        if (!response.ok) {
+          throw new Error('Unable to load risk context for chat.');
+        }
+
+        setRiskContext(payload as RiskResponse);
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        console.error('Unable to load gallery chat risk context', error);
+      }
+    }
+
+    void loadRiskContext();
+    return () => controller.abort();
+  }, []);
+
+  const sendChatMessage = useCallback(async () => {
     const trimmed = chatInput.trim();
-    if (!trimmed) return;
+    if (!trimmed || chatPending) return;
+
     const userMsg: ChatMessage = {
       id: `u-${Date.now()}`,
       role: 'user',
@@ -142,18 +218,44 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
     };
     setChatMessages((prev) => [...prev, userMsg]);
     setChatInput('');
-    window.setTimeout(() => {
+    setChatPending(true);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: trimmed,
+          property_context: buildPropertyContext(riskContext),
+        }),
+      });
+
+      const data = (await response.json()) as { response?: string; error?: string };
+      if (!response.ok) {
+        throw new Error(data.error || 'Could not connect to server.');
+      }
+
       setChatMessages((prev) => [
         ...prev,
         {
           id: `b-${Date.now()}`,
           role: 'bot',
-          text:
-            'Message received. Field routing is simulated for this demo — connect your API to enable live intel.',
+          text: data.response || 'No response received.',
         },
       ]);
-    }, 600);
-  }, [chatInput]);
+    } catch (error) {
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          id: `b-${Date.now()}`,
+          role: 'bot',
+          text: error instanceof Error ? error.message : 'Could not connect to server.',
+        },
+      ]);
+    } finally {
+      setChatPending(false);
+    }
+  }, [chatInput, chatPending, riskContext]);
 
   const updateConnector = useCallback(() => {
     if (openPin == null) {

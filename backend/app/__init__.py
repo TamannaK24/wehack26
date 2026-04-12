@@ -2,6 +2,7 @@ from flask import Flask
 from flask_cors import CORS
 
 from app.routes.addresses import addresses_bp
+from app.routes.chatbot import chatbot_bp
 from app.routes.claims import claims_bp
 from app.routes.photos import photos_bp
 from app.routes.quiz import quiz_bp
@@ -20,5 +21,6 @@ def create_app():
     app.register_blueprint(photos_bp)
     app.register_blueprint(quiz_bp)
     app.register_blueprint(risk_bp)
+    app.register_blueprint(chatbot_bp, url_prefix="/api")
 
     return app
