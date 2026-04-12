@@ -86,7 +86,7 @@ const TopBar = ({
     <div className="mx-auto flex max-w-[1920px] flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6 sm:py-2 lg:px-8">
       <div className="flex shrink-0 items-center justify-between gap-4 sm:min-w-0">
         <span className="font-headline text-xl uppercase tracking-[0.08em] text-white sm:text-2xl">
-          Nocturne <span className="text-red-400">ops</span>
+          React <span className="text-red-400">Radar</span>
         </span>
         <div className="flex items-center gap-2 lg:hidden">
           <button
@@ -258,7 +258,7 @@ export default function App() {
         <footer
           className="w-full px-4 py-12 sm:px-8 flex flex-col items-center justify-center space-y-4 border-t border-red-950/25 bg-[#030203]"
         >
-          <div className="font-headline text-sm uppercase tracking-[0.15em] text-white/90">Nocturne ops</div>
+          <div className="font-headline text-sm uppercase tracking-[0.15em] text-white/90">React Radar</div>
           <div className="flex flex-wrap justify-center gap-x-8 gap-y-2">
             <a href="#" className="font-label text-[10px] tracking-widest uppercase text-zinc-500 hover:text-red-300 transition-colors">
               Rules of engagement
@@ -270,7 +270,7 @@ export default function App() {
               Disclosure
             </a>
           </div>
-          <p className="font-label text-[10px] tracking-widest uppercase text-zinc-600">© 2026 Nocturne — classified UI demo</p>
+          <p className="font-label text-[10px] tracking-widest uppercase text-zinc-600">© 2026 React Radar — UI demo</p>
         </footer>
       )}
     </div>

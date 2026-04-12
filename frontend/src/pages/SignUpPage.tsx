@@ -55,7 +55,7 @@ export default function SignUpPage({ onGoToLogin, onSuccess }: SignUpPageProps) 
             <Shield className="text-red-400" size={26} />
           </div>
           <div>
-            <p className="font-label text-[10px] uppercase tracking-[0.35em] text-red-400/80">Nocturne ops</p>
+            <p className="font-label text-[10px] uppercase tracking-[0.35em] text-red-400/80">React Radar</p>
             <h1 className="font-headline text-2xl uppercase tracking-wide text-white">Sign up</h1>
           </div>
         </div>
