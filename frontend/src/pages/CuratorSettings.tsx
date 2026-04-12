@@ -10,12 +10,12 @@ import type { NavigateFn } from '../types/navigation';
 
 const CuratorSettings = ({ onNavigate }: { onNavigate: NavigateFn }) => (
   <div className="max-w-7xl mx-auto space-y-12">
-    <section className="mb-8 border-l-2 border-primary/30 pl-8">
-      <p className="font-label text-primary uppercase tracking-[0.3em] text-xs mb-4">Volume V: Curatorial Settings</p>
-      <h1 className="text-6xl md:text-7xl font-headline italic tracking-tighter text-on-background">
-        The Archive: <span className="text-primary/80">Curator Settings</span>
+    <section className="mb-8 border-l-2 border-red-800/40 pl-8">
+      <p className="font-label text-red-400/90 uppercase tracking-[0.3em] text-xs mb-4">Cover ID · Backstop</p>
+      <h1 className="text-6xl md:text-7xl font-headline uppercase tracking-tighter text-on-background">
+        Identity <span className="text-red-400">settings</span>
       </h1>
-      <p className="mt-4 text-zinc-400 max-w-2xl">Manage your account profile, security controls, and notification preferences.</p>
+      <p className="mt-4 text-zinc-400 max-w-2xl">Aliases, access, and dead-drop alerts for this workstation.</p>
     </section>
 
     <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">

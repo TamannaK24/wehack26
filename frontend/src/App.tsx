@@ -47,50 +47,50 @@ const Sidebar = ({
   isOpen: boolean;
 }) => {
   const navItems = [
-    { id: 'GALLERY', label: 'Gallery Floor', icon: DoorOpen, transition: 'push_back' as const },
-    { id: 'RESTORATION', label: 'Policy Vault', icon: Lock, transition: 'push' as const },
-    { id: 'ARCHIVE', label: 'Claims Archive', icon: ScrollText, transition: 'push' as const },
-    { id: 'INQUIRY', label: 'Risk Appraisal', icon: Compass, transition: 'push' as const },
-    { id: 'SETTINGS', label: 'Curator Settings', icon: Settings, transition: 'push' as const },
+    { id: 'GALLERY', label: 'Floor plan', icon: DoorOpen, transition: 'push_back' as const },
+    { id: 'RESTORATION', label: 'Vault ops', icon: Lock, transition: 'push' as const },
+    { id: 'ARCHIVE', label: 'Signal log', icon: ScrollText, transition: 'push' as const },
+    { id: 'INQUIRY', label: 'Asset sweep', icon: Compass, transition: 'push' as const },
+    { id: 'SETTINGS', label: 'Cover ID', icon: Settings, transition: 'push' as const },
   ];
 
   return (
     <aside
-      className={`fixed left-0 top-0 h-full w-80 pt-24 pb-8 px-6 bg-[#131313]/90 backdrop-blur-xl border-r border-outline-variant/15 shadow-2xl shadow-black/80 z-40 flex flex-col transition-transform duration-500 ${
+      className={`fixed left-0 top-0 h-full w-80 pt-24 pb-8 px-6 bg-[#060304]/95 backdrop-blur-xl border-r border-red-950/35 shadow-2xl shadow-black/90 z-40 flex flex-col transition-transform duration-500 ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       }`}
     >
       <div className="mb-10 px-4">
-        <h2 className="font-headline text-lg tracking-wide uppercase text-primary">Curatorial Index</h2>
-        <p className="font-label text-xs tracking-widest text-zinc-500 uppercase mt-1">Museum Risk Management</p>
+        <h2 className="font-headline text-xl tracking-[0.12em] uppercase text-white">Operations</h2>
+        <p className="font-label text-[10px] tracking-widest text-red-400/70 uppercase mt-2">Nocturne · red cell</p>
       </div>
-      <nav className="flex-1 space-y-2">
+      <nav className="flex-1 space-y-1">
         {navItems.map((item) => {
           const isActive = currentScreen === item.id;
           return (
             <button
               key={item.id}
               onClick={() => onNavigate(item.id as Screen, item.transition)}
-              className={`w-full flex items-center gap-4 px-4 py-4 transition-all duration-500 text-left ${
+              className={`w-full flex items-center gap-4 px-4 py-3.5 transition-all duration-300 text-left rounded-sm ${
                 isActive
-                  ? 'bg-gradient-to-r from-primary-container/10 to-transparent border-l-4 border-primary text-primary translate-x-2'
-                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/30'
+                  ? 'bg-red-950/40 border-l-4 border-red-500 text-red-300 translate-x-1 shadow-[inset_0_0_0_1px_rgba(248,113,113,0.12)]'
+                  : 'text-zinc-400 hover:text-white hover:bg-white/5 border-l-4 border-transparent'
               }`}
             >
-              <item.icon size={20} />
-              <span className="font-headline text-lg tracking-wide uppercase">{item.label}</span>
+              <item.icon size={20} className={isActive ? 'text-red-400' : 'text-zinc-500'} />
+              <span className="font-headline text-base tracking-wide uppercase">{item.label}</span>
             </button>
           );
         })}
       </nav>
-      <div className="mt-auto pt-8 border-t border-outline-variant/10">
-        <div className="flex items-center space-x-3 p-4 bg-surface-container-low">
-          <div className="w-10 h-10 bg-primary-container/20 border border-primary/20 flex items-center justify-center">
-            <UserCircle className="text-primary" size={24} />
+      <div className="mt-auto pt-8 border-t border-red-950/25">
+        <div className="flex items-center space-x-3 p-4 bg-[#0a0506] ring-1 ring-red-950/40">
+          <div className="w-10 h-10 bg-red-950/50 border border-red-800/40 flex items-center justify-center">
+            <UserCircle className="text-red-300" size={24} />
           </div>
           <div>
-            <p className="font-label text-[10px] uppercase tracking-widest text-primary">Chief Curator</p>
-            <p className="font-headline text-xs text-on-surface">Elias Thorne</p>
+            <p className="font-label text-[10px] uppercase tracking-widest text-red-400/90">Field lead</p>
+            <p className="font-headline text-xs text-white tracking-wide">E. Thorne</p>
           </div>
         </div>
       </div>
@@ -106,20 +106,28 @@ const TopBar = ({
   sidebarOpen: boolean;
 }) => (
   <header
-    className={`fixed top-0 w-full z-50 flex justify-between items-center h-20 pr-8 pl-24 bg-[#131313] border-b border-outline-variant/20 shadow-[0_10px_30px_rgba(0,0,0,0.8)] transition-[padding,transform,opacity] duration-300 ${
+    className={`fixed top-0 w-full z-50 flex justify-between items-center h-20 pr-8 pl-24 bg-[#060304]/95 border-b border-red-950/30 shadow-[0_12px_40px_rgba(0,0,0,0.85)] backdrop-blur-md transition-[padding,transform,opacity] duration-300 ${
       isVisible ? 'translate-y-0 opacity-100 pointer-events-auto' : '-translate-y-full opacity-0 pointer-events-none'
     }`}
   >
     <div className="flex items-center gap-6">
-      <span className="text-3xl font-headline text-primary italic uppercase tracking-tight">The Nocturne Gallery</span>
+      <span className="text-2xl sm:text-3xl font-headline text-white uppercase tracking-[0.08em]">
+        Nocturne <span className="text-red-400">ops</span>
+      </span>
     </div>
     <div className="flex items-center gap-8">
-      <nav className="hidden md:flex space-x-8 font-headline text-primary tracking-tight">
-        <a href="#" className="text-primary drop-shadow-[0_0_8px_rgba(233,193,118,0.5)]">Exhibits</a>
-        <a href="#" className="text-zinc-500 hover:text-primary transition-colors">Collections</a>
-        <a href="#" className="text-zinc-500 hover:text-primary transition-colors">Archive</a>
+      <nav className="hidden md:flex space-x-8 font-label text-[11px] uppercase tracking-[0.2em]">
+        <a href="#" className="text-red-300/90 hover:text-white transition-colors">
+          Brief
+        </a>
+        <a href="#" className="text-zinc-500 hover:text-red-300 transition-colors">
+          Intel
+        </a>
+        <a href="#" className="text-zinc-500 hover:text-red-300 transition-colors">
+          Comms
+        </a>
       </nav>
-      <div className="flex items-center gap-4 border-l border-outline-variant/40 pl-6 text-primary">
+      <div className="flex items-center gap-4 border-l border-red-950/40 pl-6 text-red-400/90">
         <Shield size={20} />
         <Landmark size={20} />
       </div>
@@ -167,12 +175,12 @@ export default function App() {
   }, [currentScreen]);
 
   return (
-    <div className="min-h-screen bg-background selection:bg-primary/30 selection:text-on-primary">
+    <div className="min-h-screen bg-background selection:bg-red-600/35 selection:text-white">
       <div className="film-grain" />
 
       <button
         onClick={() => setSidebarOpen((prev) => !prev)}
-        className="fixed top-6 left-8 z-[60] w-10 h-10 border border-outline-variant/40 bg-[#131313]/90 text-primary hover:bg-primary/10 transition-colors flex items-center justify-center"
+        className="fixed top-6 left-8 z-[60] w-10 h-10 border border-red-900/50 bg-[#0a0506]/95 text-red-400 hover:bg-red-950/60 hover:text-white transition-colors flex items-center justify-center"
         aria-label={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
       >
         {sidebarOpen ? <DoorClosed size={18} /> : <ListFilter size={18} />}
@@ -184,8 +192,8 @@ export default function App() {
       <main
         className={`relative min-w-0 overflow-x-hidden pt-32 pb-24 px-8 transition-[padding] duration-500 ${sidebarOpen ? 'lg:pl-80' : 'lg:pl-8'}`}
       >
-        <div className="fixed top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full pointer-events-none"></div>
-        <div className="fixed bottom-[-5%] left-[20%] w-[400px] h-[400px] bg-secondary-container/5 blur-[100px] rounded-full pointer-events-none"></div>
+        <div className="fixed top-[-10%] right-[-10%] w-[500px] h-[500px] bg-red-900/12 blur-[120px] rounded-full pointer-events-none" />
+        <div className="fixed bottom-[-5%] left-[20%] w-[400px] h-[400px] bg-red-950/20 blur-[100px] rounded-full pointer-events-none" />
 
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
@@ -201,14 +209,22 @@ export default function App() {
         </AnimatePresence>
       </main>
 
-      <footer className={`w-full py-12 flex flex-col items-center justify-center space-y-4 border-t border-outline-variant/10 bg-[#0e0e0e] transition-[padding] duration-500 ${sidebarOpen ? 'lg:pl-80' : 'lg:pl-8'}`}>
-        <div className="font-headline italic text-sm text-secondary-container">The Nocturne Gallery</div>
-        <div className="flex space-x-8">
-          <a href="#" className="font-label text-[10px] tracking-widest uppercase text-zinc-600 hover:text-white transition-colors">Terms of Preservation</a>
-          <a href="#" className="font-label text-[10px] tracking-widest uppercase text-zinc-600 hover:text-white transition-colors">Privacy Scroll</a>
-          <a href="#" className="font-label text-[10px] tracking-widest uppercase text-zinc-600 hover:text-white transition-colors">Institutional Ethics</a>
+      <footer
+        className={`w-full py-12 flex flex-col items-center justify-center space-y-4 border-t border-red-950/25 bg-[#030203] transition-[padding] duration-500 ${sidebarOpen ? 'lg:pl-80' : 'lg:pl-8'}`}
+      >
+        <div className="font-headline text-sm uppercase tracking-[0.15em] text-white/90">Nocturne ops</div>
+        <div className="flex flex-wrap justify-center gap-x-8 gap-y-2">
+          <a href="#" className="font-label text-[10px] tracking-widest uppercase text-zinc-500 hover:text-red-300 transition-colors">
+            Rules of engagement
+          </a>
+          <a href="#" className="font-label text-[10px] tracking-widest uppercase text-zinc-500 hover:text-red-300 transition-colors">
+            Signal privacy
+          </a>
+          <a href="#" className="font-label text-[10px] tracking-widest uppercase text-zinc-500 hover:text-red-300 transition-colors">
+            Disclosure
+          </a>
         </div>
-        <p className="font-label text-[10px] tracking-widest uppercase text-zinc-600 opacity-50">© 2024 The Nocturne Gallery - All Rights Reserved</p>
+        <p className="font-label text-[10px] tracking-widest uppercase text-zinc-600">© 2026 Nocturne — classified UI demo</p>
       </footer>
     </div>
   );

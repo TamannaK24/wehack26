@@ -96,18 +96,11 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
     const link1 = document.createElement('link');
     link1.rel = 'stylesheet';
     link1.href =
-      'https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Outfit:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap';
-    document.head.appendChild(link1);
-
-    const link2 = document.createElement('link');
-    link2.rel = 'stylesheet';
-    link2.href =
       'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap';
-    document.head.appendChild(link2);
+    document.head.appendChild(link1);
 
     return () => {
       document.head.removeChild(link1);
-      document.head.removeChild(link2);
     };
   }, []);
 

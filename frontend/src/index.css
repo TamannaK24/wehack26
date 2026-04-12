@@ -1,42 +1,49 @@
-@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Inter:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Outfit:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-headline: "Newsreader", serif;
-  --font-body: "Newsreader", serif;
-  --font-label: "Inter", sans-serif;
+  --font-headline: "Bebas Neue", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-label: "JetBrains Mono", ui-monospace, monospace;
 
-  --color-primary: #e9c176;
-  --color-primary-container: #c5a059;
-  --color-on-primary: #412d00;
-  
-  --color-secondary: #ffb4ac;
-  --color-secondary-container: #960711;
-  --color-on-secondary: #690007;
+  /* Heist / intel desk — cohesive with Gallery floor */
+  --color-primary: #f87171;
+  --color-primary-container: #991b1b;
+  --color-on-primary: #fff1f2;
 
-  --color-background: #131313;
-  --color-surface: #1c1b1b;
-  --color-surface-container: #201f1f;
-  --color-surface-container-low: #1c1b1b;
-  --color-surface-container-high: #2a2a2a;
-  
-  --color-outline: #9a8f80;
-  --color-outline-variant: #4e4639;
+  --color-secondary: #fb923c;
+  --color-secondary-container: #9a3412;
+  --color-on-secondary: #fff7ed;
+
+  --color-background: #030203;
+  --color-on-background: #fafaf9;
+  --color-on-surface: #f5f5f4;
+  --color-surface: #0c0a0a;
+  --color-surface-container: #141010;
+  --color-surface-container-low: #0a0808;
+  --color-surface-container-high: #1a1212;
+  --color-surface-container-highest: #1f1416;
+
+  --color-outline: #7f1d1d;
+  --color-outline-variant: #3f1515;
 }
 
 @layer base {
   body {
-    @apply bg-background text-[#e5e2e1] font-body selection:bg-primary/30;
+    @apply bg-background text-[#e7e5e4] font-body antialiased selection:bg-red-600/35 selection:text-white;
   }
 }
 
 @layer utilities {
   .film-grain {
     position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     pointer-events: none;
     z-index: 9999;
-    opacity: 0.03;
+    opacity: 0.04;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
   }
 
@@ -44,14 +51,26 @@
     clip-path: ellipse(50% 100% at 50% 100%);
   }
 
+  /* Red accent shimmer — use instead of gold-shimmer on ops / vault pages */
+  .heist-shimmer {
+    background: linear-gradient(45deg, #7f1d1d 0%, #f87171 45%, #fca5a5 50%, #f87171 55%, #7f1d1d 100%);
+    background-size: 200% auto;
+    animation: shimmer 3s linear infinite;
+  }
+
   .gold-shimmer {
-    background: linear-gradient(45deg, #c5a059 0%, #e9c176 50%, #c5a059 100%);
+    /* Legacy alias — same motion, red palette */
+    background: linear-gradient(45deg, #7f1d1d 0%, #f87171 50%, #7f1d1d 100%);
     background-size: 200% auto;
     animation: shimmer 3s linear infinite;
   }
 
   @keyframes shimmer {
-    0% { background-position: 0% 50%; }
-    100% { background-position: 200% 50%; }
+    0% {
+      background-position: 0% 50%;
+    }
+    100% {
+      background-position: 200% 50%;
+    }
   }
 }
