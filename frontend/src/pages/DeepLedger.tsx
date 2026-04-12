@@ -1,230 +1,251 @@
-import { motion } from 'motion/react';
-import { Shield, AlertCircle, AlertTriangle, LockOpen, Droplets, Activity, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import {
+  AlertCircle,
+  AlertTriangle,
+  Compass,
+  Droplets,
+  LockOpen,
+  Shield,
+  Activity,
+  TrendingDown,
+  TrendingUp,
+  Minus,
+} from 'lucide-react';
 import type { NavigateFn } from '../types/navigation';
 
-// ── Dummy data — swap with real API payloads ──────────────────────────────────
+type Signal = {
+  id: string;
+  title: string;
+  detail: string;
+  severity: 'critical' | 'elevated' | 'moderate' | 'low';
+  time: string;
+  category: string;
+  trend: 'up' | 'down' | 'stable';
+};
+
+const LIVE_SIGNALS: Signal[] = [
+  {
+    id: 'SIG-0441',
+    title: 'Thermal spike in East Wing kitchen',
+    detail: 'Climate suppression telemetry exceeded normal tolerance for 11 minutes. Manual inspection recommended.',
+    severity: 'critical',
+    time: '14:29',
+    category: 'Access',
+    trend: 'up',
+  },
+  {
+    id: 'SIG-0440',
+    title: 'Water ingress watchlist expanded',
+    detail: 'Hydric accumulation in the western corridor is tracking 22% above baseline after the latest weather cycle.',
+    severity: 'elevated',
+    time: '13:57',
+    category: 'Water',
+    trend: 'up',
+  },
+  {
+    id: 'SIG-0438',
+    title: 'Foundation variance remains within watch threshold',
+    detail: 'North-sector movement is still nominal, but repeat measurement is scheduled for the next review window.',
+    severity: 'moderate',
+    time: '09:03',
+    category: 'Structural',
+    trend: 'down',
+  },
+];
+
 const SIGNAL_SUMMARY = {
   total: 142,
   critical: 4,
   elevated: 17,
   resolved: 121,
-  lastUpdated: '2026-04-11 · 14:32 UTC',
 };
 
-const RECENT_SIGNALS = [
-  { id: 'SIG-0441', ts: '14:29', severity: 'critical', category: 'Access', title: 'Unauthorized entry attempt', detail: 'Key-turn recorded at Archive Sub-Level 3 at 03:42. No physical entry confirmed — digital ghost pattern suspected.', trend: 'up' },
-  { id: 'SIG-0440', ts: '13:57', severity: 'elevated', category: 'Water', title: 'Condensation buildup', detail: 'Hydric accumulation behind the west-facing wall exceeds baseline by 22%. Fungal activation risk elevated.', trend: 'up' },
-  { id: 'SIG-0439', ts: '12:14', severity: 'elevated', category: 'Environmental', title: 'UV threshold breach', detail: "Ultraviolet seepage in the 'Vignette Room' exceeds safety threshold by 4%. Shutter inspection recommended.", trend: 'stable' },
-  { id: 'SIG-0438', ts: '09:03', severity: 'moderate', category: 'Structural', title: 'Foundation variance', detail: 'Nominal variance detected in the North sector. Within acceptable bounds — flagged for monitoring.', trend: 'down' },
-  { id: 'SIG-0437', ts: '08:41', severity: 'moderate', category: 'Environmental', title: 'Humidity spike', detail: 'Relative humidity in Wing B reached 68% during overnight hours. Dehumidifier schedule adjusted.', trend: 'down' },
-  { id: 'SIG-0436', ts: '06:22', severity: 'low', category: 'Access', title: 'Scheduled maintenance window', detail: 'Alarm system temporarily suspended for quarterly testing. All checkpoints nominal.', trend: 'stable' },
-];
-
-const CATEGORY_STATS = [
-  { label: 'Access Control', active: 2, resolved: 38, icon: LockOpen, color: '#f87171' },
-  { label: 'Water & Hydric', active: 3, resolved: 24, icon: Droplets, color: '#60a5fa' },
+const CATEGORY_SUMMARY = [
+  { label: 'Access', active: 2, resolved: 38, icon: LockOpen, color: '#f87171' },
+  { label: 'Water', active: 3, resolved: 24, icon: Droplets, color: '#60a5fa' },
+  { label: 'Structural', active: 4, resolved: 18, icon: Shield, color: '#fb923c' },
   { label: 'Environmental', active: 5, resolved: 41, icon: Activity, color: '#a78bfa' },
-  { label: 'Structural', active: 7, resolved: 18, icon: Shield, color: '#fb923c' },
 ];
 
-const SEVERITY_CONFIG = {
-  critical: { color: '#dc2626', bg: 'bg-red-950/50', border: 'border-red-600/40', label: 'Critical' },
-  elevated: { color: '#f87171', bg: 'bg-red-950/30', border: 'border-red-700/30', label: 'Elevated' },
-  moderate: { color: '#fbbf24', bg: 'bg-amber-950/30', border: 'border-amber-700/30', label: 'Moderate' },
-  low: { color: '#4ade80', bg: 'bg-green-950/20', border: 'border-green-800/25', label: 'Low' },
-};
+function severityTone(severity: 'critical' | 'elevated' | 'moderate' | 'low') {
+  if (severity === 'critical') {
+    return {
+      border: 'border-red-700/40',
+      bg: 'bg-red-950/25',
+      text: 'text-red-400',
+    };
+  }
+  if (severity === 'elevated') {
+    return {
+      border: 'border-orange-700/40',
+      bg: 'bg-orange-950/15',
+      text: 'text-orange-300',
+    };
+  }
+  if (severity === 'moderate') {
+    return {
+      border: 'border-amber-700/35',
+      bg: 'bg-amber-950/10',
+      text: 'text-amber-300',
+    };
+  }
+  return {
+    border: 'border-green-800/30',
+    bg: 'bg-green-950/10',
+    text: 'text-green-300',
+  };
+}
 
-const TrendIcon = ({ trend }: { trend: string }) => {
+function TrendIcon({ trend }: { trend: Signal['trend'] }) {
   if (trend === 'up') return <TrendingUp size={12} className="text-red-400" />;
   if (trend === 'down') return <TrendingDown size={12} className="text-green-400" />;
   return <Minus size={12} className="text-white/30" />;
-};
+}
 
-// ─────────────────────────────────────────────────────────────────────────────
-
-const DeepLedger = ({ onNavigate }: { onNavigate: NavigateFn }) => (
-  <div className="max-w-7xl mx-auto">
-
-    {/* ── Header ────────────────────────────────────────────────────────── */}
-    <section className="mb-12 border-l-2 border-primary/40 pl-8">
-      <p className="font-label text-[10px] text-primary uppercase tracking-[0.35em] mb-4">
-        Signal Log · Encrypted · Live Feed
-      </p>
-      <h1 className="text-6xl md:text-8xl font-headline uppercase tracking-[0.02em] text-white leading-[0.95] mb-4">
-        Signal <span className="text-primary">Ledger</span>
-      </h1>
-      <p className="font-body text-white/55 text-lg max-w-xl leading-relaxed">
-        A real-time index of detected risk events, environmental anomalies, and access alerts — ranked by severity and impact.
-      </p>
-    </section>
-
-    {/* ── Summary stat bar ──────────────────────────────────────────────── */}
-    <motion.section
-      className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-12"
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-    >
-      {[
-        { label: 'Total signals', value: SIGNAL_SUMMARY.total, color: 'text-white' },
-        { label: 'Critical active', value: SIGNAL_SUMMARY.critical, color: 'text-red-400' },
-        { label: 'Elevated active', value: SIGNAL_SUMMARY.elevated, color: 'text-primary' },
-        { label: 'Resolved (30d)', value: SIGNAL_SUMMARY.resolved, color: 'text-green-400' },
-      ].map((s, i) => (
-        <motion.div
-          key={s.label}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.06 * i }}
-          className="bg-surface-container-low border border-outline-variant/20 p-5"
-        >
-          <p className={`font-headline text-4xl leading-none mb-1 ${s.color}`}>{s.value}</p>
-          <p className="font-label text-[9px] uppercase tracking-widest text-white/35">{s.label}</p>
-        </motion.div>
-      ))}
-    </motion.section>
-
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-
-      {/* ── Signal feed ──────────────────────────────────────────────────── */}
-      <section className="lg:col-span-2">
-        <div className="flex items-center gap-4 mb-5">
-          <h2 className="font-headline text-2xl uppercase tracking-[0.04em] text-white">Recent Signals</h2>
-          <div className="flex-1 h-px bg-outline-variant/20" />
-          <span className="font-label text-[9px] uppercase tracking-widest text-white/30">{SIGNAL_SUMMARY.lastUpdated}</span>
-        </div>
-
-        <div className="space-y-2">
-          {RECENT_SIGNALS.map((sig, i) => {
-            const cfg = SEVERITY_CONFIG[sig.severity as keyof typeof SEVERITY_CONFIG];
-            return (
-              <motion.div
-                key={sig.id}
-                initial={{ opacity: 0, x: -12 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.35, delay: 0.05 * i }}
-                className={`${cfg.bg} border ${cfg.border} p-4 group hover:border-primary/30 transition-colors`}
-              >
-                <div className="flex items-start gap-4">
-                  {/* Severity indicator */}
-                  <div className="flex flex-col items-center gap-1 shrink-0 pt-0.5">
-                    <div className="w-2 h-2 rounded-full" style={{ background: cfg.color, boxShadow: `0 0 6px ${cfg.color}66` }} />
-                    <TrendIcon trend={sig.trend} />
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="font-label text-[9px] uppercase tracking-widest" style={{ color: cfg.color }}>{cfg.label}</span>
-                      <span className="font-label text-[9px] uppercase tracking-widest text-white/25">·</span>
-                      <span className="font-label text-[9px] uppercase tracking-widest text-white/30">{sig.category}</span>
-                      <span className="font-label text-[9px] uppercase tracking-widest text-white/25 ml-auto">{sig.ts}</span>
-                    </div>
-                    <p className="font-label text-[11px] text-white/80 mb-1">{sig.title}</p>
-                    <p className="font-body text-[11px] text-white/35 leading-relaxed">{sig.detail}</p>
-                  </div>
-
-                  {/* Signal ID */}
-                  <span className="font-label text-[9px] text-white/20 shrink-0 hidden sm:block">{sig.id}</span>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
+const DeepLedger = ({ onNavigate }: { onNavigate: NavigateFn }) => {
+  return (
+    <div className="mx-auto max-w-7xl">
+      <section className="relative mb-14 border-l-2 border-red-800/40 pl-8">
+        <p className="mb-4 font-label text-xs uppercase tracking-[0.3em] text-red-400/90">Signal log · Encrypted</p>
+        <h1 className="mb-6 font-headline text-6xl uppercase tracking-tighter text-on-background md:text-8xl">
+          Deep <span className="text-red-400">ledger</span>
+        </h1>
+        <p className="max-w-2xl text-lg italic leading-relaxed text-zinc-400 md:text-xl">
+          A quieter view of the active signal field. This page stays focused on current alerts, while the new top-level timeline tab handles the report-based event history.
+        </p>
       </section>
 
-      {/* ── Right sidebar ────────────────────────────────────────────────── */}
-      <aside className="space-y-6">
+      <section className="mb-12 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[
+          { label: 'Total signals', value: SIGNAL_SUMMARY.total, color: 'text-white' },
+          { label: 'Critical active', value: SIGNAL_SUMMARY.critical, color: 'text-red-400' },
+          { label: 'Elevated active', value: SIGNAL_SUMMARY.elevated, color: 'text-primary' },
+          { label: 'Resolved (30d)', value: SIGNAL_SUMMARY.resolved, color: 'text-green-400' },
+        ].map((card) => (
+          <div key={card.label} className="border border-outline-variant/20 bg-surface-container-low p-5">
+            <p className={`mb-1 font-headline text-4xl leading-none ${card.color}`}>{card.value}</p>
+            <p className="font-label text-[9px] uppercase tracking-widest text-white/35">{card.label}</p>
+          </div>
+        ))}
+      </section>
 
-        {/* Category breakdown */}
-        <div className="bg-surface-container-low border border-outline-variant/20 p-5">
-          <p className="font-label text-[9px] uppercase tracking-widest text-white/30 mb-5">By Category</p>
+      <section className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <div className="lg:col-span-2">
           <div className="space-y-4">
-            {CATEGORY_STATS.map((cat, i) => {
-              const total = cat.active + cat.resolved;
-              const pct = Math.round((cat.active / total) * 100);
-              const Icon = cat.icon;
+            {LIVE_SIGNALS.map((signal) => {
+              const tone = severityTone(signal.severity);
               return (
-                <motion.div
-                  key={cat.label}
-                  initial={{ opacity: 0, x: 8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.35, delay: 0.08 * i }}
-                >
-                  <div className="flex items-center justify-between mb-1.5">
-                    <div className="flex items-center gap-2">
-                      <Icon size={12} style={{ color: cat.color }} />
-                      <span className="font-label text-[10px] uppercase tracking-widest text-white/50">{cat.label}</span>
+                <article key={signal.id} className={`border p-5 ${tone.border} ${tone.bg}`}>
+                  <div className="mb-3 flex items-start gap-4">
+                    <div className="flex flex-col items-center gap-1 pt-0.5">
+                      <div className={`h-2.5 w-2.5 rounded-full ${signal.severity === 'critical' ? 'bg-red-500' : signal.severity === 'elevated' ? 'bg-orange-400' : signal.severity === 'moderate' ? 'bg-amber-300' : 'bg-green-400'}`} />
+                      <TrendIcon trend={signal.trend} />
                     </div>
-                    <span className="font-label text-[9px] text-white/30">{cat.active} active</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-1 flex flex-wrap items-center gap-2">
+                        <span className={`font-label text-[9px] uppercase tracking-widest ${tone.text}`}>{signal.severity}</span>
+                        <span className="font-label text-[9px] uppercase tracking-widest text-white/25">·</span>
+                        <span className="font-label text-[9px] uppercase tracking-widest text-white/35">{signal.category}</span>
+                        <span className="ml-auto font-label text-[9px] uppercase tracking-widest text-white/25">{signal.time}</span>
+                      </div>
+                      <h3 className="mb-2 font-headline text-2xl uppercase tracking-wide text-white">{signal.title}</h3>
+                      <p className="text-sm leading-relaxed text-zinc-400">{signal.detail}</p>
+                    </div>
+                    <span className="hidden shrink-0 font-label text-[9px] text-white/20 sm:block">{signal.id}</span>
                   </div>
-                  <div className="h-1 bg-surface-container-highest rounded-none overflow-hidden">
-                    <motion.div
-                      className="h-full"
-                      style={{ background: cat.color }}
-                      initial={{ width: 0 }}
-                      animate={{ width: `${pct}%` }}
-                      transition={{ duration: 0.7, delay: 0.1 * i, ease: 'easeOut' }}
-                    />
-                  </div>
-                </motion.div>
+                </article>
               );
             })}
           </div>
         </div>
 
-        {/* Critical alerts */}
-        <div className="bg-red-950/20 border border-red-700/25 p-5">
-          <div className="flex items-center gap-3 mb-5">
-            <AlertCircle size={16} className="text-red-400 shrink-0" />
-            <p className="font-label text-[9px] uppercase tracking-widest text-red-400">Critical Alerts</p>
-          </div>
-          <div className="space-y-4">
-            {[
-              { icon: AlertTriangle, label: 'Light Exposure', sub: 'UV exceeds threshold by 4%' },
-              { icon: LockOpen, label: 'Access Breach', sub: 'Digital ghost at Sub-Level 3' },
-              { icon: Droplets, label: 'Hydric Siphon', sub: 'Condensation at risk level' },
-              { icon: Activity, label: 'Sensor Dropout', sub: '2 sensors offline >1h' },
-            ].map(({ icon: Icon, label, sub }) => (
-              <div key={label} className="flex items-start gap-3">
-                <Icon size={13} className="text-red-400/70 shrink-0 mt-0.5" />
+        <aside className="space-y-6">
+          <div className="border border-outline-variant/20 bg-surface-container-high p-8">
+            <div className="mb-6 flex items-center gap-3">
+              <Compass className="text-primary" size={24} />
+              <h3 className="font-headline text-2xl uppercase tracking-wide text-white">
+                Structural Integrity
+              </h3>
+            </div>
+            <ul className="space-y-6">
+              <li className="flex items-start space-x-3">
+                <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-secondary-container" />
                 <div>
-                  <p className="font-label text-[10px] text-white/70">{label}</p>
-                  <p className="font-body text-[10px] text-white/30">{sub}</p>
+                  <p className="font-label text-xs uppercase text-zinc-500">Foundation Stress</p>
+                  <p className="text-sm italic text-zinc-300">Nominal variance detected in the North Vault.</p>
                 </div>
-              </div>
-            ))}
+              </li>
+              <li className="flex items-start space-x-3">
+                <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary" />
+                <div>
+                  <p className="font-label text-xs uppercase text-zinc-500">Load Bearing</p>
+                  <p className="text-sm italic text-zinc-300">Optimal across all primary pedestals.</p>
+                </div>
+              </li>
+            </ul>
           </div>
-          <button
-            onClick={() => onNavigate('INQUIRY', 'slide_up')}
-            className="mt-5 w-full font-label text-[9px] uppercase tracking-widest text-primary border border-primary/30 py-2.5 hover:bg-primary/5 transition-colors"
-          >
-            Run Risk Assessment
-          </button>
-        </div>
 
-        {/* Signal health minimap */}
-        <div className="bg-surface-container-low border border-outline-variant/20 p-5">
-          <p className="font-label text-[9px] uppercase tracking-widest text-white/30 mb-4">24-Hour Activity</p>
-          <svg viewBox="0 0 200 60" className="w-full" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="sig-fill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#f87171" stopOpacity="0.25" />
-                <stop offset="100%" stopColor="#f87171" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-            <path d="M0,55 L10,52 L20,48 L30,50 L40,42 L50,38 L60,35 L70,40 L80,28 L90,22 L100,30 L110,18 L120,12 L130,20 L140,15 L150,22 L160,18 L170,25 L180,20 L190,15 L200,10" fill="none" stroke="#f87171" strokeWidth="1.5" />
-            <path d="M0,55 L10,52 L20,48 L30,50 L40,42 L50,38 L60,35 L70,40 L80,28 L90,22 L100,30 L110,18 L120,12 L130,20 L140,15 L150,22 L160,18 L170,25 L180,20 L190,15 L200,10 L200,60 L0,60 Z" fill="url(#sig-fill)" />
-            <circle cx="200" cy="10" r="2.5" fill="#f87171" />
-          </svg>
-          <div className="flex justify-between mt-1">
-            <span className="font-label text-[8px] text-white/20">00:00</span>
-            <span className="font-label text-[8px] text-white/20">Now</span>
+          <div className="border border-secondary-container/20 bg-secondary-container/10 p-8">
+            <div className="mb-6 flex items-center gap-3">
+              <AlertCircle className="text-secondary" size={18} />
+              <p className="font-label text-[10px] uppercase tracking-widest text-secondary">Critical Concerns</p>
+            </div>
+            <div className="space-y-4">
+              {[
+                { icon: AlertTriangle, title: 'Light Exposure', desc: "Ultraviolet seepage in the 'Vignette Room' exceeds safety thresholds by 4%." },
+                { icon: LockOpen, title: 'Access Breach', desc: 'Unauthorized key-turn recorded at 03:42 in the Archive Sub-Level.' },
+                { icon: Droplets, title: 'Hydric Siphon', desc: 'Condensation buildup behind the tapestry wall remains elevated.' },
+              ].map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div key={item.title} className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <Icon className="text-secondary" size={16} />
+                      <h4 className="font-headline text-lg uppercase tracking-wide text-on-surface">{item.title}</h4>
+                    </div>
+                    <p className="text-sm italic leading-relaxed text-zinc-400">{item.desc}</p>
+                  </div>
+                );
+              })}
+            </div>
+            <button
+              onClick={() => onNavigate('TIMELINE', 'push')}
+              className="mt-8 w-full border border-primary/30 py-3 font-label text-[10px] uppercase tracking-[0.2em] text-primary transition-colors hover:bg-primary/5"
+            >
+              Open Timeline
+            </button>
           </div>
-        </div>
-      </aside>
+
+          <div className="border border-outline-variant/20 bg-surface-container-low p-8">
+            <div className="mb-4 flex items-center justify-between">
+              <p className="font-label text-[9px] uppercase tracking-widest text-white/30">By Category</p>
+              <Shield size={14} className="text-primary/70" />
+            </div>
+            <div className="space-y-4">
+              {CATEGORY_SUMMARY.map((item) => {
+                const total = item.active + item.resolved;
+                const width = Math.round((item.active / total) * 100);
+                const Icon = item.icon;
+                return (
+                  <div key={item.label}>
+                    <div className="mb-1.5 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Icon size={12} style={{ color: item.color }} />
+                        <span className="font-label text-[10px] uppercase tracking-widest text-white/50">{item.label}</span>
+                      </div>
+                      <span className="font-label text-[9px] text-white/30">{item.active} active</span>
+                    </div>
+                    <div className="h-1 bg-surface-container-highest">
+                      <div className="h-full" style={{ width: `${width}%`, background: item.color }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </aside>
+      </section>
     </div>
-  </div>
-);
+  );
+};
 
 export default DeepLedger;
