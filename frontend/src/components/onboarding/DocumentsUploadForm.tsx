@@ -4,10 +4,18 @@ import type { DocumentUploads } from './types';
 export type DocumentsUploadFormProps = {
   value: DocumentUploads;
   onChange: (next: DocumentUploads) => void;
+  onClaimsFileChange?: (file: File | null) => void;
+  onInspectionFileChange?: (file: File | null) => void;
   idPrefix?: string;
 };
 
-export function DocumentsUploadForm({ value, onChange, idPrefix = 'docs' }: DocumentsUploadFormProps) {
+export function DocumentsUploadForm({
+  value,
+  onChange,
+  onClaimsFileChange,
+  onInspectionFileChange,
+  idPrefix = 'docs',
+}: DocumentsUploadFormProps) {
   const p = idPrefix;
   return (
     <section className="border border-red-950/40 bg-[#0c0a0a]/80 p-8 space-y-6">
@@ -29,9 +37,11 @@ export function DocumentsUploadForm({ value, onChange, idPrefix = 'docs' }: Docu
             type="file"
             className="text-xs text-zinc-400 file:mr-3 file:border file:border-red-900/40 file:bg-red-950/30 file:px-3 file:py-1.5 file:font-label file:text-[9px] file:uppercase file:tracking-wider file:text-red-200"
             accept=".pdf,.png,.jpg,.jpeg,.webp"
-            onChange={(e) =>
-              onChange({ ...value, claimsFile: e.target.files?.[0] ?? null })
-            }
+            onChange={(e) => {
+              const file = e.target.files?.[0] ?? null;
+              onChange({ ...value, claimsFile: file });
+              onClaimsFileChange?.(file);
+            }}
           />
           {value.claimsFile && <p className="text-xs text-zinc-500 truncate">{value.claimsFile.name}</p>}
         </label>
@@ -43,9 +53,11 @@ export function DocumentsUploadForm({ value, onChange, idPrefix = 'docs' }: Docu
             type="file"
             className="text-xs text-zinc-400 file:mr-3 file:border file:border-red-900/40 file:bg-red-950/30 file:px-3 file:py-1.5 file:font-label file:text-[9px] file:uppercase file:tracking-wider file:text-red-200"
             accept=".pdf,.png,.jpg,.jpeg,.webp"
-            onChange={(e) =>
-              onChange({ ...value, inspectionFile: e.target.files?.[0] ?? null })
-            }
+            onChange={(e) => {
+              const file = e.target.files?.[0] ?? null;
+              onChange({ ...value, inspectionFile: file });
+              onInspectionFileChange?.(file);
+            }}
           />
           {value.inspectionFile && (
             <p className="text-xs text-zinc-500 truncate">{value.inspectionFile.name}</p>

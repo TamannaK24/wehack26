@@ -94,7 +94,7 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
     {
       id: 'welcome',
       role: 'bot',
-      text: 'Risk Radar comms online. Ask about the floor plan, zones, or vault status.',
+      text: 'Risk Radar online. Ask about your risk score, property issues, or how to improve your home.',
     },
   ]);
   const [chatInput, setChatInput] = useState('');
@@ -132,7 +132,7 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, commsOpen]);
 
-  const sendChatMessage = useCallback(() => {
+  const sendChatMessage = useCallback(async () => {
     const trimmed = chatInput.trim();
     if (!trimmed) return;
     const userMsg: ChatMessage = {
@@ -142,17 +142,35 @@ const CuratorsGallery = ({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }
     };
     setChatMessages((prev) => [...prev, userMsg]);
     setChatInput('');
-    window.setTimeout(() => {
+    try {
+      const res = await fetch('http://localhost:5000/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: trimmed,
+          property_context: {
+            final_score: 30,
+            label: 'Low Risk',
+            categories: {
+              roof: 30, water_damage: 30, fire: 30,
+              theft: 30, foundation: 30, natural_disasters: 30, maintenance: 30,
+            },
+            top_drivers: [],
+            weight_source: 'Insurance Information Institute 2023 claims frequency data.',
+          },
+        }),
+      });
+      const data = await res.json();
       setChatMessages((prev) => [
         ...prev,
-        {
-          id: `b-${Date.now()}`,
-          role: 'bot',
-          text:
-            'Message received. Field routing is simulated for this demo — connect your API to enable live intel.',
-        },
+        { id: `b-${Date.now()}`, role: 'bot', text: data.response },
       ]);
-    }, 600);
+    } catch {
+      setChatMessages((prev) => [
+        ...prev,
+        { id: `b-${Date.now()}`, role: 'bot', text: 'Could not connect to server.' },
+      ]);
+    }
   }, [chatInput]);
 
   const updateConnector = useCallback(() => {

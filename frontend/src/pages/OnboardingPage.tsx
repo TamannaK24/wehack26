@@ -1,8 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowRight, ChevronLeft, CheckCircle2 } from 'lucide-react';
 import { loadUser, saveUser } from '../lib/authStorage';
 import {
-  PropertyAddressForm,
   DocumentsUploadForm,
   ProtectionQuizForm,
   emptyPropertyAddress,
@@ -20,16 +19,157 @@ type OnboardingPageProps = {
   onComplete: () => void;
 };
 
+type AddressSearchResult = {
+  id: string;
+  label: string;
+  street: string;
+  city: string;
+  state: string;
+  zip: string;
+};
+
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:5000').replace(/\/$/, '');
+console.log("API_BASE_URL =", API_BASE_URL);
+
 export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
   const [step, setStep] = useState<Step>('address');
   const [address, setAddress] = useState<PropertyAddress>(emptyPropertyAddress);
   const [documents, setDocuments] = useState<DocumentUploads>(emptyDocumentUploads);
   const [quiz, setQuiz] = useState<ProtectionQuizAnswers>(() => emptyProtectionQuizAnswers());
 
+  const [addressInput, setAddressInput] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [searchResults, setSearchResults] = useState<AddressSearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState('');
+  const [selectedAddressId, setSelectedAddressId] = useState('');
+  const [claimsUploadStatus, setClaimsUploadStatus] = useState('');
+  const [inspectionUploadStatus, setInspectionUploadStatus] = useState('');
+  const blurTimeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const query = addressInput.trim();
+
+    if (!showDropdown || !query) {
+      setSearchResults([]);
+      setIsSearching(false);
+      setSearchError('');
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(async () => {
+      setIsSearching(true);
+      setSearchError('');
+
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/addresses/search?q=${encodeURIComponent(query)}`,
+          { signal: controller.signal },
+        );
+
+        if (!response.ok) {
+          throw new Error(`Address search failed with status ${response.status}`);
+        }
+
+        const results = (await response.json()) as AddressSearchResult[];
+        setSearchResults(results);
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        console.error('Address search failed', error);
+        setSearchResults([]);
+        setSearchError('Unable to load addresses right now.');
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsSearching(false);
+        }
+      }
+    }, 250);
+
+    return () => {
+      controller.abort();
+      window.clearTimeout(timeoutId);
+    };
+  }, [addressInput, showDropdown]);
+
+  useEffect(() => {
+    return () => {
+      if (blurTimeoutRef.current !== null) {
+        window.clearTimeout(blurTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleSelectAddress = (selected: AddressSearchResult) => {
+    setAddressInput(selected.label);
+    setShowDropdown(false);
+    setSelectedAddressId(selected.id);
+    setSearchResults([]);
+    setSearchError('');
+
+    setAddress({
+      street: selected.street,
+      city: selected.city,
+      state: selected.state,
+      zip: selected.zip,
+    });
+  };
+
+  const handleAddressInputChange = (value: string) => {
+    setAddressInput(value);
+    setShowDropdown(true);
+    setSelectedAddressId('');
+    setSearchError('');
+    setAddress(emptyPropertyAddress());
+  };
+
+  const uploadDocument = async (
+    file: File,
+    endpoint: string,
+    setStatus: (message: string) => void,
+    label: string,
+  ) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    setStatus(`Uploading ${label}...`);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`${label} upload failed with status ${response.status}`);
+      }
+
+      setStatus(`${label} uploaded.`);
+    } catch (error) {
+      console.error(`${label} upload failed`, error);
+      setStatus(`${label} upload failed.`);
+    }
+  };
+
+  const handleClaimsFileChange = (file: File | null) => {
+    if (!file) {
+      setClaimsUploadStatus('');
+      return;
+    }
+
+    void uploadDocument(file, '/claims', setClaimsUploadStatus, 'Claims file');
+  };
+
+  const handleInspectionFileChange = (file: File | null) => {
+    if (!file) {
+      setInspectionUploadStatus('');
+      return;
+    }
+
+    void uploadDocument(file, '/inspections', setInspectionUploadStatus, 'Inspection file');
+  };
+
   const finish = () => {
     const payload = buildOnboardingPayload(address, documents, quiz);
-    // Example — sync to Mongo after you add an API route:
-    // await fetch('/api/intake', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     void payload;
 
     const user = loadUser();
@@ -67,11 +207,15 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
                 i === stepIndex
                   ? 'border-red-500/50 bg-red-950/30 text-red-200'
                   : i < stepIndex
-                    ? 'border-red-900/40 text-zinc-500'
-                    : 'border-red-950/30 text-zinc-600'
+                  ? 'border-red-900/40 text-zinc-500'
+                  : 'border-red-950/30 text-zinc-600'
               }`}
             >
-              {i < stepIndex ? <CheckCircle2 size={12} className="text-red-400/80" /> : <span className="text-zinc-600">{i + 1}</span>}
+              {i < stepIndex ? (
+                <CheckCircle2 size={12} className="text-red-400/80" />
+              ) : (
+                <span className="text-zinc-600">{i + 1}</span>
+              )}
               {label}
             </div>
           ))}
@@ -80,11 +224,72 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
 
       {step === 'address' && (
         <>
-          <PropertyAddressForm value={address} onChange={setAddress} />
+          <div className="relative">
+            <label className="block text-sm text-zinc-300 mb-2">Property Address</label>
+            <input
+              type="text"
+              value={addressInput}
+              onChange={(e) => {
+                handleAddressInputChange(e.target.value);
+              }}
+              onFocus={() => setShowDropdown(true)}
+              onBlur={() => {
+                blurTimeoutRef.current = window.setTimeout(() => {
+                  setShowDropdown(false);
+                }, 150);
+              }}
+              placeholder="Start typing an address..."
+              className="w-full rounded-md border border-zinc-700 bg-zinc-900 px-4 py-3 text-white outline-none focus:border-red-500"
+            />
+
+            {showDropdown && (
+              <div className="absolute z-20 mt-2 w-full rounded-md border border-zinc-700 bg-zinc-950 shadow-lg max-h-60 overflow-y-auto">
+                {!addressInput.trim() && (
+                  <div className="px-4 py-3 text-sm text-zinc-500">Type to search for an address.</div>
+                )}
+
+                {addressInput.trim() && isSearching && (
+                  <div className="px-4 py-3 text-sm text-zinc-400">Searching addresses...</div>
+                )}
+
+                {addressInput.trim() && !isSearching && searchError && (
+                  <div className="px-4 py-3 text-sm text-red-300">{searchError}</div>
+                )}
+
+                {addressInput.trim() &&
+                  !isSearching &&
+                  !searchError &&
+                  searchResults.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => handleSelectAddress(item)}
+                      className="block w-full px-4 py-3 text-left text-sm text-zinc-200 hover:bg-red-950/40"
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+
+                {addressInput.trim() &&
+                  !isSearching &&
+                  !searchError &&
+                  searchResults.length === 0 && (
+                    <div className="px-4 py-3 text-sm text-zinc-500">No matching addresses found.</div>
+                  )}
+              </div>
+            )}
+          </div>
+
+          {!selectedAddressId && addressInput.trim() && (
+            <p className="mt-2 text-sm text-zinc-500">Choose one of the search results to continue.</p>
+          )}
+
           <div className="flex justify-end mt-6">
             <button
               type="button"
               onClick={() => setStep('documents')}
+              disabled={!selectedAddressId}
               className="inline-flex items-center gap-2 border border-red-800/50 bg-red-950/40 px-6 py-3 font-label text-[10px] font-bold uppercase tracking-[0.2em] text-red-100 hover:bg-red-900/50"
             >
               Continue
@@ -96,7 +301,18 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
 
       {step === 'documents' && (
         <>
-          <DocumentsUploadForm value={documents} onChange={setDocuments} />
+          <DocumentsUploadForm
+            value={documents}
+            onChange={setDocuments}
+            onClaimsFileChange={handleClaimsFileChange}
+            onInspectionFileChange={handleInspectionFileChange}
+          />
+          {(claimsUploadStatus || inspectionUploadStatus) && (
+            <div className="mt-4 space-y-1 text-sm text-zinc-400">
+              {claimsUploadStatus && <p>{claimsUploadStatus}</p>}
+              {inspectionUploadStatus && <p>{inspectionUploadStatus}</p>}
+            </div>
+          )}
           <div className="flex justify-between mt-6">
             <button
               type="button"
