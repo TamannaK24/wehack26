@@ -1,7 +1,7 @@
 {
   "referenceDate": "2026-04-12",
   "sourceFile": "C:\\Projects\\wehack26\\backend\\final.json",
-  "masterScore": 27,
+  "masterScore": 29,
   "riskTier": "Low Risk",
   "weights": {
     "roofWeatherScore": 0.25,
@@ -12,82 +12,82 @@
     "claimsHistoryScore": 0.08
   },
   "subscores": {
-    "roofWeatherScore": 22,
-    "waterPlumbingScore": 53,
-    "fireElectricalScore": 3,
-    "securityScore": 4,
-    "structuralScore": 47,
-    "claimsHistoryScore": 33
+    "roofWeatherScore": 2,
+    "waterPlumbingScore": 43,
+    "fireElectricalScore": 77,
+    "securityScore": 0,
+    "structuralScore": 30,
+    "claimsHistoryScore": 21
   },
   "details": {
     "roofWeatherScore": [
       {
-        "reason": "document risk factor roof_cracked_shingles",
-        "value": 16.8
+        "reason": "document risk factor roof_moderate_wear",
+        "value": 13.2
+      },
+      {
+        "reason": "roof remaining life 6-10 years",
+        "value": 10
       },
       {
         "reason": "address storm risk score",
-        "value": 4.95
+        "value": 6.08
+      },
+      {
+        "reason": "storm shutters or impact openings deduction",
+        "value": -27
       }
     ],
     "waterPlumbingScore": [
       {
-        "reason": "document risk factor kitchen_plumbing_leak",
+        "reason": "document risk factor kitchen_supply_line_failure",
+        "value": 19.6
+      },
+      {
+        "reason": "document risk factor kitchen_water_damage",
+        "value": 19.6
+      },
+      {
+        "reason": "document risk factor aging_water_heater",
         "value": 15.4
       },
       {
-        "reason": "document risk factor water_damage_adjacent_flooring",
-        "value": 15.4
-      },
-      {
-        "reason": "document risk factor prior_leak_under_kitchen_sink",
-        "value": 14.0
-      },
-      {
-        "reason": "outstanding reserve present",
-        "value": 8
+        "reason": "water leak detectors deduction",
+        "value": -12
       }
     ],
     "fireElectricalScore": [
       {
-        "reason": "document risk factor kitchen_fire_smoke_damage",
+        "reason": "document risk factor stovetop_grease_flare_up_fire",
         "value": 15.4
       },
       {
-        "reason": "document risk factor kitchen_fire_smoke_damage",
+        "reason": "document risk factor smoke_damage_kitchen",
         "value": 15.4
       },
       {
-        "reason": "document risk factor kitchen_fire_smoke_damage",
-        "value": 14.0
+        "reason": "smoke detectors missing",
+        "value": 15
       },
       {
-        "reason": "protective electrical feature organized_wiring",
-        "value": -10
+        "reason": "document risk factor outdated_attic_wiring",
+        "value": 15.4
       },
       {
-        "reason": "monitored fire alarm systems deduction",
-        "value": -24
-      },
-      {
-        "reason": "fire extinguishers deduction",
-        "value": -8
+        "reason": "document risk factor fire_risk_elevated",
+        "value": 15.4
       }
     ],
     "securityScore": [
       {
         "reason": "address crime insurance score",
-        "value": 4.16
+        "value": 0.32
       }
     ],
     "structuralScore": [
       {
-        "reason": "document risk factor slab_foundation_moisture",
-        "value": 18.0
-      },
-      {
-        "reason": "document risk factor exterior_siding_dents",
-        "value": 14.4
+        "reason": "photo structural risk wall_cracks",
+        "value": 15.0
       },
       {
         "reason": "address year built before 1980",
@@ -96,18 +96,18 @@
     ],
     "claimsHistoryScore": [
       {
+        "reason": "closed-paid claim TX-HO-2024-22104",
+        "value": 8
+      },
+      {
         "reason": "closed-paid claim TX-HO-2026-01477",
         "value": 8
       },
       {
-        "reason": "open claim TX-HO-2025-19866",
-        "value": 15
-      },
-      {
         "reason": "claims within 12 months of 2026-04-12",
-        "value": 10
+        "value": 5
       }
     ]
   },
-  "generatedAt": "2026-04-12T15:45:43.968781+00:00"
+  "generatedAt": "2026-04-12T21:13:12.669183+00:00"
 }
