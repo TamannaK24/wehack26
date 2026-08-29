@@ -420,8 +420,8 @@ curl http://127.0.0.1:5050/risk
 
 | Branch | Owner | Head | State |
 |---|---|---|---|
-| **`main`** | Tamanna K | `5abaf99` "full project" (2026-04-21) | **Canonical.** Everything merged: full backend (risk scoring, OpenAI extraction, chatbot), all wired frontend pages, Vite API proxy. |
-| `tammybackend` | Tamanna K | `5abaf99` | Identical to `main` — the branch `main` was last fast-forwarded from. |
+| **`main`** | Tamanna K | merge of `5abaf99` "full project" (2026-04-21) + this README | **Canonical.** Everything merged: full backend (risk scoring, OpenAI extraction, chatbot), all wired frontend pages, Vite API proxy. |
+| `tammybackend` | Tamanna K | `5abaf99` | Same code as `main`; `main` additionally carries this README. |
 | `anvi` | Anvi Siddabhattuni | `7aeef88` "Merge tammybackend into anvi" | 4 ahead / 2 behind. UI work — the top-level risk timeline view, nav centering, landing-page contrast, settings refresh. Substantially merged into `main` already. |
 | `contact` | Tramanh Trinh | `83f77ce` "contact page" | 11 ahead / 1 behind. Adds `ContactAgentsPage.tsx` (~275 lines) plus a `CONTACT` screen in the nav. **Never merged — this is the one branch with a feature `main` doesn't have.** |
 | `tramanh` | Tramanh Trinh | `c7cbb97` "spy theme" | 37 ahead of the merge base but fully contained in `main`. The original dark/spy visual direction. Historical. |
@@ -431,7 +431,7 @@ curl http://127.0.0.1:5050/risk
 
 Two branches carry work that is **not** in `main`: `contact` (contact-agents page) and `Siri` (the OpenCV photo-analysis experiments).
 
-> **Heads up if you just cloned:** if your local `main` was checked out before the final merge, it may sit behind `origin/main` — `git log --oneline main..origin/main` will tell you. `git pull --ff-only` to catch up.
+> **Heads up if you cloned or branched before August 2026:** `main` was consolidated late, so an older local checkout can sit well behind. `git log --oneline main..origin/main` will tell you; `git pull` to catch up.
 
 ---
 
