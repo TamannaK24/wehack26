@@ -27,13 +27,19 @@ export type FileMeta = {
 };
 
 export type DocumentUploads = {
-  claimsFile: File | null;
-  inspectionFile: File | null;
+  claimsFiles: File[];
+  inspectionFiles: File[];
+  /** Optional floor plan / blueprint (single file) */
+  blueprintFile: File | null;
+  /** Optional property photos (multiple) */
+  propertyPhotos: File[];
 };
 
 export const emptyDocumentUploads = (): DocumentUploads => ({
-  claimsFile: null,
-  inspectionFile: null,
+  claimsFiles: [],
+  inspectionFiles: [],
+  blueprintFile: null,
+  propertyPhotos: [],
 });
 
 /** Non-negative whole counts per feature; 0 = not installed / none */
@@ -44,8 +50,10 @@ export type OnboardingPayload = {
   address: PropertyAddress;
   /** File metadata only — binary upload handled separately */
   documentsMeta: {
-    claims: FileMeta | null;
-    inspections: FileMeta | null;
+    claims: FileMeta[];
+    inspections: FileMeta[];
+    blueprint: FileMeta | null;
+    propertyPhotos: FileMeta[];
   };
   protectionQuiz: ProtectionQuizAnswers;
 };
@@ -77,8 +85,10 @@ export function buildOnboardingPayload(
   return {
     address: { ...address },
     documentsMeta: {
-      claims: fileToMeta(uploads.claimsFile),
-      inspections: fileToMeta(uploads.inspectionFile),
+      claims: uploads.claimsFiles.map((f) => fileToMeta(f)).filter((m): m is FileMeta => m != null),
+      inspections: uploads.inspectionFiles.map((f) => fileToMeta(f)).filter((m): m is FileMeta => m != null),
+      blueprint: fileToMeta(uploads.blueprintFile),
+      propertyPhotos: uploads.propertyPhotos.map((f) => fileToMeta(f)).filter((m): m is FileMeta => m != null),
     },
     protectionQuiz: normalizeProtectionQuizAnswers(protectionQuiz),
   };

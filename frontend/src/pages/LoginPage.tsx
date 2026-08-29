@@ -1,10 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import { Shield, ArrowRight } from 'lucide-react';
-import { loadUser, type StoredUser } from '../lib/authStorage';
-
 type LoginPageProps = {
   onGoToSignUp: () => void;
-  onSuccess: (user: StoredUser) => void;
+  onSuccess: () => void;
 };
 
 export default function LoginPage({ onGoToSignUp, onSuccess }: LoginPageProps) {
@@ -19,16 +17,7 @@ export default function LoginPage({ onGoToSignUp, onSuccess }: LoginPageProps) {
       setError('Enter email and password.');
       return;
     }
-    const existing = loadUser();
-    if (existing && existing.email.toLowerCase() === email.trim().toLowerCase()) {
-      onSuccess(existing);
-      return;
-    }
-    if (!existing) {
-      setError('No account found. Sign up first.');
-      return;
-    }
-    setError('Email or password does not match our records.');
+    onSuccess();
   };
 
   return (

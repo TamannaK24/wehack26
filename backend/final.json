@@ -1,0 +1,476 @@
+{
+  "address": {
+    "id": "None",
+    "address": "9133 BOEDEKER CIR",
+    "city": "DALLAS",
+    "state": "TX",
+    "zip": "75225-2012",
+    "latitude": 32.873682,
+    "longitude": -96.777489,
+    "county": "dallas",
+    "usecode": 1,
+    "usedesc": "MFR - DUPLEXES",
+    "zoning": "D(A",
+    "zoning_description": "Duplex District",
+    "zoning_type": "Residential",
+    "zoning_subtype": "Two Family",
+    "structstyle": "12",
+    "numunits": null,
+    "numstories": 2.0,
+    "yearbuilt": 1966.0,
+    "sqft": null,
+    "acres": null,
+    "fema_flood_zone": "X",
+    "fema_zone_desc": "Moderate/minimal risk (shaded=0.2%, unshaded=minimal)",
+    "crime_total": 2,
+    "crime_insurance_score": 1.6,
+    "storm_risk_score": 40.5
+  },
+  "addressSavedAt": "2026-04-12T21:11:08.011641+00:00",
+  "document_risk_extraction": {
+    "property": {
+      "address": "4127 Meadow Park Dr",
+      "city": "Dallas",
+      "state": "TX",
+      "zip": "75287",
+      "property_type": "single-family home",
+      "occupancy_type": null,
+      "year_built": 1998,
+      "number_of_stories": null,
+      "square_footage": null
+    },
+    "documents": [
+      {
+        "document_type": "homeowners_property_claim",
+        "source_name": "Lone Star Mutual Insurance",
+        "carrier": "Lone Star Mutual Insurance",
+        "claim_number": "TX-HO-2024-22104",
+        "policy_number": "HOM-TX-88427193",
+        "claim_status": "closed - paid",
+        "inspection_date": null,
+        "date_reported": "2024-09-08",
+        "date_of_loss": "2024-09-07"
+      },
+      {
+        "document_type": "homeowners_property_claim",
+        "source_name": "Lone Star Mutual Insurance",
+        "carrier": "Lone Star Mutual Insurance",
+        "claim_number": "TX-HO-2026-01477",
+        "policy_number": "HOM-TX-88427193",
+        "claim_status": "closed - paid",
+        "inspection_date": null,
+        "date_reported": "2026-01-15",
+        "date_of_loss": "2026-01-14"
+      },
+      {
+        "document_type": "home_inspection_report",
+        "source_name": null,
+        "carrier": null,
+        "claim_number": null,
+        "policy_number": null,
+        "claim_status": null,
+        "inspection_date": null,
+        "date_reported": null,
+        "date_of_loss": null
+      },
+      {
+        "document_type": "home_inspection_report",
+        "source_name": null,
+        "carrier": null,
+        "claim_number": null,
+        "policy_number": null,
+        "claim_status": null,
+        "inspection_date": null,
+        "date_reported": null,
+        "date_of_loss": null
+      }
+    ],
+    "property_features": [
+      {
+        "feature_key": "year_built",
+        "value": 1998,
+        "unit": "year",
+        "evidence": "Built in 1998"
+      },
+      {
+        "feature_key": "roof_remaining_life",
+        "value": "5-7",
+        "unit": "years",
+        "evidence": "Roof shows moderate wear. Estimated remaining life: 5-7 years."
+      }
+    ],
+    "risk_factors": [
+      {
+        "factor_key": "kitchen_supply_line_failure",
+        "category": "plumbing",
+        "subcategory": "supply_line",
+        "location": "kitchen",
+        "severity": "high",
+        "count": 1,
+        "year": 2024,
+        "date": "2024-09-07",
+        "source_type": "homeowners_property_claim",
+        "source_name": "Lone Star Mutual Insurance",
+        "evidence": "Sudden supply line failure under the kitchen sink caused water damage to kitchen and breakfast area."
+      },
+      {
+        "factor_key": "kitchen_water_damage",
+        "category": "water_damage",
+        "subcategory": "water_damage",
+        "location": "kitchen and breakfast area",
+        "severity": "high",
+        "count": 1,
+        "year": 2024,
+        "date": "2024-09-07",
+        "source_type": "homeowners_property_claim",
+        "source_name": "Lone Star Mutual Insurance",
+        "evidence": "Water affected base cabinets, toe kicks, adjacent drywall, and flooring in kitchen and breakfast area."
+      },
+      {
+        "factor_key": "prior_loss_history",
+        "category": "prior_loss_history",
+        "subcategory": null,
+        "location": null,
+        "severity": "unknown",
+        "count": 2,
+        "year": null,
+        "date": null,
+        "source_type": "homeowners_property_claim",
+        "source_name": "Lone Star Mutual Insurance",
+        "evidence": "Prior-loss history entry tied to insured location."
+      },
+      {
+        "factor_key": "stovetop_grease_flare_up_fire",
+        "category": "fire",
+        "subcategory": "kitchen",
+        "location": "kitchen",
+        "severity": "moderate",
+        "count": 1,
+        "year": 2026,
+        "date": "2026-01-14",
+        "source_type": "homeowners_property_claim",
+        "source_name": "Lone Star Mutual Insurance",
+        "evidence": "Stovetop grease flare-up extinguished without fire department suppression; smoke residue affected kitchen."
+      },
+      {
+        "factor_key": "smoke_damage_kitchen",
+        "category": "smoke",
+        "subcategory": "kitchen",
+        "location": "kitchen",
+        "severity": "moderate",
+        "count": 1,
+        "year": 2026,
+        "date": "2026-01-14",
+        "source_type": "homeowners_property_claim",
+        "source_name": "Lone Star Mutual Insurance",
+        "evidence": "Smoke residue affected range hood, upper cabinets, ceiling, and window treatments."
+      },
+      {
+        "factor_key": "smoke_detectors_missing",
+        "category": "safety_devices",
+        "subcategory": "smoke_detectors",
+        "location": "2 rooms",
+        "severity": "high",
+        "count": 1,
+        "year": null,
+        "date": null,
+        "source_type": "home_inspection_report",
+        "source_name": null,
+        "evidence": "Smoke detectors missing in 2 rooms."
+      },
+      {
+        "factor_key": "outdated_attic_wiring",
+        "category": "electrical",
+        "subcategory": "wiring",
+        "location": "attic",
+        "severity": "moderate",
+        "count": 1,
+        "year": null,
+        "date": null,
+        "source_type": "home_inspection_report",
+        "source_name": null,
+        "evidence": "Outdated wiring in attic."
+      },
+      {
+        "factor_key": "roof_moderate_wear",
+        "category": "roof",
+        "subcategory": null,
+        "location": null,
+        "severity": "moderate",
+        "count": 1,
+        "year": null,
+        "date": null,
+        "source_type": "home_inspection_report",
+        "source_name": null,
+        "evidence": "Roof shows moderate wear."
+      },
+      {
+        "factor_key": "aging_water_heater",
+        "category": "plumbing",
+        "subcategory": "water_heater",
+        "location": null,
+        "severity": "moderate",
+        "count": 1,
+        "year": null,
+        "date": null,
+        "source_type": "home_inspection_report",
+        "source_name": null,
+        "evidence": "Water heater aging."
+      },
+      {
+        "factor_key": "fire_risk_elevated",
+        "category": "fire",
+        "subcategory": null,
+        "location": null,
+        "severity": "moderate",
+        "count": 1,
+        "year": null,
+        "date": null,
+        "source_type": "home_inspection_report",
+        "source_name": null,
+        "evidence": "Fire risk elevated."
+      }
+    ],
+    "protective_features": [
+      {
+        "feature_key": "electrical_panel_updated",
+        "category": "electrical",
+        "value": "updated",
+        "source_type": "home_inspection_report",
+        "source_name": null,
+        "evidence": "Electrical panel updated. No major issues."
+      },
+      {
+        "feature_key": "contents_smoke_odor_treatment_completed",
+        "category": "smoke",
+        "value": "completed",
+        "source_type": "homeowners_property_claim",
+        "source_name": "Lone Star Mutual Insurance",
+        "evidence": "Contents cleaning vendor completed smoke wipe-down and odor treatment."
+      }
+    ],
+    "claims_financials": [
+      {
+        "type": "replacement_cost_value",
+        "amount": 9630,
+        "currency": "USD",
+        "source_name": "Lone Star Mutual Insurance",
+        "evidence": "Replacement Cost Value (RCV) $9,630.00 for 2024 claim"
+      },
+      {
+        "type": "depreciation",
+        "amount": 980,
+        "currency": "USD",
+        "source_name": "Lone Star Mutual Insurance",
+        "evidence": "Depreciation $980.00 for 2024 claim"
+      },
+      {
+        "type": "policy_deductible",
+        "amount": 1500,
+        "currency": "USD",
+        "source_name": "Lone Star Mutual Insurance",
+        "evidence": "Policy Deductible Applied $1,500.00 for 2024 claim"
+      },
+      {
+        "type": "net_payment",
+        "amount": 7150,
+        "currency": "USD",
+        "source_name": "Lone Star Mutual Insurance",
+        "evidence": "Net Payment Issued $7,150.00 for 2024 claim"
+      },
+      {
+        "type": "replacement_cost_value",
+        "amount": 6840,
+        "currency": "USD",
+        "source_name": "Lone Star Mutual Insurance",
+        "evidence": "Replacement Cost Value (RCV) $6,840.00 for 2026 claim"
+      },
+      {
+        "type": "depreciation",
+        "amount": 540,
+        "currency": "USD",
+        "source_name": "Lone Star Mutual Insurance",
+        "evidence": "Depreciation $540.00 for 2026 claim"
+      },
+      {
+        "type": "policy_deductible",
+        "amount": 1000,
+        "currency": "USD",
+        "source_name": "Lone Star Mutual Insurance",
+        "evidence": "Policy Deductible Applied $1,000.00 for 2026 claim"
+      },
+      {
+        "type": "net_payment",
+        "amount": 5300,
+        "currency": "USD",
+        "source_name": "Lone Star Mutual Insurance",
+        "evidence": "Net Payment Issued $5,300.00 for 2026 claim"
+      }
+    ],
+    "summary_counts": {
+      "structural": 0,
+      "foundation": 0,
+      "roof": 1,
+      "water_damage": 1,
+      "plumbing": 2,
+      "electrical": 1,
+      "fire": 2,
+      "smoke": 2,
+      "mold": 0,
+      "HVAC": 0,
+      "weather": 0,
+      "hail": 0,
+      "wind": 0,
+      "flood": 0,
+      "drainage": 0,
+      "sewer": 0,
+      "tree_hazard": 0,
+      "pest": 0,
+      "prior_loss_history": 2,
+      "repeated_claims": 0,
+      "safety_devices": 1,
+      "deferred_maintenance": 0,
+      "aging_systems": 1
+    },
+    "notes": [
+      {
+        "type": "claim_handling",
+        "text": "Repair/risk recommendation for 2024 claim: Replace damaged base cabinets and affected flooring, confirm plumbing repair."
+      },
+      {
+        "type": "claim_handling",
+        "text": "Repair/risk recommendation for 2026 claim: Install or confirm functioning fire extinguisher in kitchen, verify smoke detectors, complete minor finish repairs."
+      },
+      {
+        "type": "inspection_recommendation",
+        "text": "Install smoke detectors and update attic wiring."
+      }
+    ]
+  },
+  "document_risk_extraction_meta": {
+    "model": "gpt-4.1-mini",
+    "source_files": [
+      "claim_302a6fd774214a4f9a10dd9215ea496f_claim_02_kitchen_water_leak.pdf",
+      "claim_b1ac6b64b1954627a5f28bbd290faebe_claim_05_minor_fire_smoke_damage.pdf",
+      "inspection_194faf5dd41649d4be401e9ebc720df1_inspection_04_fire_safety.pdf",
+      "inspection_8e36e8343650442bb69a989f711feaf5_inspection_01_general_condition.pdf"
+    ],
+    "saved_at": "2026-04-12T21:11:55.125187+00:00"
+  },
+  "quiz": {
+    "submittedAt": "2026-04-12T21:12:25.997391+00:00",
+    "responses": [
+      {
+        "id": "burglar_alarms",
+        "question": "How many burglar alarms are installed in your home?",
+        "answer": 0
+      },
+      {
+        "id": "exterior_security_cameras",
+        "question": "How many exterior security cameras does your home have?",
+        "answer": 0
+      },
+      {
+        "id": "working_smoke_detectors",
+        "question": "How many working smoke detectors are installed in your home?",
+        "answer": 0
+      },
+      {
+        "id": "monitored_fire_alarm_systems",
+        "question": "How many monitored fire alarm systems does your home have?",
+        "answer": 0
+      },
+      {
+        "id": "water_leak_detectors",
+        "question": "How many water leak detectors are installed in your home?",
+        "answer": 2
+      },
+      {
+        "id": "smart_water_shutoff_valves",
+        "question": "How many smart water shutoff valves does your home have?",
+        "answer": 0
+      },
+      {
+        "id": "fire_extinguishers",
+        "question": "How many fire extinguishers are accessible in your home?",
+        "answer": 0
+      },
+      {
+        "id": "storm_shutters_or_impact_openings",
+        "question": "How many windows or openings have storm shutters or impact-resistant glass?",
+        "answer": 9
+      },
+      {
+        "id": "backup_generators",
+        "question": "How many backup generators does your home have?",
+        "answer": 0
+      }
+    ]
+  },
+  "photo_risk_extraction": {
+    "photos": [
+      {
+        "source_name": null,
+        "visible_areas": [
+          "interior wall",
+          "window",
+          "ceiling"
+        ],
+        "quality": "good"
+      }
+    ],
+    "risk_factors": [
+      {
+        "factor_key": "wall_cracks",
+        "category": "structural",
+        "subcategory": "cracks",
+        "location": "interior wall near window and ceiling corner",
+        "severity": "unknown",
+        "count": 1,
+        "source_type": "photo",
+        "source_name": null,
+        "evidence": "large visible cracks extending from ceiling corner down the wall and alongside window frame"
+      }
+    ],
+    "protective_features": [],
+    "summary_counts": {
+      "structural": 1,
+      "foundation": 0,
+      "roof": 0,
+      "water_damage": 0,
+      "plumbing": 0,
+      "electrical": 0,
+      "fire": 0,
+      "smoke": 0,
+      "mold": 0,
+      "HVAC": 0,
+      "weather": 0,
+      "hail": 0,
+      "wind": 0,
+      "flood": 0,
+      "drainage": 0,
+      "sewer": 0,
+      "tree_hazard": 0,
+      "pest": 0,
+      "prior_loss_history": 0,
+      "repeated_claims": 0,
+      "safety_devices": 0,
+      "deferred_maintenance": 0,
+      "aging_systems": 0
+    },
+    "notes": [
+      {
+        "type": "inspection_note",
+        "text": "Visible cracks on interior wall indicate potential structural movement; severity cannot be fully assessed from photo alone."
+      }
+    ]
+  },
+  "photo_risk_extraction_meta": {
+    "model": "gpt-4.1-mini",
+    "source_files": [
+      "photo_c3246e3e23bd482aa3faf5688172e450_bedroom_foundation_cracks.jpg",
+      "photo_dd64fe88e975497a8f23d7eb77450bad_bedroom_foundation_cracks.jpg"
+    ],
+    "saved_at": "2026-04-12T21:12:32.639050+00:00"
+  }
+}

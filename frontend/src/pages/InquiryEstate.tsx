@@ -1,17 +1,15 @@
 import { motion } from 'motion/react';
 import type { NavigateFn } from '../types/navigation';
-import InteractiveRiskSimulator from '../components/InteractiveRiskSimulator';
+import RiskWhatIfSimulator from '../components/RiskWhatIfSimulator';
 
 // Scoring methodology factors shown in the bottom section
 const FACTORS = [
-  { label: 'Roof Integrity', weight: '18%', desc: 'Age, material, and visible degradation of roof systems' },
-  { label: 'Electrical Systems', weight: '16%', desc: 'Panel age, wiring type, update history' },
-  { label: 'Water & Flood', weight: '15%', desc: 'FEMA flood zone classification and drainage assessment' },
-  { label: 'Fire Risk', weight: '14%', desc: 'Construction materials, distance to fire station' },
-  { label: 'Theft & Security', weight: '12%', desc: 'Alarm systems, access control, neighborhood index' },
-  { label: 'Liability Exposure', weight: '10%', desc: 'Pool, outbuildings, visitor frequency, claims history' },
-  { label: 'Weather & Wind', weight: '9%', desc: 'Wind zone classification, hail frequency, storm history' },
-  { label: 'Foundation & Structure', weight: '6%', desc: 'Moisture intrusion, settling, crawlspace condition' },
+  { label: 'Roof & Weather', weight: '25%', desc: 'Roof damage, hail and wind exposure, storm risk, and remaining roof life' },
+  { label: 'Water & Plumbing', weight: '22%', desc: 'Leak history, plumbing failures, moisture evidence, and reserve pressure' },
+  { label: 'Fire & Electrical', weight: '18%', desc: 'Electrical hazards, smoke or fire evidence, and protective fire devices' },
+  { label: 'Security & Theft', weight: '15%', desc: 'Burglary history, weak entry points, alarms, cameras, and local crime signals' },
+  { label: 'Structural & Foundation', weight: '12%', desc: 'Cracks, slab moisture, structural observations, age, and flood-zone stress' },
+  { label: 'Claims History', weight: '8%', desc: 'Closed, open, repeated, recent, and high-dollar claims affecting underwriting' },
 ];
 
 const TIERS = [
@@ -34,7 +32,7 @@ const InquiryEstate = ({ onNavigate }: { onNavigate: NavigateFn }) => (
         Risk <span className="text-primary">Appraisal</span>
       </h1>
       <p className="font-body text-white/55 text-lg max-w-xl leading-relaxed">
-        Select a property class to load its risk profile, then use the simulator below to model your own exposure in real time.
+        Review the current underwriting score, then toggle different risk categories as mitigated to see the projected score if those issues were fully addressed.
       </p>
     </section>
 
@@ -42,12 +40,12 @@ const InquiryEstate = ({ onNavigate }: { onNavigate: NavigateFn }) => (
     <section className="mb-20">
       <div className="mb-8">
         <p className="font-label text-[10px] text-primary uppercase tracking-[0.35em] mb-2">Live Scoring Engine</p>
-        <h2 className="text-4xl font-headline uppercase tracking-[0.04em] text-white mb-2">Risk Simulator</h2>
+        <h2 className="text-4xl font-headline uppercase tracking-[0.04em] text-white mb-2">What-If Simulator</h2>
         <p className="font-label text-[10px] uppercase tracking-widest text-white/35">
           Tune your property parameters — the engine scores your exposure and tells you exactly what to fix
         </p>
       </div>
-      <InteractiveRiskSimulator />
+      <RiskWhatIfSimulator />
     </section>
 
     {/* Scoring Methodology */}
@@ -55,7 +53,7 @@ const InquiryEstate = ({ onNavigate }: { onNavigate: NavigateFn }) => (
       <div className="flex items-center gap-4 mb-8">
         <h2 className="font-headline text-3xl uppercase tracking-[0.04em] text-white">Scoring Methodology</h2>
         <div className="flex-1 h-px bg-outline-variant/20" />
-        <span className="font-label text-[9px] uppercase tracking-widest text-white/30">8 weighted factors</span>
+        <span className="font-label text-[9px] uppercase tracking-widest text-white/30">6 weighted factors</span>
       </div>
 
       {/* Factor weights */}

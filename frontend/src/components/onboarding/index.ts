@@ -4,5 +4,7 @@ export { PropertyAddressForm } from './PropertyAddressForm';
 export type { PropertyAddressFormProps } from './PropertyAddressForm';
 export { DocumentsUploadForm } from './DocumentsUploadForm';
 export type { DocumentsUploadFormProps } from './DocumentsUploadForm';
+export { PropertyBlueprintUploadForm } from './PropertyBlueprintUploadForm';
+export type { PropertyBlueprintUploadFormProps } from './PropertyBlueprintUploadForm';
 export { ProtectionQuizForm, emptyProtectionQuizAnswers } from './ProtectionQuizForm';
 export type { ProtectionQuizFormProps } from './ProtectionQuizForm';
